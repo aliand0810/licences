@@ -177,6 +177,7 @@ dialog::backdrop{background:rgba(0,0,0,.6);backdrop-filter:blur(4px)}
 
 <script>
 const $=id=>document.getElementById(id);
+const FB_DEF={fbUrl:'https://covo-licences-default-rtdb.europe-west1.firebasedatabase.app',fbKey:'AIzaSyBf93ZHmBf6qi6GbtUX-dQh-DGMgR6nIts'};
 const DEF_P='COVO Pro,Gestion Terrain Pro,LivraPro,Mon Planning Pro,Onda Player,Bureau Virtuel Pro';
 const PAL=['#7c3aed','#06b6d4','#10b981','#f59e0b','#f43f5e','#3b82f6','#ec4899','#84cc16'];
 const C=()=>JSON.parse(localStorage.getItem('licCfg')||'{}');
@@ -190,7 +191,7 @@ function showMods(sel){const m=MODS()[$('prod').value];$('modBox').style.display
   $('mods').innerHTML=m.map(x=>`<label><input type="checkbox" value="${x}" ${!sel||sel.includes(x)?'checked':''}>${x}</label>`).join('')}
 function setMods(v){document.querySelectorAll('#mods input').forEach(i=>i.checked=!!v)}
 function getMods(){return MODS()[$('prod').value]?[...document.querySelectorAll('#mods input:checked')].map(i=>i.value):null}
-function initCfg(){['tok','own','rep','pth','sec','fbUrl','fbKey','fbMail','fbPass'].forEach(k=>{if(C()[k])$(k).value=C()[k]});$('prods').value=C().prods||DEF_P;
+function initCfg(){['tok','own','rep','pth','sec','fbUrl','fbKey','fbMail','fbPass'].forEach(k=>{if(C()[k])$(k).value=C()[k]});$('fbUrl').value=$('fbUrl').value||FB_DEF.fbUrl;$('fbKey').value=$('fbKey').value||FB_DEF.fbKey;$('prods').value=C().prods||DEF_P;
   $('prod').innerHTML=prods().map(p=>`<option>${p}</option>`).join('');
   const ok=C().tok&&C().own&&C().rep;$('gh').classList.toggle('on',!!ok);$('ghTxt').textContent=ok?`${C().own}/${C().rep}`:'GitHub non configuré'}
 async function saveCfg(){const c={...C()};['tok','own','rep','pth','sec','prods','fbUrl','fbKey','fbMail','fbPass'].forEach(k=>c[k]=$(k).value.trim());localStorage.setItem('licCfg',JSON.stringify(c));initCfg();
@@ -244,7 +245,7 @@ async function generate(){
   if(!C().sec||!C().tok){cfgDlg.showModal();return toast('Configure GitHub et le secret','ko')}
   if(BAN.includes(mail))return toast('🚫 Adresse bannie — débannis-la d\'abord','ko');
   const maxDev=Math.min(99,Math.max(0,+$('maxDev').value||0));
-  if(maxDev&&!FB())return toast('Configure Firebase dans ⚙️ pour limiter les appareils','ko');
+  if(maxDev&&!(C().fbMail&&C().fbPass)){cfgDlg.showModal();$('fbMail').scrollIntoView({block:'center'});$('fbMail').focus();return toast('Entre ton e-mail et mot de passe admin Firebase (section 🔥)','ko')}
   const b=$('gen');b.classList.add('load');b.textContent='Génération…';
   try{
     const key=await makeKey(mail,prod);$('kb').classList.remove('show');void $('kb').offsetWidth;$('kb').classList.add('show');reveal(key);
@@ -252,7 +253,7 @@ async function generate(){
     const e=expiry(),exp=e?e.toISOString():null;
     const lic={id,email:mail,produit:prod,hash:await sha(mail+'|'+prod+'|'+key),cree:new Date().toISOString().slice(0,10),expire:exp,actif:true,modules:mods,maxDevices:maxDev||null};
     const i=data.licences.findIndex(l=>l.id===id);i>=0?data.licences[i]={...data.licences[i],...lic,cree:data.licences[i].cree}:data.licences.push(lic);
-    if(FB()){data.firebase=FB();await fbPut('limits/'+id,maxDev?String(maxDev).padStart(2,'0'):null)}
+    if(maxDev||(data.firebase&&C().fbMail)){data.firebase=FB();await fbPut('limits/'+id,maxDev?String(maxDev).padStart(2,'0'):null)}
     await ghPut(data,s,(i>=0?'Régénération':'Nouvelle')+' licence '+prod);
     toast(i>=0?'✔ Licence régénérée et sauvegardée':'✔ Licence créée et sauvegardée');LIC=data.licences;refresh();
   }catch(e){toast(e.message,'ko')}
@@ -322,9 +323,10 @@ $('kb').querySelector('[onclick="testDlg.showModal()"]').addEventListener('click
 
 // ── Firebase (limite d'appareils) ──
 let DEV={},FBT=null;
-const FB=()=>(C().fbUrl||'').replace(/\/+$/,'');
+const FB=()=>(C().fbUrl||FB_DEF.fbUrl).replace(/\/+$/,'');
+const FBKEY=()=>C().fbKey||FB_DEF.fbKey;
 async function fbTok(){if(FBT&&FBT.exp>Date.now())return FBT.t;
-  const r=await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key='+C().fbKey,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:C().fbMail,password:C().fbPass,returnSecureToken:true})});
+  const r=await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key='+FBKEY(),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:C().fbMail,password:C().fbPass,returnSecureToken:true})});
   const j=await r.json();if(!r.ok)throw new Error('Firebase : connexion admin refusée ('+(j.error&&j.error.message||r.status)+')');
   FBT={t:j.idToken,exp:Date.now()+50*6e4};return FBT.t}
 async function fbPut(path,val){const t=await fbTok();const r=await fetch(`${FB()}/${path}.json?auth=${t}`,{method:val===null?'DELETE':'PUT',body:JSON.stringify(val)});
@@ -333,7 +335,7 @@ async function fbGet(path){const r=await fetch(`${FB()}/${path}.json`);return r.
 async function loadDev(){if(!FB())return;const all=await fbGet('devices')||{};DEV={};LIC.forEach(l=>{if(l.maxDevices)DEV[l.id]=Object.keys(all[l.id]||{}).length});render()}
 function setDev(n){n=Math.min(99,Math.max(0,parseInt(n,10)||0));$('maxDev').value=n;
   $('devTxt').textContent=n?n+' appareil'+(n>1?'s':''):'Illimité';
-  $('devSub').textContent=n?(FB()?'maximum autorisé pour cette licence':'⚠️ configure Firebase dans ⚙️'):'aucune limite d\'appareils';
+  $('devSub').textContent=n?(C().fbMail?'maximum autorisé pour cette licence':'⚠️ ajoute ton compte admin Firebase dans ⚙️'):'aucune limite d\'appareils';
   document.querySelector('.stp').disabled=n===0;
   document.querySelectorAll('#devSeg button').forEach(b=>b.classList.toggle('act',+b.dataset.dev===n))}
 document.querySelectorAll('#devSeg button').forEach(b=>b.onclick=()=>setDev(b.dataset.dev));
