@@ -13,6 +13,7 @@
     mail=mail.trim().toLowerCase();key=key.trim().toUpperCase();
     try{
       const d=await (await fetch(URL+'?t='+Date.now(),{cache:'no-store'})).json();
+      if((d.bannis||[]).includes(mail))return{ok:false,msg:'Accès interdit pour cette adresse'};
       const h=await sha(mail+'|'+PRODUIT+'|'+key);
       const l=d.licences.find(x=>x.email===mail&&x.produit===PRODUIT&&x.hash===h);
       if(!l)return{ok:false,msg:'Licence invalide'};

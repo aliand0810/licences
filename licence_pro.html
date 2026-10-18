@@ -115,6 +115,9 @@ dialog::backdrop{background:rgba(0,0,0,.6);backdrop-filter:blur(4px)}
   <div class="card" style="animation-delay:.1s">
     <h3>📋 Licences <div class="tools"><input id="q" placeholder="Rechercher…" oninput="render()"><button class="mini" onclick="load()">↻</button></div></h3>
     <div class="list" id="list"><div class="empty">Configure GitHub pour charger les licences</div></div>
+    <div id="banBox" style="display:none;margin-top:14px;border-top:1px solid var(--bd);padding-top:12px">
+      <h3 style="font-size:.9rem">🚫 Adresses bannies</h3><div id="banList"></div>
+    </div>
   </div>
 </section>
 
@@ -148,7 +151,7 @@ const $=id=>document.getElementById(id);
 const DEF_P='COVO Pro,Gestion Terrain Pro,LivraPro,Mon Planning Pro,Onda Player,Bureau Virtuel Pro';
 const PAL=['#7c3aed','#06b6d4','#10b981','#f59e0b','#f43f5e','#3b82f6','#ec4899','#84cc16'];
 const C=()=>JSON.parse(localStorage.getItem('licCfg')||'{}');
-let LIC=[],DUR=0,PER=30,charts={};
+let BAN=[],LIC=[],DUR=0,PER=30,charts={};
 
 function toast(t,c='ok'){const e=$('toast');e.textContent=t;e.className='toast show '+c;clearTimeout(e._t);e._t=setTimeout(()=>e.className='toast',2600)}
 function prods(){return (C().prods||DEF_P).split(',').map(s=>s.trim()).filter(Boolean)}
@@ -203,6 +206,7 @@ async function generate(){
   const mail=norm($('mail').value),prod=$('prod').value;
   if(!/^\S+@\S+\.\S+$/.test(mail))return toast('E-mail invalide','ko');
   if(!C().sec||!C().tok){cfgDlg.showModal();return toast('Configure GitHub et le secret','ko')}
+  if(BAN.includes(mail))return toast('🚫 Adresse bannie — débannis-la d\'abord','ko');
   const b=$('gen');b.classList.add('load');b.textContent='Génération…';
   try{
     const key=await makeKey(mail,prod);$('kb').classList.remove('show');void $('kb').offsetWidth;$('kb').classList.add('show');reveal(key);
@@ -225,7 +229,9 @@ function render(){const q=$('q').value.toLowerCase();const L=LIC.filter(l=>(l.em
   $('list').innerHTML=L.length?L.map((l,i)=>{const[s,c]=status(l);const col=color(l.produit);
     return `<div class="item" style="animation-delay:${i*.03}s"><div class="av" style="background:${col}22;color:${col}">${l.email[0].toUpperCase()}</div>
     <div class="m"><b>${l.email}</b><span>${l.produit} · ${l.expire?'→ '+fmtD(new Date(l.expire)):'Illimitée'}</span></div>
-    <span class="badge ${c}">${s}</span><button class="mini" onclick="revoke('${l.id}')">${l.actif?'⛔':'↺'}</button></div>`}).join(''):'<div class="empty">Aucune licence</div>'}
+    <span class="badge ${c}">${s}</span><button class="mini" title="${l.actif?'Révoquer':'Réactiver'}" onclick="revoke('${l.id}')">${l.actif?'⛔':'↺'}</button>${!l.actif?`<button class="mini" title="Supprimer et bannir" style="border-color:var(--ko)" onclick="delLic('${l.id}')">🗑</button>`:''}</div>`}).join(''):'<div class="empty">Aucune licence</div>';
+  $('banBox').style.display=BAN.length?'block':'none';
+  $('banList').innerHTML=BAN.map(m=>`<div class="item"><div class="av" style="background:#f43f5e22;color:#f43f5e">🚫</div><div class="m"><b>${m}</b><span>Accès interdit à tous les logiciels</span></div><button class="mini" onclick="unban('${m}')">Débannir</button></div>`).join('')}
 
 function count(el,to){const from=+el.textContent||0,t0=performance.now();(function f(t){const p=Math.min((t-t0)/700,1);el.textContent=Math.round(from+(to-from)*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(f)})(t0)}
 function stats(){const n={tot:LIC.length,act:0,soon:0,off:0};LIC.forEach(l=>{const k=status(l)[2];n[k]++;if(k==='soon')n.act++});
@@ -255,12 +261,19 @@ function drawBar(){const P=prods(),g=k=>P.map(p=>LIC.filter(l=>l.produit===p&&st
    options:{indexAxis:'y',responsive:true,animation:{duration:900},plugins:{legend:{labels:{usePointStyle:true}},tooltip:tip},scales:{x:{stacked:true,beginAtZero:true,ticks:{precision:0}},y:{stacked:true,grid:{display:false}}}}})}
 
 function refresh(){render();stats();drawLine();drawDonut();drawBar()}
-async function load(){if(!C().tok){refresh();return}try{LIC=(await ghGet()).data.licences;refresh()}catch(e){toast(e.message,'ko')}}
+async function load(){if(!C().tok){refresh();return}try{const d=(await ghGet()).data;LIC=d.licences;BAN=d.bannis||[];refresh()}catch(e){toast(e.message,'ko')}}
+async function delLic(id){const l=LIC.find(x=>x.id===id);if(!l)return;
+  const all=confirm(`Supprimer la licence ${l.produit} de ${l.email} ?\n\nOK = supprimer ET bannir l'adresse (accès interdit à tous tes logiciels)\nAnnuler = ne rien faire`);if(!all)return;
+  try{const {data,sha:s}=await ghGet();data.licences=data.licences.filter(x=>x.id!==id);data.bannis=[...new Set([...(data.bannis||[]),l.email])];
+    await ghPut(data,s,'Suppression + bannissement '+l.email);LIC=data.licences;BAN=data.bannis;refresh();toast('Adresse supprimée et bannie','ko')}catch(e){toast(e.message,'ko')}}
+async function unban(m){if(!confirm('Débannir '+m+' ?'))return;
+  try{const {data,sha:s}=await ghGet();data.bannis=(data.bannis||[]).filter(x=>x!==m);await ghPut(data,s,'Débannissement '+m);BAN=data.bannis;refresh();toast('Adresse débannie')}catch(e){toast(e.message,'ko')}}
 async function revoke(id){try{const {data,sha:s}=await ghGet();const l=data.licences.find(x=>x.id===id);l.actif=!l.actif;
   await ghPut(data,s,(l.actif?'Réactivation':'Révocation')+' '+l.produit);LIC=data.licences;refresh();toast(l.actif?'Licence réactivée':'Licence révoquée',l.actif?'ok':'ko')}catch(e){toast(e.message,'ko')}}
 function copyKey(){navigator.clipboard.writeText($('key').textContent);toast('Clé copiée')}
 function mailKey(){location.href=`mailto:${$('mail').value}?subject=${encodeURIComponent('Votre licence '+$('prod').value)}&body=${encodeURIComponent(`Bonjour,\n\nVotre clé de licence ${$('prod').value} :\n${$('key').textContent}\n\nMerci !`)}`}
 async function test(){const mail=norm($('vMail').value),key=$('vKey').value.trim().toUpperCase(),r=$('vRes');r.style.display='block';
+  if(BAN.includes(mail)){r.className='res badge b-ko';r.textContent='🚫 Adresse bannie';return}
   for(const l of LIC){if(l.email===mail&&l.hash===await sha(mail+'|'+l.produit+'|'+key)){const[s,c,k]=status(l);
     r.className='res badge '+c;r.textContent=k==='off'?'✖ '+s:'✔ Valide — '+l.produit+' ('+s+')';return}}
   r.className='res badge b-ko';r.textContent='✖ Licence invalide'}
