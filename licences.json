@@ -8,15 +8,9 @@
       "cree": "2026-10-18",
       "expire": "2026-11-17",
       "actif": false
-    },
-    {
-      "id": "4dd7a434fd4813907afaaab9fe377a11c09f02ec9317bdbefa5d9246d6ade619",
-      "email": "aliand0810@gmail.com",
-      "produit": "Mon Planning Pro",
-      "hash": "6b9b8feb08722c8d6136d80e2afe3e71512ae43ffcd050da2eaa23766801beeb",
-      "cree": "2026-10-18",
-      "expire": "2026-10-18T04:11:40.703Z",
-      "actif": false
     }
+  ],
+  "bannis": [
+    "aliand0810@gmail.com"
   ]
 }
