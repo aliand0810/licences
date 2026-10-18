@@ -1,6 +1,8 @@
-// Usage : <script src="https://aliand0810.github.io/licences/licence_check.js" data-produit="COVO Pro"></script>
+// Usage : <script src="https://aliand0810.github.io/licences/licence_check.js" data-produit="COVO Pro" data-module="Caisse"></script>
+// data-module est facultatif (uniquement pour les satellites)
 (function(){
-  const PRODUIT=(document.currentScript&&document.currentScript.dataset.produit)||'COVO Pro';
+  const DS=(document.currentScript&&document.currentScript.dataset)||{};
+  const PRODUIT=DS.produit||'COVO Pro', MODULE=DS.module||'';
   const URL='https://raw.githubusercontent.com/aliand0810/licences/main/licences.json';
   const KEY='licOK_'+PRODUIT;
   const sha=async s=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))].map(x=>x.toString(16).padStart(2,'0')).join('');
@@ -19,6 +21,7 @@
       if(!l)return{ok:false,msg:'Licence invalide'};
       if(!l.actif)return{ok:false,msg:'Licence révoquée'};
       if(!notExpired(l.expire))return{ok:false,msg:'Licence expirée'};
+      if(MODULE&&Array.isArray(l.modules)&&!l.modules.includes(MODULE))return{ok:false,msg:`Le module « ${MODULE} » n'est pas inclus dans votre licence`};
       return{ok:true,expire:l.expire||null};
     }catch(e){ // hors ligne : dernière validation, 7 jours max, sans dépasser l'expiration
       const s=get();
@@ -51,7 +54,7 @@
     overlay=document.createElement('div');
     overlay.style.cssText='position:fixed;inset:0;z-index:2147483647;background:rgba(7,11,22,.97);display:flex;align-items:center;justify-content:center;font-family:system-ui,sans-serif';
     overlay.innerHTML=`<div style="background:#111827;border:1px solid rgba(255,255,255,.1);padding:28px;border-radius:20px;width:min(380px,90vw);color:#eef2ff;box-shadow:0 20px 60px rgba(0,0,0,.5)">
-      <div style="font-size:2rem">🔑</div><h2 style="margin:8px 0 4px">${PRODUIT}</h2>
+      <div style="font-size:2rem">🔑</div><h2 style="margin:8px 0 4px">${PRODUIT}${MODULE?' · '+MODULE:''}</h2>
       <p style="color:#8b93b0;margin:0 0 16px;font-size:.9rem">Entrez votre licence pour continuer</p>
       <input id="lm" type="email" placeholder="E-mail" style="width:100%;padding:12px;margin-bottom:8px;box-sizing:border-box;border-radius:10px;border:1px solid #334155;background:#0b1220;color:#fff">
       <input id="lk" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX" style="width:100%;padding:12px;box-sizing:border-box;border-radius:10px;border:1px solid #334155;background:#0b1220;color:#fff;font-family:monospace">

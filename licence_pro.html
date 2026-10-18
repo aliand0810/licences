@@ -73,6 +73,8 @@ dialog::backdrop{background:rgba(0,0,0,.6);backdrop-filter:blur(4px)}
 #dur{flex-wrap:wrap}#dur button{flex:1 0 auto;padding:8px 10px;font-size:.85rem}
 .dur2{display:grid;grid-template-columns:1fr 1.3fr;gap:8px;margin-top:8px}
 .exp{margin-top:8px;font-size:.8rem;color:var(--a2)}
+.mods{display:flex;flex-wrap:wrap;gap:6px}.mods label{margin:0;display:flex;align-items:center;gap:6px;padding:8px 12px;border:1px solid var(--bd);border-radius:999px;cursor:pointer;text-transform:none;letter-spacing:0;font-size:.85rem;color:var(--txt);transition:.2s}.mods input{width:auto;accent-color:#7c3aed}.mods label:has(input:checked){background:rgba(124,58,237,.18);border-color:#7c3aed}.mods label:has(input:not(:checked)){opacity:.5;text-decoration:line-through}
+.chip{display:inline-block;font-size:.66rem;padding:2px 7px;border-radius:999px;background:rgba(6,182,212,.13);color:#67e8f9;margin:3px 3px 0 0}
 .res{margin-top:12px;padding:12px;border-radius:12px;font-weight:600;display:none}
 @media(max-width:900px){.grid,.charts{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}
 </style>
@@ -96,7 +98,11 @@ dialog::backdrop{background:rgba(0,0,0,.6);backdrop-filter:blur(4px)}
     <h3>⚡ Nouvelle licence</h3>
     <label>E-mail du client</label><input id="mail" type="email" placeholder="client@exemple.fr" autocomplete="off">
     <label>Logiciel</label>
-    <select id="prod"></select>
+    <select id="prod" onchange="showMods()"></select>
+    <div id="modBox" style="display:none">
+      <label style="display:flex;justify-content:space-between">Modules satellites autorisés <span><a href="#" onclick="setMods(1);return false" style="color:var(--a2)">tout</a> · <a href="#" onclick="setMods(0);return false" style="color:var(--a2)">rien</a></span></label>
+      <div class="mods" id="mods"></div>
+    </div>
     <label>Durée</label>
     <div class="seg" id="dur">
       <button data-v="0" data-u="j" class="act">∞</button><button data-v="30" data-u="min">30 min</button><button data-v="1" data-u="h">1 h</button><button data-v="24" data-u="h">24 h</button><button data-v="1" data-u="sem">1 sem</button><button data-v="1" data-u="mois">1 mois</button><button data-v="1" data-u="an">1 an</button>
@@ -155,6 +161,12 @@ let BAN=[],LIC=[],DUR=0,PER=30,charts={};
 
 function toast(t,c='ok'){const e=$('toast');e.textContent=t;e.className='toast show '+c;clearTimeout(e._t);e._t=setTimeout(()=>e.className='toast',2600)}
 function prods(){return (C().prods||DEF_P).split(',').map(s=>s.trim()).filter(Boolean)}
+const DEF_MODS={'COVO Pro':['Caisse','Gestion','Investissement','Finances','Historique','Clôtures','Fidélité','Admin']};
+function MODS(){try{return C().mods?JSON.parse(C().mods):DEF_MODS}catch(e){return DEF_MODS}}
+function showMods(sel){const m=MODS()[$('prod').value];$('modBox').style.display=m?'block':'none';if(!m)return;
+  $('mods').innerHTML=m.map(x=>`<label><input type="checkbox" value="${x}" ${!sel||sel.includes(x)?'checked':''}>${x}</label>`).join('')}
+function setMods(v){document.querySelectorAll('#mods input').forEach(i=>i.checked=!!v)}
+function getMods(){return MODS()[$('prod').value]?[...document.querySelectorAll('#mods input:checked')].map(i=>i.value):null}
 function initCfg(){['tok','own','rep','pth','sec'].forEach(k=>{if(C()[k])$(k).value=C()[k]});$('prods').value=C().prods||DEF_P;
   $('prod').innerHTML=prods().map(p=>`<option>${p}</option>`).join('');
   const ok=C().tok&&C().own&&C().rep;$('gh').classList.toggle('on',!!ok);$('ghTxt').textContent=ok?`${C().own}/${C().rep}`:'GitHub non configuré'}
@@ -203,7 +215,8 @@ function reveal(key){const el=$('key');let f=0;const iv=setInterval(()=>{
   el.textContent=key.split('').map((c,i)=>c==='-'?'-':i<f?c:ALPHA[Math.random()*32|0]).join('');if(++f>key.length){clearInterval(iv);el.textContent=key}},35)}
 
 async function generate(){
-  const mail=norm($('mail').value),prod=$('prod').value;
+  const mail=norm($('mail').value),prod=$('prod').value,mods=getMods();
+  if(mods&&!mods.length)return toast('Coche au moins un module','ko');
   if(!/^\S+@\S+\.\S+$/.test(mail))return toast('E-mail invalide','ko');
   if(!C().sec||!C().tok){cfgDlg.showModal();return toast('Configure GitHub et le secret','ko')}
   if(BAN.includes(mail))return toast('🚫 Adresse bannie — débannis-la d\'abord','ko');
@@ -212,7 +225,7 @@ async function generate(){
     const key=await makeKey(mail,prod);$('kb').classList.remove('show');void $('kb').offsetWidth;$('kb').classList.add('show');reveal(key);
     const {data,sha:s}=await ghGet();const id=await sha(mail+'|'+prod);
     const e=expiry(),exp=e?e.toISOString():null;
-    const lic={id,email:mail,produit:prod,hash:await sha(mail+'|'+prod+'|'+key),cree:new Date().toISOString().slice(0,10),expire:exp,actif:true};
+    const lic={id,email:mail,produit:prod,hash:await sha(mail+'|'+prod+'|'+key),cree:new Date().toISOString().slice(0,10),expire:exp,actif:true,modules:mods};
     const i=data.licences.findIndex(l=>l.id===id);i>=0?data.licences[i]={...data.licences[i],...lic,cree:data.licences[i].cree}:data.licences.push(lic);
     await ghPut(data,s,(i>=0?'Régénération':'Nouvelle')+' licence '+prod);
     toast(i>=0?'✔ Licence régénérée et sauvegardée':'✔ Licence créée et sauvegardée');LIC=data.licences;refresh();
@@ -228,7 +241,7 @@ const color=p=>PAL[prods().indexOf(p)%PAL.length]||PAL[7];
 function render(){const q=$('q').value.toLowerCase();const L=LIC.filter(l=>(l.email+l.produit).toLowerCase().includes(q)).slice().reverse();
   $('list').innerHTML=L.length?L.map((l,i)=>{const[s,c]=status(l);const col=color(l.produit);
     return `<div class="item" style="animation-delay:${i*.03}s"><div class="av" style="background:${col}22;color:${col}">${l.email[0].toUpperCase()}</div>
-    <div class="m"><b>${l.email}</b><span>${l.produit} · ${l.expire?'→ '+fmtD(new Date(l.expire)):'Illimitée'}</span></div>
+    <div class="m"><b>${l.email}</b><span>${l.produit} · ${l.expire?'→ '+fmtD(new Date(l.expire)):'Illimitée'}</span>${l.modules?'<div>'+l.modules.map(x=>`<span class="chip">${x}</span>`).join('')+'</div>':''}</div>
     <span class="badge ${c}">${s}</span><button class="mini" title="${l.actif?'Révoquer':'Réactiver'}" onclick="revoke('${l.id}')">${l.actif?'⛔':'↺'}</button>${!l.actif?`<button class="mini" title="Supprimer et bannir" style="border-color:var(--ko)" onclick="delLic('${l.id}')">🗑</button>`:''}</div>`}).join(''):'<div class="empty">Aucune licence</div>';
   $('banBox').style.display=BAN.length?'block':'none';
   $('banList').innerHTML=BAN.map(m=>`<div class="item"><div class="av" style="background:#f43f5e22;color:#f43f5e">🚫</div><div class="m"><b>${m}</b><span>Accès interdit à tous les logiciels</span></div><button class="mini" onclick="unban('${m}')">Débannir</button></div>`).join('')}
@@ -280,6 +293,8 @@ async function test(){const mail=norm($('vMail').value),key=$('vKey').value.trim
 testDlg.addEventListener('show',()=>{});
 $('kb').querySelector('[onclick="testDlg.showModal()"]').addEventListener('click',()=>{$('vMail').value=$('mail').value;$('vKey').value=$('key').textContent});
 
-initCfg();updExp();load();setInterval(load,60000);setInterval(()=>LIC.length&&(render(),stats()),30000);
+initCfg();showMods();updExp();
+const prefill=()=>{const l=LIC.find(x=>x.email===norm($('mail').value)&&x.produit===$('prod').value);showMods(l&&l.modules)};
+$('mail').addEventListener('change',prefill);$('prod').addEventListener('change',prefill);load();setInterval(load,60000);setInterval(()=>LIC.length&&(render(),stats()),30000);
 </script>
 </body></html>
