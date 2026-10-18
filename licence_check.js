@@ -3,7 +3,7 @@
 (function(){
   const DS=(document.currentScript&&document.currentScript.dataset)||{};
   const PRODUIT=DS.produit||'COVO Pro', MODULE=DS.module||'';
-  const URL='https://raw.githubusercontent.com/aliand0810/licences/main/licences.json';
+  const SRC='https://raw.githubusercontent.com/aliand0810/licences/main/licences.json';
   const KEY='licOK_'+PRODUIT;
   const sha=async s=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))].map(x=>x.toString(16).padStart(2,'0')).join('');
   const get=()=>{try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){return{}}};
@@ -14,7 +14,7 @@
   async function verif(mail,key){
     mail=mail.trim().toLowerCase();key=key.trim().toUpperCase();
     try{
-      const d=await (await fetch(URL+'?t='+Date.now(),{cache:'no-store'})).json();
+      const d=await (await fetch(SRC+'?t='+Date.now(),{cache:'no-store'})).json();
       if((d.bannis||[]).includes(mail))return{ok:false,msg:'Accès interdit pour cette adresse'};
       const h=await sha(mail+'|'+PRODUIT+'|'+key);
       const l=d.licences.find(x=>x.email===mail&&x.produit===PRODUIT&&x.hash===h);
@@ -69,6 +69,24 @@
       else overlay.querySelector('#le').textContent=r.msg;
     };
   }
+
+  // ── Transfert de licence entre domaines (COVO Pro ⇄ satellites) ──
+  const TRUST=/(^|\.)aliand0810\.github\.io$|(^|\.)covo-trv\.(store|fr)$/i;
+  const enc=s=>btoa(unescape(encodeURIComponent(s))).replace(/=+$/,'');
+  const dec=s=>decodeURIComponent(escape(atob(s)));
+  // 1) À l'arrivée : lire #lic=… , l'enregistrer puis l'effacer de l'adresse
+  (function(){const m=location.hash.match(/[#&]lic=([A-Za-z0-9+/_-]+)/);if(!m)return;
+    try{const [mail,key]=dec(m[1]).split('|');if(mail&&key)save(mail,key,null)}catch(e){}
+    const h=location.hash.replace(/[#&]lic=[^&]*/,'').replace(/^&/,'#');
+    history.replaceState(null,'',location.pathname+location.search+(h==='#'?'':h));
+  })();
+  // 2) Au départ : ajouter la licence aux liens vers les autres domaines de confiance
+  function withLic(url){try{const u=new URL(url,location.href);const s=get();
+    if(!s.mail||u.origin===location.origin||!TRUST.test(u.hostname))return url;
+    const t='lic='+enc(s.mail+'|'+s.key);u.hash=u.hash&&u.hash.length>1?u.hash+'&'+t:t;return u.href}catch(e){return url}}
+  window.licenceLink=withLic;
+  document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[href]');if(a&&!overlay){const o=a.href,n=withLic(o);if(n!==o){a.href=n;setTimeout(()=>a.href=o,500)}}},true);
+  const _open=window.open;window.open=function(u,...r){return _open.call(window,u?withLic(String(u)):u,...r)};
 
   (async()=>{
     const s=get();
