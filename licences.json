@@ -17,7 +17,8 @@
         "Clôtures",
         "Fidélité",
         "Admin"
-      ]
+      ],
+      "maxDevices": null
     }
   ],
   "bannis": []
