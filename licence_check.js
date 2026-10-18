@@ -1,6 +1,6 @@
-// À coller en haut du <script> de chaque logiciel. Adapter PRODUIT et URL.
+// Usage : <script src="https://aliand0810.github.io/licences/licence_check.js" data-produit="COVO Pro"></script>
 (async function(){
-  const PRODUIT='COVO Pro';
+  const PRODUIT=(document.currentScript&&document.currentScript.dataset.produit)||'COVO Pro';
   const URL='https://raw.githubusercontent.com/aliand0810/licences/main/licences.json';
   const sha=async s=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))].map(x=>x.toString(16).padStart(2,'0')).join('');
 
