@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Licence Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--bg:#070b16;--glass:rgba(255,255,255,.04);--bd:rgba(255,255,255,.08);--txt:#eef2ff;--mut:#8b93b0;
+--a1:#7c3aed;--a2:#06b6d4;--ok:#10b981;--ko:#f43f5e;--warn:#f59e0b}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;overflow-x:hidden}
+body::before,body::after{content:"";position:fixed;width:520px;height:520px;border-radius:50%;filter:blur(120px);opacity:.35;z-index:-1;animation:float 18s ease-in-out infinite}
+body::before{background:var(--a1);top:-160px;left:-120px}
+body::after{background:var(--a2);bottom:-180px;right:-140px;animation-delay:-9s}
+@keyframes float{50%{transform:translate(80px,60px) scale(1.15)}}
+.wrap{max-width:1180px;margin:auto;padding:24px 16px 60px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px}
+.logo{display:flex;align-items:center;gap:12px;font-weight:800;font-size:1.35rem}
+.logo i{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-style:normal;background:linear-gradient(135deg,var(--a1),var(--a2));box-shadow:0 8px 30px rgba(124,58,237,.45)}
+.logo small{display:block;font-size:.72rem;font-weight:500;color:var(--mut)}
+.pill{display:flex;align-items:center;gap:8px;font-size:.8rem;color:var(--mut);padding:8px 12px;border:1px solid var(--bd);border-radius:999px;background:var(--glass);cursor:pointer}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ko);box-shadow:0 0 10px currentColor}
+.dot.on{background:var(--ok)}
+.card{background:var(--glass);backdrop-filter:blur(18px);border:1px solid var(--bd);border-radius:20px;padding:20px;animation:up .6s both}
+@keyframes up{from{opacity:0;transform:translateY(16px)}}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+.stat{position:relative;overflow:hidden}
+.stat .v{font-size:2rem;font-weight:800;margin-top:6px}
+.stat .l{font-size:.78rem;color:var(--mut);text-transform:uppercase;letter-spacing:.08em}
+.stat::after{content:"";position:absolute;right:-30px;top:-30px;width:100px;height:100px;border-radius:50%;background:var(--c);opacity:.18;filter:blur(8px)}
+.grid{display:grid;grid-template-columns:1.05fr 1fr;gap:16px;margin-bottom:16px}
+.charts{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px}
+h3{margin:0 0 14px;font-size:1rem;display:flex;align-items:center;justify-content:space-between}
+label{display:block;font-size:.76rem;color:var(--mut);margin:14px 0 6px;text-transform:uppercase;letter-spacing:.06em}
+input,select{width:100%;padding:13px 14px;border-radius:12px;border:1px solid var(--bd);background:rgba(0,0,0,.3);color:var(--txt);font:inherit;outline:none;transition:.2s}
+input:focus,select:focus{border-color:var(--a2);box-shadow:0 0 0 4px rgba(6,182,212,.15)}
+.seg{display:flex;gap:6px;background:rgba(0,0,0,.3);border:1px solid var(--bd);border-radius:12px;padding:4px}
+.seg button{flex:1;margin:0;padding:9px;background:transparent;color:var(--mut);font-weight:600;box-shadow:none}
+.seg button.act{background:linear-gradient(135deg,var(--a1),var(--a2));color:#fff}
+button{font:inherit;cursor:pointer;border:0;border-radius:12px;padding:13px 18px;font-weight:700;color:#fff;transition:.2s}
+.btn{width:100%;margin-top:18px;background:linear-gradient(135deg,var(--a1),var(--a2));box-shadow:0 10px 30px rgba(124,58,237,.35);position:relative;overflow:hidden}
+.btn:hover{transform:translateY(-2px);box-shadow:0 14px 40px rgba(124,58,237,.5)}
+.btn.load::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);animation:sh 1s infinite}
+@keyframes sh{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+.ghost{background:var(--glass);border:1px solid var(--bd);color:var(--txt);padding:10px 14px}
+.ghost:hover{background:rgba(255,255,255,.09)}
+.keybox{margin-top:18px;padding:20px;border-radius:16px;text-align:center;border:1px dashed rgba(6,182,212,.45);background:linear-gradient(135deg,rgba(124,58,237,.12),rgba(6,182,212,.08));display:none}
+.keybox.show{display:block;animation:pop .5s cubic-bezier(.2,1.4,.4,1)}
+@keyframes pop{from{transform:scale(.9);opacity:0}}
+.key{font-family:"JetBrains Mono",monospace;font-size:clamp(1rem,3.6vw,1.45rem);letter-spacing:.12em;background:linear-gradient(90deg,#c4b5fd,#67e8f9);-webkit-background-clip:text;color:transparent;word-break:break-all}
+.acts{display:flex;gap:8px;margin-top:14px;justify-content:center}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(120px);padding:12px 20px;border-radius:12px;background:#111827;border:1px solid var(--bd);font-weight:600;transition:.4s cubic-bezier(.2,1.4,.4,1);z-index:50}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.ok{border-color:var(--ok);color:#6ee7b7}.toast.ko{border-color:var(--ko);color:#fda4af}
+.tools{display:flex;gap:8px}
+.tools input{padding:9px 12px;font-size:.88rem}
+.list{max-height:420px;overflow:auto;margin-top:6px}
+.item{display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;transition:.2s;animation:up .4s both}
+.item:hover{background:rgba(255,255,255,.04)}
+.av{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-weight:800;flex-shrink:0}
+.item .m{flex:1;min-width:0}
+.item b{display:block;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item span{font-size:.76rem;color:var(--mut)}
+.badge{font-size:.7rem;font-weight:700;padding:4px 9px;border-radius:999px}
+.b-ok{background:rgba(16,185,129,.15);color:#6ee7b7}.b-ko{background:rgba(244,63,94,.15);color:#fda4af}.b-w{background:rgba(245,158,11,.15);color:#fcd34d}
+.mini{padding:7px 10px;font-size:.75rem;background:var(--glass);border:1px solid var(--bd);color:var(--txt)}
+.empty{text-align:center;color:var(--mut);padding:40px 0}
+canvas{max-height:280px}
+dialog{background:#0f1424;color:var(--txt);border:1px solid var(--bd);border-radius:20px;padding:24px;width:min(460px,92vw)}
+dialog::backdrop{background:rgba(0,0,0,.6);backdrop-filter:blur(4px)}
+.res{margin-top:12px;padding:12px;border-radius:12px;font-weight:600;display:none}
+@media(max-width:900px){.grid,.charts{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="logo"><i>🔑</i><div>Licence Pro<small>Gestion des clés logicielles</small></div></div>
+  <div class="pill" onclick="cfgDlg.showModal()"><span class="dot" id="gh"></span><span id="ghTxt">GitHub non configuré</span> ⚙️</div>
+</header>
+
+<section class="stats">
+  <div class="card stat" style="--c:var(--a1)"><div class="l">Total</div><div class="v" data-n="tot">0</div></div>
+  <div class="card stat" style="--c:var(--ok);animation-delay:.05s"><div class="l">Actives</div><div class="v" data-n="act">0</div></div>
+  <div class="card stat" style="--c:var(--warn);animation-delay:.1s"><div class="l">Expirent ≤ 30 j</div><div class="v" data-n="soon">0</div></div>
+  <div class="card stat" style="--c:var(--ko);animation-delay:.15s"><div class="l">Révoquées / expirées</div><div class="v" data-n="off">0</div></div>
+</section>
+
+<section class="grid">
+  <div class="card">
+    <h3>⚡ Nouvelle licence</h3>
+    <label>E-mail du client</label><input id="mail" type="email" placeholder="client@exemple.fr" autocomplete="off">
+    <label>Logiciel</label>
+    <select id="prod"></select>
+    <label>Durée</label>
+    <div class="seg" id="dur">
+      <button data-d="0" class="act">Illimitée</button><button data-d="30">30 j</button><button data-d="90">90 j</button><button data-d="365">1 an</button>
+    </div>
+    <button class="btn" id="gen" onclick="generate()">Générer la licence</button>
+    <div class="keybox" id="kb">
+      <div class="key" id="key"></div>
+      <div class="acts"><button class="ghost" onclick="copyKey()">📋 Copier</button><button class="ghost" onclick="mailKey()">✉️ Envoyer</button><button class="ghost" onclick="testDlg.showModal()">🔍 Tester</button></div>
+    </div>
+  </div>
+  <div class="card" style="animation-delay:.1s">
+    <h3>📋 Licences <div class="tools"><input id="q" placeholder="Rechercher…" oninput="render()"><button class="mini" onclick="load()">↻</button></div></h3>
+    <div class="list" id="list"><div class="empty">Configure GitHub pour charger les licences</div></div>
+  </div>
+</section>
+
+<section class="charts">
+  <div class="card"><h3>📈 Évolution des licences <div class="seg" id="per" style="width:auto"><button data-p="7">7 j</button><button data-p="30" class="act">30 j</button><button data-p="365">1 an</button></div></h3><canvas id="cLine"></canvas></div>
+  <div class="card"><h3>🍩 Par logiciel</h3><canvas id="cDonut"></canvas></div>
+</section>
+<section class="card"><h3>📊 Statut par logiciel</h3><canvas id="cBar" style="max-height:240px"></canvas></section>
+</div>
+
+<dialog id="cfgDlg"><h3>⚙️ Configuration <button class="mini" onclick="cfgDlg.close()">✕</button></h3>
+  <label>Token GitHub (Contents : write)</label><input id="tok" type="password">
+  <label>Propriétaire</label><input id="own" placeholder="aliand0810">
+  <label>Dépôt</label><input id="rep" placeholder="licences">
+  <label>Fichier</label><input id="pth" value="licences.json">
+  <label>Secret maître (ne plus le changer)</label><input id="sec" type="password">
+  <label>Logiciels (séparés par des virgules)</label><input id="prods">
+  <button class="btn" onclick="saveCfg()">Enregistrer</button>
+</dialog>
+
+<dialog id="testDlg"><h3>🔍 Vérifier une licence <button class="mini" onclick="testDlg.close()">✕</button></h3>
+  <label>E-mail</label><input id="vMail">
+  <label>Clé</label><input id="vKey" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX">
+  <button class="btn" onclick="test()">Vérifier</button><div class="res" id="vRes"></div>
+</dialog>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const DEF_P='COVO Pro,Gestion Terrain Pro,LivraPro,Mon Planning Pro,Onda Player,Bureau Virtuel Pro';
+const PAL=['#7c3aed','#06b6d4','#10b981','#f59e0b','#f43f5e','#3b82f6','#ec4899','#84cc16'];
+const C=()=>JSON.parse(localStorage.getItem('licCfg')||'{}');
+let LIC=[],DUR=0,PER=30,charts={};
+
+function toast(t,c='ok'){const e=$('toast');e.textContent=t;e.className='toast show '+c;clearTimeout(e._t);e._t=setTimeout(()=>e.className='toast',2600)}
+function prods(){return (C().prods||DEF_P).split(',').map(s=>s.trim()).filter(Boolean)}
+function initCfg(){['tok','own','rep','pth','sec'].forEach(k=>{if(C()[k])$(k).value=C()[k]});$('prods').value=C().prods||DEF_P;
+  $('prod').innerHTML=prods().map(p=>`<option>${p}</option>`).join('');
+  const ok=C().tok&&C().own&&C().rep;$('gh').classList.toggle('on',!!ok);$('ghTxt').textContent=ok?`${C().own}/${C().rep}`:'GitHub non configuré'}
+function saveCfg(){const c={};['tok','own','rep','pth','sec','prods'].forEach(k=>c[k]=$(k).value.trim());localStorage.setItem('licCfg',JSON.stringify(c));initCfg();cfgDlg.close();toast('Configuration enregistrée');load()}
+document.querySelectorAll('#dur button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#dur button').forEach(x=>x.classList.remove('act'));b.classList.add('act');DUR=+b.dataset.d});
+document.querySelectorAll('#per button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#per button').forEach(x=>x.classList.remove('act'));b.classList.add('act');PER=+b.dataset.p;drawLine()});
+
+const enc=new TextEncoder();
+const hex=b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
+const sha=async s=>hex(await crypto.subtle.digest('SHA-256',enc.encode(s)));
+const norm=m=>m.trim().toLowerCase();
+const ALPHA='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+async function makeKey(mail,prod){
+  const k=await crypto.subtle.importKey('raw',enc.encode(C().sec),{name:'HMAC',hash:'SHA-256'},false,['sign']);
+  const s=new Uint8Array(await crypto.subtle.sign('HMAC',k,enc.encode(norm(mail)+'|'+prod)));
+  let r='';for(let i=0;i<20;i++)r+=ALPHA[s[i]%32];return r.match(/.{4}/g).join('-');
+}
+
+const api=()=>`https://api.github.com/repos/${C().own}/${C().rep}/contents/${C().pth||'licences.json'}`;
+const hdr=()=>({Authorization:'Bearer '+C().tok,Accept:'application/vnd.github+json'});
+async function ghGet(){const r=await fetch(api()+'?t='+Date.now(),{headers:hdr()});
+  if(r.status===404)return{data:{licences:[]},sha:null};if(!r.ok)throw new Error('GitHub '+r.status);
+  const j=await r.json();return{data:JSON.parse(decodeURIComponent(escape(atob(j.content.replace(/\n/g,''))))),sha:j.sha}}
+async function ghPut(data,sha,msg){const b={message:msg,content:btoa(unescape(encodeURIComponent(JSON.stringify(data,null,2))))};if(sha)b.sha=sha;
+  const r=await fetch(api(),{method:'PUT',headers:hdr(),body:JSON.stringify(b)});if(!r.ok)throw new Error('GitHub '+r.status)}
+
+// Effet "décodage" de la clé
+function reveal(key){const el=$('key');let f=0;const iv=setInterval(()=>{
+  el.textContent=key.split('').map((c,i)=>c==='-'?'-':i<f?c:ALPHA[Math.random()*32|0]).join('');if(++f>key.length){clearInterval(iv);el.textContent=key}},35)}
+
+async function generate(){
+  const mail=norm($('mail').value),prod=$('prod').value;
+  if(!/^\S+@\S+\.\S+$/.test(mail))return toast('E-mail invalide','ko');
+  if(!C().sec||!C().tok){cfgDlg.showModal();return toast('Configure GitHub et le secret','ko')}
+  const b=$('gen');b.classList.add('load');b.textContent='Génération…';
+  try{
+    const key=await makeKey(mail,prod);$('kb').classList.remove('show');void $('kb').offsetWidth;$('kb').classList.add('show');reveal(key);
+    const {data,sha:s}=await ghGet();const id=await sha(mail+'|'+prod);
+    const exp=DUR?new Date(Date.now()+DUR*864e5).toISOString().slice(0,10):null;
+    const lic={id,email:mail,produit:prod,hash:await sha(mail+'|'+prod+'|'+key),cree:new Date().toISOString().slice(0,10),expire:exp,actif:true};
+    const i=data.licences.findIndex(l=>l.id===id);i>=0?data.licences[i]={...data.licences[i],...lic,cree:data.licences[i].cree}:data.licences.push(lic);
+    await ghPut(data,s,(i>=0?'Régénération':'Nouvelle')+' licence '+prod);
+    toast(i>=0?'✔ Licence régénérée et sauvegardée':'✔ Licence créée et sauvegardée');LIC=data.licences;refresh();
+  }catch(e){toast(e.message,'ko')}
+  b.classList.remove('load');b.textContent='Générer la licence';
+}
+
+function status(l){const d=l.expire?(new Date(l.expire)-new Date())/864e5:Infinity;
+  if(!l.actif)return['Révoquée','b-ko','off'];if(d<0)return['Expirée','b-ko','off'];if(d<=30)return[`${Math.ceil(d)} j restants`,'b-w','soon'];return['Active','b-ok','act']}
+const color=p=>PAL[prods().indexOf(p)%PAL.length]||PAL[7];
+
+function render(){const q=$('q').value.toLowerCase();const L=LIC.filter(l=>(l.email+l.produit).toLowerCase().includes(q)).slice().reverse();
+  $('list').innerHTML=L.length?L.map((l,i)=>{const[s,c]=status(l);const col=color(l.produit);
+    return `<div class="item" style="animation-delay:${i*.03}s"><div class="av" style="background:${col}22;color:${col}">${l.email[0].toUpperCase()}</div>
+    <div class="m"><b>${l.email}</b><span>${l.produit} · ${l.expire?'→ '+l.expire:'Illimitée'}</span></div>
+    <span class="badge ${c}">${s}</span><button class="mini" onclick="revoke('${l.id}')">${l.actif?'⛔':'↺'}</button></div>`}).join(''):'<div class="empty">Aucune licence</div>'}
+
+function count(el,to){const from=+el.textContent||0,t0=performance.now();(function f(t){const p=Math.min((t-t0)/700,1);el.textContent=Math.round(from+(to-from)*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(f)})(t0)}
+function stats(){const n={tot:LIC.length,act:0,soon:0,off:0};LIC.forEach(l=>{const k=status(l)[2];n[k]++;if(k==='soon')n.act++});
+  document.querySelectorAll('[data-n]').forEach(e=>count(e,n[e.dataset.n]))}
+
+Chart.defaults.color='#8b93b0';Chart.defaults.font.family='Inter';Chart.defaults.borderColor='rgba(255,255,255,.06)';
+const tip={backgroundColor:'#0f1424',borderColor:'rgba(255,255,255,.1)',borderWidth:1,padding:12,cornerRadius:10};
+function mk(id,cfg){if(charts[id]){charts[id].data=cfg.data;charts[id].update();return}charts[id]=new Chart($(id),cfg)}
+
+function drawLine(){const days=[],now=new Date();for(let i=PER-1;i>=0;i--){days.push(new Date(now-i*864e5).toISOString().slice(0,10))}
+  const per={},cum=[];LIC.forEach(l=>per[l.cree]=(per[l.cree]||0)+1);
+  let c=LIC.filter(l=>l.cree<days[0]).length;const daily=days.map(d=>{c+=per[d]||0;cum.push(c);return per[d]||0});
+  const ctx=$('cLine').getContext('2d'),g=ctx.createLinearGradient(0,0,0,280);g.addColorStop(0,'rgba(124,58,237,.45)');g.addColorStop(1,'rgba(124,58,237,0)');
+  mk('cLine',{data:{labels:days.map(d=>d.slice(5).split('-').reverse().join('/')),datasets:[
+    {type:'line',label:'Cumul',data:cum,borderColor:'#a78bfa',backgroundColor:g,fill:true,tension:.4,pointRadius:0,pointHoverRadius:6,borderWidth:3,yAxisID:'y'},
+    {type:'bar',label:'Nouvelles',data:daily,backgroundColor:'rgba(6,182,212,.6)',borderRadius:6,yAxisID:'y1',maxBarThickness:18}]},
+   options:{responsive:true,interaction:{mode:'index',intersect:false},animation:{duration:900,easing:'easeOutQuart'},
+    plugins:{legend:{labels:{usePointStyle:true}},tooltip:tip},
+    scales:{x:{grid:{display:false},ticks:{maxTicksLimit:8}},y:{beginAtZero:true},y1:{beginAtZero:true,position:'right',grid:{display:false},ticks:{precision:0}}}}})}
+
+function drawDonut(){const P=prods(),d=P.map(p=>LIC.filter(l=>l.produit===p).length);
+  mk('cDonut',{type:'doughnut',data:{labels:P,datasets:[{data:d,backgroundColor:P.map(color),borderWidth:0,hoverOffset:14}]},
+   options:{cutout:'70%',animation:{animateRotate:true,duration:1100},plugins:{legend:{position:'bottom',labels:{usePointStyle:true,padding:12,font:{size:11}}},tooltip:tip}}})}
+
+function drawBar(){const P=prods(),g=k=>P.map(p=>LIC.filter(l=>l.produit===p&&status(l)[2]===k).length);
+  mk('cBar',{type:'bar',data:{labels:P,datasets:[{label:'Actives',data:g('act'),backgroundColor:'#10b981',borderRadius:8},{label:'Bientôt expirées',data:g('soon'),backgroundColor:'#f59e0b',borderRadius:8},{label:'Inactives',data:g('off'),backgroundColor:'#f43f5e',borderRadius:8}]},
+   options:{indexAxis:'y',responsive:true,animation:{duration:900},plugins:{legend:{labels:{usePointStyle:true}},tooltip:tip},scales:{x:{stacked:true,beginAtZero:true,ticks:{precision:0}},y:{stacked:true,grid:{display:false}}}}})}
+
+function refresh(){render();stats();drawLine();drawDonut();drawBar()}
+async function load(){if(!C().tok){refresh();return}try{LIC=(await ghGet()).data.licences;refresh()}catch(e){toast(e.message,'ko')}}
+async function revoke(id){try{const {data,sha:s}=await ghGet();const l=data.licences.find(x=>x.id===id);l.actif=!l.actif;
+  await ghPut(data,s,(l.actif?'Réactivation':'Révocation')+' '+l.produit);LIC=data.licences;refresh();toast(l.actif?'Licence réactivée':'Licence révoquée',l.actif?'ok':'ko')}catch(e){toast(e.message,'ko')}}
+function copyKey(){navigator.clipboard.writeText($('key').textContent);toast('Clé copiée')}
+function mailKey(){location.href=`mailto:${$('mail').value}?subject=${encodeURIComponent('Votre licence '+$('prod').value)}&body=${encodeURIComponent(`Bonjour,\n\nVotre clé de licence ${$('prod').value} :\n${$('key').textContent}\n\nMerci !`)}`}
+async function test(){const mail=norm($('vMail').value),key=$('vKey').value.trim().toUpperCase(),r=$('vRes');r.style.display='block';
+  for(const l of LIC){if(l.email===mail&&l.hash===await sha(mail+'|'+l.produit+'|'+key)){const[s,c,k]=status(l);
+    r.className='res badge '+c;r.textContent=k==='off'?'✖ '+s:'✔ Valide — '+l.produit+' ('+s+')';return}}
+  r.className='res badge b-ko';r.textContent='✖ Licence invalide'}
+testDlg.addEventListener('show',()=>{});
+$('kb').querySelector('[onclick="testDlg.showModal()"]').addEventListener('click',()=>{$('vMail').value=$('mail').value;$('vKey').value=$('key').textContent});
+
+initCfg();load();setInterval(load,60000);
+</script>
+</body></html>
