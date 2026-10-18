@@ -112,6 +112,9 @@ dialog::backdrop{background:rgba(0,0,0,.6);backdrop-filter:blur(4px)}
       <select id="durU"><option value="min">Minutes</option><option value="h">Heures</option><option value="j" selected>Jours</option><option value="sem">Semaines</option><option value="mois">Mois</option><option value="an">Années</option></select>
     </div>
     <div class="exp" id="expTxt">Licence illimitée</div>
+    <label>Appareils max <span style="text-transform:none;letter-spacing:0">(0 = illimité · nécessite Firebase)</span></label>
+    <div class="seg" id="devSeg"><button data-n="0" class="act">∞</button><button data-n="1">1</button><button data-n="2">2</button><button data-n="3">3</button><button data-n="5">5</button><button data-n="10">10</button></div>
+    <input id="maxDev" type="number" min="0" max="99" value="0" style="margin-top:8px">
     <button class="btn" id="gen" onclick="generate()">Générer la licence</button>
     <div class="keybox" id="kb">
       <div class="key" id="key"></div>
@@ -141,6 +144,11 @@ dialog::backdrop{background:rgba(0,0,0,.6);backdrop-filter:blur(4px)}
   <label>Fichier</label><input id="pth" value="licences.json">
   <label>Secret maître (ne plus le changer)</label><input id="sec" type="password">
   <label>Logiciels (séparés par des virgules)</label><input id="prods">
+  <h3 style="margin-top:22px">🔥 Firebase (limite d'appareils)</h3>
+  <label>URL Realtime Database</label><input id="fbUrl" placeholder="https://xxx-default-rtdb.europe-west1.firebasedatabase.app">
+  <label>Clé API Web</label><input id="fbKey" placeholder="AIza…">
+  <label>E-mail admin Firebase</label><input id="fbMail" type="email">
+  <label>Mot de passe admin Firebase</label><input id="fbPass" type="password">
   <button class="btn" onclick="saveCfg()">Enregistrer</button>
 </dialog>
 
@@ -148,6 +156,10 @@ dialog::backdrop{background:rgba(0,0,0,.6);backdrop-filter:blur(4px)}
   <label>E-mail</label><input id="vMail">
   <label>Clé</label><input id="vKey" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX">
   <button class="btn" onclick="test()">Vérifier</button><div class="res" id="vRes"></div>
+</dialog>
+
+<dialog id="devDlg"><h3>📱 Appareils <button class="mini" onclick="devDlg.close()">✕</button></h3>
+  <div id="devInfo" style="color:var(--mut);font-size:.85rem"></div><div id="devList" style="margin-top:10px"></div>
 </dialog>
 
 <div class="toast" id="toast"></div>
@@ -167,10 +179,10 @@ function showMods(sel){const m=MODS()[$('prod').value];$('modBox').style.display
   $('mods').innerHTML=m.map(x=>`<label><input type="checkbox" value="${x}" ${!sel||sel.includes(x)?'checked':''}>${x}</label>`).join('')}
 function setMods(v){document.querySelectorAll('#mods input').forEach(i=>i.checked=!!v)}
 function getMods(){return MODS()[$('prod').value]?[...document.querySelectorAll('#mods input:checked')].map(i=>i.value):null}
-function initCfg(){['tok','own','rep','pth','sec'].forEach(k=>{if(C()[k])$(k).value=C()[k]});$('prods').value=C().prods||DEF_P;
+function initCfg(){['tok','own','rep','pth','sec','fbUrl','fbKey','fbMail','fbPass'].forEach(k=>{if(C()[k])$(k).value=C()[k]});$('prods').value=C().prods||DEF_P;
   $('prod').innerHTML=prods().map(p=>`<option>${p}</option>`).join('');
   const ok=C().tok&&C().own&&C().rep;$('gh').classList.toggle('on',!!ok);$('ghTxt').textContent=ok?`${C().own}/${C().rep}`:'GitHub non configuré'}
-async function saveCfg(){const c={};['tok','own','rep','pth','sec','prods'].forEach(k=>c[k]=$(k).value.trim());localStorage.setItem('licCfg',JSON.stringify(c));initCfg();
+async function saveCfg(){const c={...C()};['tok','own','rep','pth','sec','prods','fbUrl','fbKey','fbMail','fbPass'].forEach(k=>c[k]=$(k).value.trim());localStorage.setItem('licCfg',JSON.stringify(c));initCfg();
   const d=await diag();if(d){$('gh').classList.remove('on');return toast(d,'ko')}
   cfgDlg.close();toast('✔ Connexion GitHub OK');load()}
 const UNIT={min:6e4,h:36e5,j:864e5,sem:6048e5};
@@ -220,13 +232,16 @@ async function generate(){
   if(!/^\S+@\S+\.\S+$/.test(mail))return toast('E-mail invalide','ko');
   if(!C().sec||!C().tok){cfgDlg.showModal();return toast('Configure GitHub et le secret','ko')}
   if(BAN.includes(mail))return toast('🚫 Adresse bannie — débannis-la d\'abord','ko');
+  const maxDev=Math.min(99,Math.max(0,+$('maxDev').value||0));
+  if(maxDev&&!FB())return toast('Configure Firebase dans ⚙️ pour limiter les appareils','ko');
   const b=$('gen');b.classList.add('load');b.textContent='Génération…';
   try{
     const key=await makeKey(mail,prod);$('kb').classList.remove('show');void $('kb').offsetWidth;$('kb').classList.add('show');reveal(key);
     const {data,sha:s}=await ghGet();const id=await sha(mail+'|'+prod);
     const e=expiry(),exp=e?e.toISOString():null;
-    const lic={id,email:mail,produit:prod,hash:await sha(mail+'|'+prod+'|'+key),cree:new Date().toISOString().slice(0,10),expire:exp,actif:true,modules:mods};
+    const lic={id,email:mail,produit:prod,hash:await sha(mail+'|'+prod+'|'+key),cree:new Date().toISOString().slice(0,10),expire:exp,actif:true,modules:mods,maxDevices:maxDev||null};
     const i=data.licences.findIndex(l=>l.id===id);i>=0?data.licences[i]={...data.licences[i],...lic,cree:data.licences[i].cree}:data.licences.push(lic);
+    if(FB()){data.firebase=FB();await fbPut('limits/'+id,maxDev?String(maxDev).padStart(2,'0'):null)}
     await ghPut(data,s,(i>=0?'Régénération':'Nouvelle')+' licence '+prod);
     toast(i>=0?'✔ Licence régénérée et sauvegardée':'✔ Licence créée et sauvegardée');LIC=data.licences;refresh();
   }catch(e){toast(e.message,'ko')}
@@ -242,7 +257,7 @@ function render(){const q=$('q').value.toLowerCase();const L=LIC.filter(l=>(l.em
   $('list').innerHTML=L.length?L.map((l,i)=>{const[s,c]=status(l);const col=color(l.produit);
     return `<div class="item" style="animation-delay:${i*.03}s"><div class="av" style="background:${col}22;color:${col}">${l.email[0].toUpperCase()}</div>
     <div class="m"><b>${l.email}</b><span>${l.produit} · ${l.expire?'→ '+fmtD(new Date(l.expire)):'Illimitée'}</span>${l.modules?'<div>'+l.modules.map(x=>`<span class="chip">${x}</span>`).join('')+'</div>':''}</div>
-    <span class="badge ${c}">${s}</span><button class="mini" title="${l.actif?'Révoquer':'Réactiver'}" onclick="revoke('${l.id}')">${l.actif?'⛔':'↺'}</button>${!l.actif?`<button class="mini" title="Supprimer et bannir" style="border-color:var(--ko)" onclick="delLic('${l.id}')">🗑</button>`:''}</div>`}).join(''):'<div class="empty">Aucune licence</div>';
+    ${l.maxDevices?`<button class="mini" title="Appareils" onclick="devDlgOpen('${l.id}')">📱 ${DEV[l.id]??'…'}/${l.maxDevices}</button>`:''}<span class="badge ${c}">${s}</span><button class="mini" title="${l.actif?'Révoquer':'Réactiver'}" onclick="revoke('${l.id}')">${l.actif?'⛔':'↺'}</button>${!l.actif?`<button class="mini" title="Supprimer et bannir" style="border-color:var(--ko)" onclick="delLic('${l.id}')">🗑</button>`:''}</div>`}).join(''):'<div class="empty">Aucune licence</div>';
   $('banBox').style.display=BAN.length?'block':'none';
   $('banList').innerHTML=BAN.map(m=>`<div class="item"><div class="av" style="background:#f43f5e22;color:#f43f5e">🚫</div><div class="m"><b>${m}</b><span>Accès interdit à tous les logiciels</span></div><button class="mini" onclick="unban('${m}')">Débannir</button></div>`).join('')}
 
@@ -274,7 +289,7 @@ function drawBar(){const P=prods(),g=k=>P.map(p=>LIC.filter(l=>l.produit===p&&st
    options:{indexAxis:'y',responsive:true,animation:{duration:900},plugins:{legend:{labels:{usePointStyle:true}},tooltip:tip},scales:{x:{stacked:true,beginAtZero:true,ticks:{precision:0}},y:{stacked:true,grid:{display:false}}}}})}
 
 function refresh(){render();stats();drawLine();drawDonut();drawBar()}
-async function load(){if(!C().tok){refresh();return}try{const d=(await ghGet()).data;LIC=d.licences;BAN=d.bannis||[];refresh()}catch(e){toast(e.message,'ko')}}
+async function load(){if(!C().tok){refresh();return}try{const d=(await ghGet()).data;LIC=d.licences;BAN=d.bannis||[];refresh();loadDev().catch(()=>{})}catch(e){toast(e.message,'ko')}}
 async function delLic(id){const l=LIC.find(x=>x.id===id);if(!l)return;
   const all=confirm(`Supprimer la licence ${l.produit} de ${l.email} ?\n\nOK = supprimer ET bannir l'adresse (accès interdit à tous tes logiciels)\nAnnuler = ne rien faire`);if(!all)return;
   try{const {data,sha:s}=await ghGet();data.licences=data.licences.filter(x=>x.id!==id);data.bannis=[...new Set([...(data.bannis||[]),l.email])];
@@ -293,8 +308,29 @@ async function test(){const mail=norm($('vMail').value),key=$('vKey').value.trim
 testDlg.addEventListener('show',()=>{});
 $('kb').querySelector('[onclick="testDlg.showModal()"]').addEventListener('click',()=>{$('vMail').value=$('mail').value;$('vKey').value=$('key').textContent});
 
+
+// ── Firebase (limite d'appareils) ──
+let DEV={},FBT=null;
+const FB=()=>(C().fbUrl||'').replace(/\/+$/,'');
+async function fbTok(){if(FBT&&FBT.exp>Date.now())return FBT.t;
+  const r=await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key='+C().fbKey,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:C().fbMail,password:C().fbPass,returnSecureToken:true})});
+  const j=await r.json();if(!r.ok)throw new Error('Firebase : connexion admin refusée ('+(j.error&&j.error.message||r.status)+')');
+  FBT={t:j.idToken,exp:Date.now()+50*6e4};return FBT.t}
+async function fbPut(path,val){const t=await fbTok();const r=await fetch(`${FB()}/${path}.json?auth=${t}`,{method:val===null?'DELETE':'PUT',body:JSON.stringify(val)});
+  if(!r.ok)throw new Error('Firebase '+r.status+' — vérifie les règles et l\'UID admin')}
+async function fbGet(path){const r=await fetch(`${FB()}/${path}.json`);return r.ok?r.json():null}
+async function loadDev(){if(!FB())return;const all=await fbGet('devices')||{};DEV={};LIC.forEach(l=>{if(l.maxDevices)DEV[l.id]=Object.keys(all[l.id]||{}).length});render()}
+function setDev(n){$('maxDev').value=n;document.querySelectorAll('#devSeg button').forEach(b=>b.classList.toggle('act',+b.dataset.n===+n))}
+document.querySelectorAll('#devSeg button').forEach(b=>b.onclick=()=>setDev(b.dataset.n));
+$('maxDev').oninput=()=>setDev($('maxDev').value);
+async function devDlgOpen(id){const l=LIC.find(x=>x.id===id);const d=await fbGet('devices/'+id)||{};const e=Object.entries(d);
+  $('devInfo').textContent=`${l.email} · ${l.produit} — ${e.length}/${l.maxDevices} appareil(s)`;
+  $('devList').innerHTML=e.length?e.map(([k,v])=>`<div class="item"><div class="av" style="background:#06b6d422;color:#06b6d4">📱</div><div class="m"><b>${(v.ua||'Appareil').slice(0,60)}</b><span>Activé le ${fmtD(new Date(v.t))}</span></div><button class="mini" onclick="devDel('${id}','${k}')">Retirer</button></div>`).join(''):'<div class="empty">Aucun appareil activé</div>';
+  devDlg.showModal()}
+async function devDel(id,k){if(!confirm('Retirer cet appareil ? Il sera bloqué et libérera une place.'))return;
+  try{await fbPut(`devices/${id}/${k}`,null);toast('Appareil retiré');await loadDev();devDlgOpen(id)}catch(e){toast(e.message,'ko')}}
 initCfg();showMods();updExp();
-const prefill=()=>{const l=LIC.find(x=>x.email===norm($('mail').value)&&x.produit===$('prod').value);showMods(l&&l.modules)};
+const prefill=()=>{const l=LIC.find(x=>x.email===norm($('mail').value)&&x.produit===$('prod').value);showMods(l&&l.modules);setDev(l&&l.maxDevices||0)};
 $('mail').addEventListener('change',prefill);$('prod').addEventListener('change',prefill);load();setInterval(load,60000);setInterval(()=>LIC.length&&(render(),stats()),30000);
 </script>
 </body></html>

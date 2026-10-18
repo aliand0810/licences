@@ -1,0 +1,18 @@
+{
+  "rules": {
+    "limits": {
+      ".read": true,
+      "$lic": { ".write": "auth != null && auth.uid === 'REMPLACER_PAR_TON_UID'" }
+    },
+    "devices": {
+      "$lic": {
+        ".read": true,
+        ".write": "auth != null && auth.uid === 'REMPLACER_PAR_TON_UID'",
+        "$slot": {
+          ".write": "newData.exists() && $slot.length === 2 && root.child('limits').child($lic).exists() && $slot < root.child('limits').child($lic).val() && (!data.exists() || data.child('id').val() === newData.child('id').val())",
+          ".validate": "newData.hasChildren(['id','t']) && newData.child('id').isString() && newData.child('id').val().length <= 40"
+        }
+      }
+    }
+  }
+}
