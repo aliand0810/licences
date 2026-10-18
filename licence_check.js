@@ -28,14 +28,22 @@
 
   function save(mail,key,expire){localStorage.setItem(KEY,JSON.stringify({mail:mail.trim().toLowerCase(),key:key.trim().toUpperCase(),expire,t:Date.now()}))}
 
-  // Bloque l'app automatiquement à l'expiration + revérifie toutes les 5 min (révocation)
-  function watch(expire){
-    clearInterval(timer);
-    timer=setInterval(async()=>{
-      if(!notExpired(expire))return lock('Votre période d\'essai / licence a expiré');
-      const s=get();if(Date.now()-s.t>3e5){const r=await verif(s.mail,s.key);if(r.ok)save(s.mail,s.key,r.expire);else lock(r.msg)}
-    },15000);
+  // Bloque l'app à l'expiration (contrôle chaque seconde) et revérifie la révocation toutes les 20 s
+  let busy=false,last=0;
+  async function recheck(force){
+    if(overlay||busy||(!force&&Date.now()-last<20000))return;
+    busy=true;last=Date.now();
+    const s=get();const r=await verif(s.mail,s.key);busy=false;
+    if(r.ok){save(s.mail,s.key,r.expire);curExp=r.expire}else lock(r.msg);
   }
+  let curExp=null;
+  function watch(expire){
+    curExp=expire;clearInterval(timer);
+    timer=setInterval(()=>{if(!notExpired(curExp))return lock('Votre période d\'essai / licence a expiré');recheck()},1000);
+  }
+  document.addEventListener('visibilitychange',()=>document.visibilityState==='visible'&&recheck(true));
+  addEventListener('focus',()=>recheck(true));
+  addEventListener('online',()=>recheck(true));
 
   function lock(msg){
     clearInterval(timer);if(overlay)return;
