@@ -70,6 +70,9 @@ button{font:inherit;cursor:pointer;border:0;border-radius:12px;padding:13px 18px
 canvas{max-height:280px}
 dialog{background:#0f1424;color:var(--txt);border:1px solid var(--bd);border-radius:20px;padding:24px;width:min(460px,92vw)}
 dialog::backdrop{background:rgba(0,0,0,.6);backdrop-filter:blur(4px)}
+#dur{flex-wrap:wrap}#dur button{flex:1 0 auto;padding:8px 10px;font-size:.85rem}
+.dur2{display:grid;grid-template-columns:1fr 1.3fr;gap:8px;margin-top:8px}
+.exp{margin-top:8px;font-size:.8rem;color:var(--a2)}
 .res{margin-top:12px;padding:12px;border-radius:12px;font-weight:600;display:none}
 @media(max-width:900px){.grid,.charts{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}
 </style>
@@ -96,8 +99,13 @@ dialog::backdrop{background:rgba(0,0,0,.6);backdrop-filter:blur(4px)}
     <select id="prod"></select>
     <label>Durée</label>
     <div class="seg" id="dur">
-      <button data-d="0" class="act">Illimitée</button><button data-d="30">30 j</button><button data-d="90">90 j</button><button data-d="365">1 an</button>
+      <button data-v="0" data-u="j" class="act">∞</button><button data-v="30" data-u="min">30 min</button><button data-v="1" data-u="h">1 h</button><button data-v="24" data-u="h">24 h</button><button data-v="1" data-u="sem">1 sem</button><button data-v="1" data-u="mois">1 mois</button><button data-v="1" data-u="an">1 an</button>
     </div>
+    <div class="dur2">
+      <input id="durV" type="number" min="0" value="0" placeholder="0 = illimitée">
+      <select id="durU"><option value="min">Minutes</option><option value="h">Heures</option><option value="j" selected>Jours</option><option value="sem">Semaines</option><option value="mois">Mois</option><option value="an">Années</option></select>
+    </div>
+    <div class="exp" id="expTxt">Licence illimitée</div>
     <button class="btn" id="gen" onclick="generate()">Générer la licence</button>
     <div class="keybox" id="kb">
       <div class="key" id="key"></div>
@@ -150,7 +158,14 @@ function initCfg(){['tok','own','rep','pth','sec'].forEach(k=>{if(C()[k])$(k).va
 async function saveCfg(){const c={};['tok','own','rep','pth','sec','prods'].forEach(k=>c[k]=$(k).value.trim());localStorage.setItem('licCfg',JSON.stringify(c));initCfg();
   const d=await diag();if(d){$('gh').classList.remove('on');return toast(d,'ko')}
   cfgDlg.close();toast('✔ Connexion GitHub OK');load()}
-document.querySelectorAll('#dur button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#dur button').forEach(x=>x.classList.remove('act'));b.classList.add('act');DUR=+b.dataset.d});
+const UNIT={min:6e4,h:36e5,j:864e5,sem:6048e5};
+function expiry(){const v=+$('durV').value,u=$('durU').value;if(!v||v<0)return null;const d=new Date();
+  if(u==='mois')d.setMonth(d.getMonth()+v);else if(u==='an')d.setFullYear(d.getFullYear()+v);else d.setTime(d.getTime()+v*UNIT[u]);return d}
+const fmtD=d=>d.toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+function updExp(){const e=expiry();$('expTxt').textContent=e?'Expire le '+fmtD(e):'Licence illimitée';
+  document.querySelectorAll('#dur button').forEach(b=>b.classList.toggle('act',+b.dataset.v===+$('durV').value&&b.dataset.u===$('durU').value||(!+$('durV').value&&b.dataset.v==='0')))}
+document.querySelectorAll('#dur button').forEach(b=>b.onclick=()=>{$('durV').value=b.dataset.v;$('durU').value=b.dataset.u;updExp()});
+$('durV').oninput=$('durU').onchange=updExp;setInterval(updExp,30000);
 document.querySelectorAll('#per button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#per button').forEach(x=>x.classList.remove('act'));b.classList.add('act');PER=+b.dataset.p;drawLine()});
 
 const enc=new TextEncoder();
@@ -192,7 +207,7 @@ async function generate(){
   try{
     const key=await makeKey(mail,prod);$('kb').classList.remove('show');void $('kb').offsetWidth;$('kb').classList.add('show');reveal(key);
     const {data,sha:s}=await ghGet();const id=await sha(mail+'|'+prod);
-    const exp=DUR?new Date(Date.now()+DUR*864e5).toISOString().slice(0,10):null;
+    const e=expiry(),exp=e?e.toISOString():null;
     const lic={id,email:mail,produit:prod,hash:await sha(mail+'|'+prod+'|'+key),cree:new Date().toISOString().slice(0,10),expire:exp,actif:true};
     const i=data.licences.findIndex(l=>l.id===id);i>=0?data.licences[i]={...data.licences[i],...lic,cree:data.licences[i].cree}:data.licences.push(lic);
     await ghPut(data,s,(i>=0?'Régénération':'Nouvelle')+' licence '+prod);
@@ -201,14 +216,15 @@ async function generate(){
   b.classList.remove('load');b.textContent='Générer la licence';
 }
 
-function status(l){const d=l.expire?(new Date(l.expire)-new Date())/864e5:Infinity;
-  if(!l.actif)return['Révoquée','b-ko','off'];if(d<0)return['Expirée','b-ko','off'];if(d<=30)return[`${Math.ceil(d)} j restants`,'b-w','soon'];return['Active','b-ok','act']}
+function left(ms){const m=Math.ceil(ms/6e4);if(m<60)return m+' min';const h=Math.floor(m/60);if(h<48)return h+' h '+(m%60?m%60+' min':'');return Math.ceil(ms/864e5)+' j'}
+function status(l){const ms=l.expire?new Date(l.expire)-new Date():Infinity;
+  if(!l.actif)return['Révoquée','b-ko','off'];if(ms<0)return['Expirée','b-ko','off'];if(ms<=30*864e5)return[left(ms)+' restants','b-w','soon'];return['Active','b-ok','act']}
 const color=p=>PAL[prods().indexOf(p)%PAL.length]||PAL[7];
 
 function render(){const q=$('q').value.toLowerCase();const L=LIC.filter(l=>(l.email+l.produit).toLowerCase().includes(q)).slice().reverse();
   $('list').innerHTML=L.length?L.map((l,i)=>{const[s,c]=status(l);const col=color(l.produit);
     return `<div class="item" style="animation-delay:${i*.03}s"><div class="av" style="background:${col}22;color:${col}">${l.email[0].toUpperCase()}</div>
-    <div class="m"><b>${l.email}</b><span>${l.produit} · ${l.expire?'→ '+l.expire:'Illimitée'}</span></div>
+    <div class="m"><b>${l.email}</b><span>${l.produit} · ${l.expire?'→ '+fmtD(new Date(l.expire)):'Illimitée'}</span></div>
     <span class="badge ${c}">${s}</span><button class="mini" onclick="revoke('${l.id}')">${l.actif?'⛔':'↺'}</button></div>`}).join(''):'<div class="empty">Aucune licence</div>'}
 
 function count(el,to){const from=+el.textContent||0,t0=performance.now();(function f(t){const p=Math.min((t-t0)/700,1);el.textContent=Math.round(from+(to-from)*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(f)})(t0)}
@@ -251,6 +267,6 @@ async function test(){const mail=norm($('vMail').value),key=$('vKey').value.trim
 testDlg.addEventListener('show',()=>{});
 $('kb').querySelector('[onclick="testDlg.showModal()"]').addEventListener('click',()=>{$('vMail').value=$('mail').value;$('vKey').value=$('key').textContent});
 
-initCfg();load();setInterval(load,60000);
+initCfg();updExp();load();setInterval(load,60000);setInterval(()=>LIC.length&&(render(),stats()),30000);
 </script>
 </body></html>
