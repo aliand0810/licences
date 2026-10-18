@@ -147,7 +147,9 @@ function prods(){return (C().prods||DEF_P).split(',').map(s=>s.trim()).filter(Bo
 function initCfg(){['tok','own','rep','pth','sec'].forEach(k=>{if(C()[k])$(k).value=C()[k]});$('prods').value=C().prods||DEF_P;
   $('prod').innerHTML=prods().map(p=>`<option>${p}</option>`).join('');
   const ok=C().tok&&C().own&&C().rep;$('gh').classList.toggle('on',!!ok);$('ghTxt').textContent=ok?`${C().own}/${C().rep}`:'GitHub non configuré'}
-function saveCfg(){const c={};['tok','own','rep','pth','sec','prods'].forEach(k=>c[k]=$(k).value.trim());localStorage.setItem('licCfg',JSON.stringify(c));initCfg();cfgDlg.close();toast('Configuration enregistrée');load()}
+async function saveCfg(){const c={};['tok','own','rep','pth','sec','prods'].forEach(k=>c[k]=$(k).value.trim());localStorage.setItem('licCfg',JSON.stringify(c));initCfg();
+  const d=await diag();if(d){$('gh').classList.remove('on');return toast(d,'ko')}
+  cfgDlg.close();toast('✔ Connexion GitHub OK');load()}
 document.querySelectorAll('#dur button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#dur button').forEach(x=>x.classList.remove('act'));b.classList.add('act');DUR=+b.dataset.d});
 document.querySelectorAll('#per button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#per button').forEach(x=>x.classList.remove('act'));b.classList.add('act');PER=+b.dataset.p;drawLine()});
 
@@ -167,8 +169,16 @@ const hdr=()=>({Authorization:'Bearer '+C().tok,Accept:'application/vnd.github+j
 async function ghGet(){const r=await fetch(api()+'?t='+Date.now(),{headers:hdr()});
   if(r.status===404)return{data:{licences:[]},sha:null};if(!r.ok)throw new Error('GitHub '+r.status);
   const j=await r.json();return{data:JSON.parse(decodeURIComponent(escape(atob(j.content.replace(/\n/g,''))))),sha:j.sha}}
+async function diag(){
+  const u=await fetch('https://api.github.com/user',{headers:hdr()});
+  if(u.status===401)return 'Token invalide ou expiré — recrée-le';
+  const r=await fetch(`https://api.github.com/repos/${C().own}/${C().rep}`,{headers:hdr()});
+  if(r.status===404)return `Le token n'a pas accès à « ${C().own}/${C().rep} » (vérifie le nom et « Repository access » du token)`;
+  const j=await r.json();if(j.permissions&&!j.permissions.push)return 'Permission « Contents » en lecture seule — mets « Read and write »';
+  return null}
 async function ghPut(data,sha,msg){const b={message:msg,content:btoa(unescape(encodeURIComponent(JSON.stringify(data,null,2))))};if(sha)b.sha=sha;
-  const r=await fetch(api(),{method:'PUT',headers:hdr(),body:JSON.stringify(b)});if(!r.ok)throw new Error('GitHub '+r.status)}
+  const r=await fetch(api(),{method:'PUT',headers:hdr(),body:JSON.stringify(b)});
+  if(!r.ok){const d=(r.status===404||r.status===403)&&await diag();throw new Error(d||'GitHub '+r.status+' — permission « Contents : Read and write » requise')}}
 
 // Effet "décodage" de la clé
 function reveal(key){const el=$('key');let f=0;const iv=setInterval(()=>{
