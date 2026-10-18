@@ -1,4 +1,24 @@
 {
-  "licences": [],
+  "licences": [
+    {
+      "id": "ae59582370d43554e62e331c330624571830ea91c40bcb88059ef311b1e529a3",
+      "email": "covo.trv@gmail.com",
+      "produit": "COVO Pro",
+      "hash": "0ce9c0f0acaf8d1f6a455ad74c65195fea8e5279bdc1ae1a7eb07df842cacd84",
+      "cree": "2026-10-18",
+      "expire": "2026-10-18T10:05:39.807Z",
+      "actif": true,
+      "modules": [
+        "Caisse",
+        "Gestion",
+        "Investissement",
+        "Finances",
+        "Historique",
+        "Clôtures",
+        "Fidélité",
+        "Admin"
+      ]
+    }
+  ],
   "bannis": []
 }
