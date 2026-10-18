@@ -1,15 +1,5 @@
 {
-  "licences": [
-    {
-      "id": "cd6600779d9ca96085e71da7e19341fe819b2a1eb0b84177b38ab7c2e9c56ff1",
-      "email": "aliand0810@gmail.com",
-      "produit": "COVO Pro",
-      "hash": "6e87884740d85322e8d0a1d72b7b2dbf06b1f9a37fbf6127c88cccd641af6fa2",
-      "cree": "2026-10-18",
-      "expire": "2026-11-17",
-      "actif": false
-    }
-  ],
+  "licences": [],
   "bannis": [
     "aliand0810@gmail.com"
   ]
