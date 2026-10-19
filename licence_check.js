@@ -37,16 +37,27 @@
     let tz='';try{tz=Intl.DateTimeFormat().resolvedOptions().timeZone}catch(e){}
     return (await sha([n.userAgent,n.platform,n.hardwareConcurrency,n.deviceMemory,w+'x'+h,sc.colorDepth,tz].join('|'))).slice(0,24)}
   const UA=()=>navigator.userAgent.replace(/^Mozilla\/5\.0 /,'').slice(0,120);
+  // Adresse IP publique + ville approximative (mise en cache 10 min)
+  async function netInfo(){try{const c=JSON.parse(sessionStorage.getItem('licNet')||'null');if(c&&Date.now()-c.at<6e5)return c}catch(e){}
+    const get=(u)=>Promise.race([fetch(u).then(r=>r.json()),new Promise((_,j)=>setTimeout(j,3500))]);
+    let n=null;try{const j=await get('https://ipwho.is/?fields=ip,city,country_code');if(j&&j.ip)n={ip:j.ip,loc:[j.city,j.country_code].filter(Boolean).join(', ')}}catch(e){}
+    if(!n)try{const j=await get('https://api.ipify.org?format=json');if(j&&j.ip)n={ip:j.ip,loc:''}}catch(e){}
+    n=n||{ip:'',loc:''};n.at=Date.now();try{sessionStorage.setItem('licNet',JSON.stringify(n))}catch(e){}return n}
   async function device(fb,l){
     fb=fb.replace(/\/+$/,'');const me=await devId(),flag='licSlot_'+l.id;
     let list;try{list=await (await fetch(`${fb}/devices/${l.id}.json`,{cache:'no-store'})).json()||{}}catch(e){return{ok:true}} // Firebase injoignable : on tolère
-    if(Object.keys(list).some(k=>list[k]&&list[k].id===me))return{ok:true};
+    const k0=Object.keys(list).find(k=>list[k]&&list[k].id===me);
+    if(k0){const d=list[k0];if(Date.now()-(d.seen||0)>6e5){const n=await netInfo();
+        const hist=[{t:Date.now(),ip:n.ip,loc:n.loc},...(Array.isArray(d.hist)?d.hist:[])].slice(0,15);
+        fetch(`${fb}/devices/${l.id}/${k0}.json`,{method:'PUT',body:JSON.stringify({...d,seen:Date.now(),lastIp:n.ip,lastLoc:n.loc,ua:UA(),hist})}).catch(()=>{})}
+      return{ok:true}}
     if(localStorage.getItem(flag))return{ok:false,msg:'Cet appareil a été retiré de la licence'};
-    for(let n=0;n<l.maxDevices;n++){const k=String(n).padStart(2,'0');if(list[k])continue;
-      const r=await fetch(`${fb}/devices/${l.id}/${k}.json`,{method:'PUT',body:JSON.stringify({id:me,t:Date.now(),ua:UA()})});
+    const n=await netInfo();
+    for(let i=0;i<l.maxDevices;i++){const k=String(i).padStart(2,'0');if(list[k])continue;
+      const r=await fetch(`${fb}/devices/${l.id}/${k}.json`,{method:'PUT',body:JSON.stringify({id:me,t:Date.now(),seen:Date.now(),ua:UA(),ip:n.ip,loc:n.loc,lastIp:n.ip,lastLoc:n.loc,hist:[{t:Date.now(),ip:n.ip,loc:n.loc}]})});
       if(r.ok){localStorage.setItem(flag,k);return{ok:true}}}
-    // Licence en trop : on signale la tentative au vendeur
-    try{await fetch(`${fb}/excess/${l.id}/${me}.json`,{method:'PUT',body:JSON.stringify({t:Date.now(),ua:UA()})})}catch(e){}
+    // Licence en trop : on signale la tentative au vendeur (avec IP)
+    try{await fetch(`${fb}/excess/${l.id}/${me}.json`,{method:'PUT',body:JSON.stringify({t:Date.now(),ua:UA(),ip:n.ip,loc:n.loc})})}catch(e){}
     return{ok:false,msg:`Licence en trop : ce code est déjà utilisé sur ${l.maxDevices} appareil${l.maxDevices>1?'s':''}. Contactez le vendeur.`};
   }
 

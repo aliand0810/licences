@@ -170,6 +170,9 @@ canvas{max-height:270px}
 .dev{display:flex;align-items:center;gap:12px;padding:11px 12px;border:1px solid var(--bd);border-radius:12px;margin-bottom:6px;background:var(--glass)}
 .dev.bad{border-color:rgba(244,63,94,.4);background:rgba(244,63,94,.07)}
 .dev .di{font-size:1.3rem}.dev>div{flex:1;min-width:0}.dev b{display:block;font-size:.86rem}.dev small{font-size:.74rem;color:var(--mut)}
+.dev small{display:block}.ipl{margin-top:3px;color:#a5b4fc!important}.ip{cursor:pointer;font-family:"JetBrains Mono",monospace;font-weight:600;display:inline!important;font-size:.74rem}
+.hist{margin-top:6px;font-size:.72rem;color:var(--mut)}.hist summary{cursor:pointer;color:var(--a2)}.hist div{display:flex;justify-content:space-between;gap:10px;padding:3px 0;border-bottom:1px dashed var(--bd)}
+.dev{align-items:flex-start}.dev .di,.dev button{margin-top:2px}
 .mgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .mg{display:flex;align-items:center;gap:8px;padding:9px 11px;border-radius:11px;background:rgba(124,58,237,.14);font-size:.84rem;font-weight:600}
 .mg i{margin-left:auto;font-style:normal;color:#6ee7b7}
@@ -417,7 +420,7 @@ function renderAcc(){const q=$('q').value.toLowerCase(),g={};LIC.forEach(l=>(g[l
 /* ── rendu : alertes & KPI ── */
 function allExc(){const out=[];LIC.forEach(l=>excList(l.id).forEach(e=>out.push({l,...e})));return out.sort((a,b)=>b.t-a.t)}
 function alertHTML(a,i){const u=shortUA(a.ua),[ic,col]=pm(a.l.produit);
-  return `<div class="al" style="animation-delay:${i*.03}s"><div class="pi" style="--pc:${col}">${ic}</div><div><b>${esc(a.l.email)} · ${esc(a.l.produit)}</b><small>${u.ic} ${u.txt} refusé le ${fmtD(new Date(a.t))} — limite ${a.l.maxDevices} appareil${a.l.maxDevices>1?'s':''}</small></div>
+  return `<div class="al" style="animation-delay:${i*.03}s"><div class="pi" style="--pc:${col}">${ic}</div><div><b>${esc(a.l.email)} · ${esc(a.l.produit)}</b><small>${u.ic} ${u.txt}${a.ip?' · 🌐 '+esc(a.ip):''}${a.loc?' · 📍 '+esc(a.loc):''} — refusé le ${fmtD(new Date(a.t))}, limite ${a.l.maxDevices} appareil${a.l.maxDevices>1?'s':''}</small></div>
     <div class="acts2"><button class="ghost sm" onclick="allowExtra('${a.l.id}','${a.dev}')">+1 appareil</button><button class="ghost sm" onclick="ignoreExc('${a.l.id}','${a.dev}')">Ignorer</button><button class="ghost sm" onclick="openLic('${a.l.id}')">Compte</button></div></div>`}
 function rulesWarn(){return RULES_OK?'':`<div class="al" style="border-color:rgba(245,158,11,.45);background:rgba(245,158,11,.08)"><div class="pi" style="--pc:#f59e0b">🔥</div><div><b>Règles Firebase à republier</b><small>Les licences en trop ne peuvent pas être détectées. Dans Firebase → Realtime Database → Règles, colle le contenu de firebase-rules.json puis clique sur Publier.</small></div><div class="acts2"><a class="ghost sm" style="text-decoration:none" target="_blank" href="https://github.com/aliand0810/licences/blob/main/firebase-rules.json">Voir les règles</a></div></div>`}
 function renderAlerts(){const A=allExc();EXCN=A.length;$('nbAl').textContent=A.length||'';
@@ -456,15 +459,19 @@ document.querySelectorAll('#flt button').forEach(b=>b.onclick=()=>{document.quer
 /* ── tiroir de détail ── */
 function closeDrawer(){$('drawer').classList.remove('on')}
 document.addEventListener('keydown',e=>e.key==='Escape'&&closeDrawer());
+const ago=t=>{const m=Math.round((Date.now()-t)/6e4);return m<1?'à l\'instant':m<60?'il y a '+m+' min':m<1440?'il y a '+Math.round(m/60)+' h':'le '+new Date(t).toLocaleDateString('fr-FR')};
+const ipLine=(ip,loc)=>ip?`🌐 <b class="ip" onclick="event.stopPropagation();copyTxt('${esc(ip)}')" title="Copier l'adresse IP">${esc(ip)}</b>${loc?' · 📍 '+esc(loc):''}`:'🌐 IP inconnue';
+function histHTML(v){const h=Array.isArray(v.hist)?v.hist:[];if(h.length<2)return'';
+  return `<details class="hist"><summary>Historique des connexions (${h.length})</summary>${h.map(x=>`<div><span>${fmtD(new Date(x.t))}</span><span>${x.ip?esc(x.ip):'—'}${x.loc?' · '+esc(x.loc):''}</span></div>`).join('')}</details>`}
 function openLic(id){const l=LIC.find(x=>x.id===id);if(!l)return;const[s,c]=status(l),[ic,col]=pm(l.produit),devs=devList(id),ex=excList(id),all=MODS()[l.produit];
   $('dw').innerHTML=`<div class="dw-h"><div class="pi lg" style="--pc:${col}">${ic}</div><div><h2>${esc(l.produit)}</h2><span>${esc(l.email)}</span></div><button class="x" onclick="closeDrawer()">✕</button></div>
   <div class="dw-b">
     <div class="kv"><div><span>Statut</span><b class="badge ${c}">${s}</b></div><div><span>Expiration</span><b>${l.expire?fmtD(new Date(l.expire)):'Illimitée'}</b></div>
       <div><span>Appareils</span><b>${l.maxDevices?devs.length+' / '+l.maxDevices:'Illimités'}</b></div><div><span>Créée le</span><b>${l.cree?new Date(l.cree).toLocaleDateString('fr-FR'):'—'}</b></div></div>
     <div class="keyb"><span>Clé de licence</span><code id="dwKey">${C().sec?'…':'Secret maître manquant'}</code><div class="row"><button class="ghost sm" onclick="copyTxt($('dwKey').textContent)">📋 Copier</button><button class="ghost sm" onclick="mailKey('${esc(l.email)}','${esc(l.produit)}',$('dwKey').textContent)">✉️ Envoyer au client</button></div></div>
-    ${ex.length?`<h4 class="red">⚠ Licence en trop — ${ex.length} appareil${ex.length>1?'s':''} refusé${ex.length>1?'s':''}</h4>`+ex.map(e=>{const u=shortUA(e.ua);return `<div class="dev bad"><span class="di">${u.ic}</span><div><b>${u.txt}</b><small>Tentative le ${fmtD(new Date(e.t))}</small></div><button class="ghost sm" onclick="allowExtra('${id}','${e.dev}')">+1</button><button class="ghost sm" onclick="ignoreExc('${id}','${e.dev}')">Ignorer</button></div>`}).join(''):''}
+    ${ex.length?`<h4 class="red">⚠ Licence en trop — ${ex.length} appareil${ex.length>1?'s':''} refusé${ex.length>1?'s':''}</h4>`+ex.map(e=>{const u=shortUA(e.ua);return `<div class="dev bad"><span class="di">${u.ic}</span><div><b>${u.txt}</b><small>Tentative le ${fmtD(new Date(e.t))}</small><small class="ipl">${ipLine(e.ip,e.loc)}</small></div><button class="ghost sm" onclick="allowExtra('${id}','${e.dev}')">+1</button><button class="ghost sm" onclick="ignoreExc('${id}','${e.dev}')">Ignorer</button></div>`}).join(''):''}
     <h4>📱 Appareils activés${l.maxDevices?` (${devs.length}/${l.maxDevices})`:''}</h4>
-    ${!l.maxDevices?'<div class="empty sm">Pas de limite d\'appareils sur cette licence</div>':devs.length?devs.map(([k,v])=>{const u=shortUA(v.ua);return `<div class="dev"><span class="di">${u.ic}</span><div><b>${u.txt}</b><small>Place ${+k+1} · activé le ${fmtD(new Date(v.t))}</small></div><button class="ghost sm" onclick="devDel('${id}','${k}')">Retirer</button></div>`}).join(''):'<div class="empty sm">Aucun appareil activé pour l\'instant</div>'}
+    ${!l.maxDevices?'<div class="empty sm">Pas de limite d\'appareils sur cette licence</div>':devs.length?devs.map(([k,v])=>{const u=shortUA(v.ua);return `<div class="dev"><span class="di">${u.ic}</span><div><b>${u.txt}</b><small>Place ${+k+1} · activé le ${fmtD(new Date(v.t))}${v.seen?' · vu '+ago(v.seen):''}</small><small class="ipl">${ipLine(v.lastIp||v.ip,v.lastLoc||v.loc)}${v.ip&&v.lastIp&&v.ip!==v.lastIp?` <span class="red">(1ʳᵉ : ${esc(v.ip)})</span>`:''}</small>${histHTML(v)}</div><button class="ghost sm" onclick="devDel('${id}','${k}')">Retirer</button></div>`}).join(''):'<div class="empty sm">Aucun appareil activé pour l\'instant</div>'}
     ${all?`<h4>🧩 Modules satellites</h4><p class="hint">Les satellites utilisent cette licence ${esc(l.produit)} : seuls les modules ✓ sont accessibles, avec la même limite d'appareils.</p><div class="mgrid">${all.map(m=>{const ok=!l.modules||l.modules.includes(m);return `<div class="mg${ok?'':' no'}"><span>${MICON[m]||'•'}</span>${esc(m)}<i>${ok?'✓':'✕'}</i></div>`}).join('')}</div>`:''}
   </div>
   <div class="dw-f"><button class="btn" onclick="editLic('${id}')">✏️ Modifier</button><button class="ghost${l.actif?' danger':''}" onclick="revoke('${id}')">${l.actif?'⛔ Révoquer':'↺ Réactiver'}</button>${!l.actif?`<button class="ghost danger" title="Supprimer et bannir" onclick="delLic('${id}')">🗑</button>`:''}</div>`;
