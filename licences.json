@@ -19,7 +19,19 @@
         "Admin"
       ],
       "maxDevices": null
+    },
+    {
+      "id": "4dd7a434fd4813907afaaab9fe377a11c09f02ec9317bdbefa5d9246d6ade619",
+      "email": "aliand0810@gmail.com",
+      "produit": "Mon Planning Pro",
+      "hash": "6b9b8feb08722c8d6136d80e2afe3e71512ae43ffcd050da2eaa23766801beeb",
+      "cree": "2026-10-19",
+      "expire": null,
+      "actif": true,
+      "modules": null,
+      "maxDevices": 1
     }
   ],
-  "bannis": []
+  "bannis": [],
+  "firebase": "https://covo-licences-default-rtdb.europe-west1.firebasedatabase.app"
 }
