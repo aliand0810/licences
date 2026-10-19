@@ -10,6 +10,9 @@
       "actif": true,
       "modules": [
         "Caisse",
+        "Gestion",
+        "Investissement",
+        "Finances",
         "Historique",
         "Clôtures",
         "Fidélité",
