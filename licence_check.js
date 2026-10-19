@@ -38,16 +38,20 @@
     return (await sha([n.userAgent,n.platform,n.hardwareConcurrency,n.deviceMemory,w+'x'+h,sc.colorDepth,tz].join('|'))).slice(0,24)}
   const UA=()=>navigator.userAgent.replace(/^Mozilla\/5\.0 /,'').slice(0,120);
   // Adresse IP publique + ville approximative (mise en cache 10 min)
-  async function netInfo(){try{const c=JSON.parse(sessionStorage.getItem('licNet')||'null');if(c&&Date.now()-c.at<6e5)return c}catch(e){}
-    const get=(u)=>Promise.race([fetch(u).then(r=>r.json()),new Promise((_,j)=>setTimeout(j,3500))]);
-    let n=null;try{const j=await get('https://ipwho.is/?fields=ip,city,country_code');if(j&&j.ip)n={ip:j.ip,loc:[j.city,j.country_code].filter(Boolean).join(', ')}}catch(e){}
-    if(!n)try{const j=await get('https://api.ipify.org?format=json');if(j&&j.ip)n={ip:j.ip,loc:''}}catch(e){}
-    n=n||{ip:'',loc:''};n.at=Date.now();try{sessionStorage.setItem('licNet',JSON.stringify(n))}catch(e){}return n}
+  async function netInfo(){try{const c=JSON.parse(sessionStorage.getItem('licNet')||'null');if(c&&c.ip&&Date.now()-c.at<6e5)return c}catch(e){}
+    const get=u=>Promise.race([fetch(u,{cache:'no-store'}).then(r=>{if(!r.ok)throw 0;return r.json()}),new Promise((_,j)=>setTimeout(()=>j(0),4000))]);
+    const src=[['https://get.geojs.io/v1/ip/geo.json',j=>({ip:j.ip,loc:[j.city,j.country_code].filter(Boolean).join(', ')})],
+      ['https://ipwho.is/?fields=ip,city,country_code',j=>({ip:j.ip,loc:[j.city,j.country_code].filter(Boolean).join(', ')})],
+      ['https://ipinfo.io/json',j=>({ip:j.ip,loc:[j.city,j.country].filter(Boolean).join(', ')})],
+      ['https://api.ipify.org?format=json',j=>({ip:j.ip,loc:''})],
+      ['https://api64.ipify.org?format=json',j=>({ip:j.ip,loc:''})]];
+    let n=null;for(const[u,f]of src){try{const r=f(await get(u));if(r.ip){n=r;break}}catch(e){}}
+    n=n||{ip:'',loc:'',err:1};n.at=Date.now();if(n.ip)try{sessionStorage.setItem('licNet',JSON.stringify(n))}catch(e){}return n}
   async function device(fb,l){
     fb=fb.replace(/\/+$/,'');const me=await devId(),flag='licSlot_'+l.id;
     let list;try{list=await (await fetch(`${fb}/devices/${l.id}.json`,{cache:'no-store'})).json()||{}}catch(e){return{ok:true}} // Firebase injoignable : on tolère
     const k0=Object.keys(list).find(k=>list[k]&&list[k].id===me);
-    if(k0){const d=list[k0];if(Date.now()-(d.seen||0)>6e5){const n=await netInfo();
+    if(k0){const d=list[k0];if(!d.lastIp||Date.now()-(d.seen||0)>6e5){const n=await netInfo();
         const hist=[{t:Date.now(),ip:n.ip,loc:n.loc},...(Array.isArray(d.hist)?d.hist:[])].slice(0,15);
         fetch(`${fb}/devices/${l.id}/${k0}.json`,{method:'PUT',body:JSON.stringify({...d,seen:Date.now(),lastIp:n.ip,lastLoc:n.loc,ua:UA(),hist})}).catch(()=>{})}
       return{ok:true}}
