@@ -369,7 +369,12 @@ async function fbTok(){if(FBT&&FBT.exp>Date.now())return FBT.t;
 async function fbPut(path,val){const t=await fbTok();const r=await fetch(`${FB()}/${path}.json?auth=${t}`,{method:val===null?'DELETE':'PUT',body:JSON.stringify(val)});
   if(!r.ok)throw new Error('Firebase '+r.status+' — vérifie les règles publiées')}
 async function fbGet(path){try{const r=await fetch(`${FB()}/${path}.json?t=${Date.now()}`);return r.ok?await r.json():null}catch(e){return null}}
-async function loadFB(){const [d,e]=await Promise.all([fbGet('devices'),fbGet('excess')]);DEV=d||{};EXC=e||{};renderAll()}
+let RULES_OK=true;
+async function fbRaw(path){try{const r=await fetch(`${FB()}/${path}.json?t=${Date.now()}`);return{ok:r.ok,status:r.status,j:r.ok?await r.json():null}}catch(e){return{ok:false,status:0,j:null}}}
+async function loadFB(){const lim=LIC.filter(l=>l.maxDevices);const D={},E={};let denied=false;
+  await Promise.all(lim.map(async l=>{const[d,e]=await Promise.all([fbRaw('devices/'+l.id),fbRaw('excess/'+l.id)]);
+    if(d.j)D[l.id]=d.j;if(e.j)E[l.id]=e.j;if(e.status===401||d.status===401)denied=true}));
+  DEV=D;EXC=E;RULES_OK=!denied;renderAll()}
 
 /* ── temps & statut ── */
 const UNIT={min:6e4,h:36e5,j:864e5,sem:6048e5};
@@ -414,9 +419,11 @@ function allExc(){const out=[];LIC.forEach(l=>excList(l.id).forEach(e=>out.push(
 function alertHTML(a,i){const u=shortUA(a.ua),[ic,col]=pm(a.l.produit);
   return `<div class="al" style="animation-delay:${i*.03}s"><div class="pi" style="--pc:${col}">${ic}</div><div><b>${esc(a.l.email)} · ${esc(a.l.produit)}</b><small>${u.ic} ${u.txt} refusé le ${fmtD(new Date(a.t))} — limite ${a.l.maxDevices} appareil${a.l.maxDevices>1?'s':''}</small></div>
     <div class="acts2"><button class="ghost sm" onclick="allowExtra('${a.l.id}','${a.dev}')">+1 appareil</button><button class="ghost sm" onclick="ignoreExc('${a.l.id}','${a.dev}')">Ignorer</button><button class="ghost sm" onclick="openLic('${a.l.id}')">Compte</button></div></div>`}
+function rulesWarn(){return RULES_OK?'':`<div class="al" style="border-color:rgba(245,158,11,.45);background:rgba(245,158,11,.08)"><div class="pi" style="--pc:#f59e0b">🔥</div><div><b>Règles Firebase à republier</b><small>Les licences en trop ne peuvent pas être détectées. Dans Firebase → Realtime Database → Règles, colle le contenu de firebase-rules.json puis clique sur Publier.</small></div><div class="acts2"><a class="ghost sm" style="text-decoration:none" target="_blank" href="https://github.com/aliand0810/licences/blob/main/firebase-rules.json">Voir les règles</a></div></div>`}
 function renderAlerts(){const A=allExc();EXCN=A.length;$('nbAl').textContent=A.length||'';
-  $('alList').innerHTML=A.length?A.map(alertHTML).join(''):'<div class="empty">✅ Aucune licence en trop</div>';
-  $('dashAl').innerHTML=A.length?A.slice(0,4).map(alertHTML).join(''):'<div class="empty sm">✅ Aucune licence utilisée en trop</div>';
+  $('alList').innerHTML=rulesWarn()+(A.length?A.map(alertHTML).join(''):'<div class="empty">✅ Aucune licence en trop</div>');
+  $('dashAl').innerHTML=rulesWarn()+(A.length?A.slice(0,4).map(alertHTML).join(''):'<div class="empty sm">✅ Aucune licence utilisée en trop</div>');
+  if(!RULES_OK)$('nbAl').textContent=A.length?A.length+'!':'!';
   $('kExcCard').classList.toggle('alert',A.length>0)}
 function count(el,to){const from=+el.textContent||0,t0=performance.now();(function f(t){const p=Math.min((t-t0)/700,1);el.textContent=Math.round(from+(to-from)*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(f)})(t0)}
 function renderKpi(){const lim=LIC.filter(l=>l.maxDevices&&status(l)[2]!=='off'),n={cli:new Set(LIC.map(l=>l.email)).size,act:LIC.filter(l=>status(l)[2]!=='off').length,exc:EXCN};
@@ -502,7 +509,7 @@ async function saveLic({mail,prod,mods,maxDev,expire}){
   const i=data.licences.findIndex(l=>l.id===id);i>=0?data.licences[i]={...data.licences[i],...lic,cree:data.licences[i].cree,actif:data.licences[i].actif}:data.licences.push(lic);
   if(maxDev||data.firebase){data.firebase=FB();await fbPut('limits/'+id,maxDev?String(maxDev).padStart(2,'0'):null);FBOK=true}
   await ghPut(data,s,(i>=0?'Mise à jour':'Nouvelle')+' licence '+prod+' — '+mail);
-  LIC=data.licences;BAN=data.bannis||[];LASTID=id;renderAll();return{key,updated:i>=0}}
+  LIC=data.licences;BAN=data.bannis||[];LASTID=id;await loadFB();return{key,updated:i>=0}}
 async function generate(){const mail=norm($('mail').value),prod=PROD,mods=getMods();
   if(!/^\S+@\S+\.\S+$/.test(mail))return toast('E-mail invalide','ko');
   if(mods&&!mods.length)return toast('Coche au moins un module','ko');
