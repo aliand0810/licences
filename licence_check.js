@@ -32,17 +32,22 @@
   }
 
   // ── Limite d'appareils (Firebase) ──
-  function devId(){let i=localStorage.getItem('licDevice');if(!i){i=[...crypto.getRandomValues(new Uint8Array(12))].map(x=>x.toString(16).padStart(2,'0')).join('');localStorage.setItem('licDevice',i)}return i}
+  // Empreinte de l'appareil : identique sur COVO Pro et tous ses satellites (même navigateur)
+  async function devId(){const n=navigator,sc=screen,w=Math.min(sc.width,sc.height),h=Math.max(sc.width,sc.height);
+    let tz='';try{tz=Intl.DateTimeFormat().resolvedOptions().timeZone}catch(e){}
+    return (await sha([n.userAgent,n.platform,n.hardwareConcurrency,n.deviceMemory,w+'x'+h,sc.colorDepth,tz].join('|'))).slice(0,24)}
+  const UA=()=>navigator.userAgent.replace(/^Mozilla\/5\.0 /,'').slice(0,120);
   async function device(fb,l){
-    fb=fb.replace(/\/+$/,'');const me=devId(),flag='licSlot_'+l.id;
+    fb=fb.replace(/\/+$/,'');const me=await devId(),flag='licSlot_'+l.id;
     let list;try{list=await (await fetch(`${fb}/devices/${l.id}.json`,{cache:'no-store'})).json()||{}}catch(e){return{ok:true}} // Firebase injoignable : on tolère
-    const mine=Object.keys(list).find(k=>list[k]&&list[k].id===me);
-    if(mine)return{ok:true};
+    if(Object.keys(list).some(k=>list[k]&&list[k].id===me))return{ok:true};
     if(localStorage.getItem(flag))return{ok:false,msg:'Cet appareil a été retiré de la licence'};
     for(let n=0;n<l.maxDevices;n++){const k=String(n).padStart(2,'0');if(list[k])continue;
-      const r=await fetch(`${fb}/devices/${l.id}/${k}.json`,{method:'PUT',body:JSON.stringify({id:me,t:Date.now(),ua:navigator.userAgent.replace(/^Mozilla\/5\.0 /,'').slice(0,120)})});
+      const r=await fetch(`${fb}/devices/${l.id}/${k}.json`,{method:'PUT',body:JSON.stringify({id:me,t:Date.now(),ua:UA()})});
       if(r.ok){localStorage.setItem(flag,k);return{ok:true}}}
-    return{ok:false,msg:`Nombre maximal d'appareils atteint (${l.maxDevices}). Contactez le vendeur.`};
+    // Licence en trop : on signale la tentative au vendeur
+    try{await fetch(`${fb}/excess/${l.id}/${me}.json`,{method:'PUT',body:JSON.stringify({t:Date.now(),ua:UA()})})}catch(e){}
+    return{ok:false,msg:`Licence en trop : ce code est déjà utilisé sur ${l.maxDevices} appareil${l.maxDevices>1?'s':''}. Contactez le vendeur.`};
   }
 
   function save(mail,key,expire){localStorage.setItem(KEY,JSON.stringify({mail:mail.trim().toLowerCase(),key:key.trim().toUpperCase(),expire,t:Date.now()}))}
