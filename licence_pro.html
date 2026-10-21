@@ -30,6 +30,7 @@ a{color:var(--a2)}
 .hint{font-size:.8rem;color:var(--mut);margin:-2px 0 10px;line-height:1.45}
 .red{color:#fda4af}
 
+[hidden]{display:none!important}
 /* layout */
 .app{display:grid;grid-template-columns:248px 1fr;min-height:100vh}
 .side{position:sticky;top:0;height:100vh;padding:22px 14px;border-right:1px solid var(--bd);background:rgba(7,11,22,.55);backdrop-filter:blur(22px);display:flex;flex-direction:column;gap:22px;z-index:30}
@@ -189,6 +190,42 @@ canvas{max-height:270px}
 .toast.show{transform:translateX(-50%) translateY(0)}
 .toast.ok{border-color:var(--ok);color:#6ee7b7}.toast.ko{border-color:var(--ko);color:#fda4af}
 
+
+/* ── Téléphone ── */
+.fab{display:none}
+.sheetHandle{display:none}
+.mSum{display:none}
+@media(max-width:860px){
+ input,select{font-size:16px;padding:13px 14px}
+ .top{margin-bottom:16px}.top p{display:none}
+ .kpis{gap:10px}.kpi{padding:14px}.kpi .v{font-size:1.6rem}.kpi .l{font-size:.64rem}.kpi .s{font-size:.68rem}
+ .card{padding:16px;border-radius:18px}
+ .chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 -14px;padding:0 14px;width:calc(100% + 28px)}.chips::-webkit-scrollbar{display:none}
+ .chips button{flex-shrink:0}
+ .toolbar input{max-width:none}
+ .lic{padding:14px 16px}
+ .fab{display:grid;place-items:center;position:fixed;right:18px;bottom:calc(84px + env(safe-area-inset-bottom));width:58px;height:58px;border-radius:18px;background:var(--grad);font-size:1.8rem;box-shadow:0 12px 30px rgba(124,58,237,.5);z-index:35}
+ body.onNew .fab,body.onSet .fab{display:none}
+ /* panneau détail en feuille du bas */
+ .dw{top:auto;bottom:0;width:100%;height:auto;max-height:92vh;border-left:0;border-top:1px solid var(--bd);border-radius:24px 24px 0 0;transform:translateY(100%)}
+ .drawer.on .dw{transform:none}
+ .sheetHandle{display:block;width:44px;height:5px;border-radius:9px;background:rgba(255,255,255,.25);margin:10px auto 0}
+ .dw-h{padding:12px 18px 14px}.dw-b{padding:14px 18px}.dw-f{padding:12px 18px calc(12px + env(safe-area-inset-bottom))}
+ .dev{flex-wrap:wrap}.dev>div{min-width:calc(100% - 50px)}.dev>div+button{margin-left:auto}
+ #v-new .card{backdrop-filter:none;background:rgba(13,18,34,.92)}#v-new.view.on{animation:none}
+ /* formulaire : aperçu compact + bouton fixe */
+ .preview{display:none}
+ #v-new .card{padding-bottom:90px}
+ .ptiles{grid-template-columns:1fr 1fr}.pt{padding:9px;font-size:.8rem}
+ .mods{grid-template-columns:1fr 1fr}
+ .genBar{position:fixed;left:0;right:0;bottom:calc(64px + env(safe-area-inset-bottom));padding:10px 14px;background:rgba(9,13,26,.97);border-top:1px solid var(--bd);backdrop-filter:blur(12px);z-index:34}
+ .genBar .btn{width:100%;margin:0}
+ .mSum{display:block;font-size:.72rem;color:var(--mut);text-align:center;margin-bottom:6px}
+ .keybox{margin-bottom:10px}
+ .sets{gap:12px}
+ .toast{bottom:calc(150px + env(safe-area-inset-bottom))}
+}
+@media(min-width:861px){.genBar{display:contents}.genBar .btn{width:100%;margin-top:22px}}
 @media(max-width:1100px){.kpis{grid-template-columns:repeat(2,1fr)}.row2,.formgrid,.sets{grid-template-columns:1fr}.preview{position:static}}
 @media(max-width:860px){
  .app{grid-template-columns:1fr}
@@ -255,7 +292,7 @@ canvas{max-height:270px}
     <div class="formgrid">
       <div class="card">
         <div class="editbar" id="editBar" hidden>✏️ <span id="editTxt"></span><button class="ghost sm" onclick="newLic()">Annuler</button></div>
-        <label style="margin-top:4px">E-mail du client</label><input id="mail" type="email" placeholder="client@exemple.fr" autocomplete="off">
+        <label style="margin-top:4px">E-mail du client</label><input id="mail" type="email" inputmode="email" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="client@exemple.fr" autocomplete="off">
         <label>Logiciel</label><div class="ptiles" id="ptiles"></div>
         <div id="modBox" hidden>
           <label class="lrow">Modules satellites autorisés <span><a href="#" onclick="setMods(1);return false">tout</a> · <a href="#" onclick="setMods(0);return false">rien</a></span></label>
@@ -273,9 +310,9 @@ canvas{max-height:270px}
           <button type="button" class="stp" onclick="setDev(DEVN+1)">+</button>
         </div>
         <div class="seg" id="devSeg" style="margin-top:8px"><button data-dev="0">∞</button><button data-dev="1">1</button><button data-dev="2">2</button><button data-dev="3">3</button><button data-dev="5">5</button><button data-dev="10">10</button></div>
-        <button class="btn full" id="gen" onclick="generate()">Générer la licence</button>
+        <div class="genBar"><div class="mSum" id="mSum"></div><button class="btn full" id="gen" onclick="generate()">Générer la licence</button></div>
         <div class="keybox" id="kb"><div class="key" id="key"></div>
-          <div class="acts"><button class="ghost sm" onclick="copyTxt($('key').textContent)">📋 Copier</button><button class="ghost sm" onclick="mailKey($('mail').value,PROD,$('key').textContent)">✉️ Envoyer</button><button class="ghost sm" onclick="LASTID&&openLic(LASTID)">👁 Voir le compte</button></div></div>
+          <div class="acts"><button class="ghost sm" onclick="copyTxt($('key').textContent)">📋 Copier</button><button class="ghost sm" onclick="shareKey($('mail').value,PROD,$('key').textContent)">📤 Partager</button><button class="ghost sm" onclick="mailKey($('mail').value,PROD,$('key').textContent)">✉️ E-mail</button><button class="ghost sm" onclick="LASTID&&openLic(LASTID)">👁 Voir le compte</button></div></div>
       </div>
       <aside class="card preview" id="preview"></aside>
     </div>
@@ -311,6 +348,7 @@ canvas{max-height:270px}
 </div>
 
 <div class="drawer" id="drawer"><div class="dw-bg" onclick="closeDrawer()"></div><div class="dw" id="dw"></div></div>
+<button class="fab" onclick="newLic()" aria-label="Nouvelle licence">＋</button>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -334,7 +372,7 @@ const TITLES={dash:["Vue d'ensemble","Tes licences et tes clients en un coup d'�
 function go(v){document.querySelectorAll('.view').forEach(x=>x.classList.toggle('on',x.id==='v-'+v));
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('act',b.dataset.v===v));
   $('vTitle').textContent=TITLES[v][0];$('vSub').textContent=TITLES[v][1];
-  if(v==='dash')drawCharts();window.scrollTo({top:0})}
+  document.body.className='on'+v[0].toUpperCase()+v.slice(1);if(v==='dash')drawCharts();window.scrollTo({top:0})}
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>b.dataset.v==='new'?newLic():go(b.dataset.v));
 
 /* ── crypto ── */
@@ -464,11 +502,11 @@ const ipLine=(ip,loc,v)=>ip?`🌐 <b class="ip" onclick="event.stopPropagation()
 function histHTML(v){const h=Array.isArray(v.hist)?v.hist:[];if(h.length<2)return'';
   return `<details class="hist"><summary>Historique des connexions (${h.length})</summary>${h.map(x=>`<div><span>${fmtD(new Date(x.t))}</span><span>${x.ip?esc(x.ip):'—'}${x.loc?' · '+esc(x.loc):''}</span></div>`).join('')}</details>`}
 function openLic(id){const l=LIC.find(x=>x.id===id);if(!l)return;const[s,c]=status(l),[ic,col]=pm(l.produit),devs=devList(id),ex=excList(id),all=MODS()[l.produit];
-  $('dw').innerHTML=`<div class="dw-h"><div class="pi lg" style="--pc:${col}">${ic}</div><div><h2>${esc(l.produit)}</h2><span>${esc(l.email)}</span></div><button class="x" onclick="closeDrawer()">✕</button></div>
+  $('dw').innerHTML=`<div class="sheetHandle"></div><div class="dw-h"><div class="pi lg" style="--pc:${col}">${ic}</div><div><h2>${esc(l.produit)}</h2><span>${esc(l.email)}</span></div><button class="x" onclick="closeDrawer()">✕</button></div>
   <div class="dw-b">
     <div class="kv"><div><span>Statut</span><b class="badge ${c}">${s}</b></div><div><span>Expiration</span><b>${l.expire?fmtD(new Date(l.expire)):'Illimitée'}</b></div>
       <div><span>Appareils</span><b>${l.maxDevices?devs.length+' / '+l.maxDevices:'Illimités'}</b></div><div><span>Créée le</span><b>${l.cree?new Date(l.cree).toLocaleDateString('fr-FR'):'—'}</b></div></div>
-    <div class="keyb"><span>Clé de licence</span><code id="dwKey">${C().sec?'…':'Secret maître manquant'}</code><div class="row"><button class="ghost sm" onclick="copyTxt($('dwKey').textContent)">📋 Copier</button><button class="ghost sm" onclick="mailKey('${esc(l.email)}','${esc(l.produit)}',$('dwKey').textContent)">✉️ Envoyer au client</button></div></div>
+    <div class="keyb"><span>Clé de licence</span><code id="dwKey">${C().sec?'…':'Secret maître manquant'}</code><div class="row"><button class="ghost sm" onclick="copyTxt($('dwKey').textContent)">📋 Copier</button><button class="ghost sm" onclick="shareKey('${esc(l.email)}','${esc(l.produit)}',$('dwKey').textContent)">📤 Partager</button><button class="ghost sm" onclick="mailKey('${esc(l.email)}','${esc(l.produit)}',$('dwKey').textContent)">✉️ E-mail</button></div></div>
     ${ex.length?`<h4 class="red">⚠ Licence en trop — ${ex.length} appareil${ex.length>1?'s':''} refusé${ex.length>1?'s':''}</h4>`+ex.map(e=>{const u=shortUA(e.ua);return `<div class="dev bad"><span class="di">${u.ic}</span><div><b>${u.txt}</b><small>Tentative le ${fmtD(new Date(e.t))}</small><small class="ipl">${ipLine(e.ip,e.loc,e)}</small></div><button class="ghost sm" onclick="allowExtra('${id}','${e.dev}')">+1</button><button class="ghost sm" onclick="ignoreExc('${id}','${e.dev}')">Ignorer</button></div>`}).join(''):''}
     <h4>📱 Appareils activés${l.maxDevices?` (${devs.length}/${l.maxDevices})`:''}</h4>
     ${!l.maxDevices?'<div class="empty sm">Pas de limite d\'appareils sur cette licence</div>':devs.length?devs.map(([k,v])=>{const u=shortUA(v.ua);return `<div class="dev"><span class="di">${u.ic}</span><div><b>${u.txt}</b><small>Place ${+k+1} · activé le ${fmtD(new Date(v.t))}${v.seen?' · vu '+ago(v.seen):''}</small><small class="ipl">${ipLine(v.lastIp||v.ip,v.lastLoc||v.loc,v)}${v.ip&&v.lastIp&&v.ip!==v.lastIp?` <span class="red">(1ʳᵉ : ${esc(v.ip)})</span>`:''}</small>${histHTML(v)}</div><button class="ghost sm" onclick="devDel('${id}','${k}')">Retirer</button></div>`}).join(''):'<div class="empty sm">Aucun appareil activé pour l\'instant</div>'}
@@ -494,6 +532,7 @@ function updExp(){const e=expiry();$('expTxt').textContent=KEEP&&EDIT?(e?'Expira
 document.querySelectorAll('#dur button').forEach(b=>b.onclick=()=>{if(b.dataset.v==='keep')KEEP=true;else{KEEP=false;$('durV').value=b.dataset.v;$('durU').value=b.dataset.u}updExp()});
 $('durV').oninput=$('durU').onchange=()=>{KEEP=false;updExp()};
 function updPrev(){const[ic,col]=pm(PROD),m=getMods(),e=expiry(),mail=$('mail').value.trim();
+  $('mSum').textContent=`${ic} ${PROD} · ${e?'jusqu\'au '+e.toLocaleDateString('fr-FR'):'illimitée'} · 📱 ${DEVN||'∞'}${m?' · 🧩 '+m.length+'/'+MODS()[PROD].length:''}`;
   $('preview').innerHTML=`<h3>👁 Aperçu de la licence</h3><div class="pv-h"><div class="pi lg" style="--pc:${col}">${ic}</div><div><b>${esc(PROD||'—')}</b><span>${esc(mail||'e-mail du client')}</span></div></div>
    <div class="pv-r"><span>Durée</span><b>${e?'jusqu\'au '+fmtD(e):'Illimitée'}</b></div>
    <div class="pv-r"><span>Appareils</span><b>${DEVN?DEVN+' max — le '+(DEVN+1)+'ᵉ sera refusé':'Illimités'}</b></div>
@@ -525,7 +564,7 @@ async function generate(){const mail=norm($('mail').value),prod=PROD,mods=getMod
   const b=$('gen'),txt=b.textContent;b.classList.add('load');b.textContent='Enregistrement…';
   try{const e=expiry(),r=await saveLic({mail,prod,mods,maxDev:DEVN,expire:e?e.toISOString():null});
     $('kb').classList.remove('show');void $('kb').offsetWidth;$('kb').classList.add('show');reveal(r.key);
-    toast(r.updated?'✔ Licence mise à jour':'✔ Licence créée et sauvegardée');if(EDIT){EDIT=null;$('editBar').hidden=true;$('durKeep').hidden=true;$('mail').disabled=false;KEEP=false}
+    toast(r.updated?'✔ Licence mise à jour':'✔ Licence créée et sauvegardée');if(navigator.vibrate)navigator.vibrate(30);$('kb').scrollIntoView({behavior:'smooth',block:'center'});if(EDIT){EDIT=null;$('editBar').hidden=true;$('durKeep').hidden=true;$('mail').disabled=false;KEEP=false}
   }catch(e){toast(e.message,'ko')}
   b.classList.remove('load');b.textContent=EDIT?txt:'Générer la licence'}
 function reveal(key){const el=$('key');let f=0;const iv=setInterval(()=>{el.textContent=key.split('').map((c,i)=>c==='-'?'-':i<f?c:ALPHA[Math.random()*32|0]).join('');if(++f>key.length){clearInterval(iv);el.textContent=key}},30)}
@@ -544,6 +583,11 @@ async function delLic(id){const l=LIC.find(x=>x.id===id);if(!l||!confirm(`Suppri
     await ghPut(data,s,'Suppression + bannissement '+l.email);LIC=data.licences;BAN=data.bannis;closeDrawer();renderAll();toast('Adresse supprimée et bannie','ko')}catch(e){toast(e.message,'ko')}}
 async function unban(m){if(!confirm('Débannir '+m+' ?'))return;
   try{const {data,sha:s}=await ghGet();data.bannis=(data.bannis||[]).filter(x=>x!==m);await ghPut(data,s,'Débannissement '+m);BAN=data.bannis;renderAll();toast('Adresse débannie')}catch(e){toast(e.message,'ko')}}
+function shareKey(mail,prod,key){const text=`Bonjour,\n\nVoici votre clé de licence ${prod} :\n${key}\n\nÀ saisir avec votre adresse e-mail (${mail}) au premier lancement.`;
+  if(navigator.share)navigator.share({title:'Licence '+prod,text}).catch(()=>{});else copyTxt(text)}
+(function(){let y0=null;const dw=$('dw');dw.addEventListener('touchstart',e=>{if(dw.querySelector('.dw-b').scrollTop<=0)y0=e.touches[0].clientY},{passive:true});
+  dw.addEventListener('touchmove',e=>{if(y0===null)return;const d=e.touches[0].clientY-y0;if(d>0)dw.style.transform=`translateY(${d}px)`},{passive:true});
+  dw.addEventListener('touchend',e=>{if(y0===null)return;const d=e.changedTouches[0].clientY-y0;dw.style.transform='';y0=null;if(d>110)closeDrawer()})})();
 function copyTxt(t){navigator.clipboard.writeText(t).then(()=>toast('📋 Copié'),()=>toast('Copie impossible','ko'))}
 function mailKey(mail,prod,key){location.href=`mailto:${mail}?subject=${encodeURIComponent('Votre licence '+prod)}&body=${encodeURIComponent(`Bonjour,\n\nVoici votre clé de licence ${prod} :\n\n${key}\n\nÀ saisir avec votre adresse e-mail (${mail}) au premier lancement.\n\nMerci !`)}`}
 
