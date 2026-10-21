@@ -191,6 +191,14 @@ canvas{max-height:270px}
 .toast.ok{border-color:var(--ok);color:#6ee7b7}.toast.ko{border-color:var(--ko);color:#fda4af}
 
 
+.pw{position:relative}.pw input{padding-right:48px}
+.eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:38px;height:38px;padding:0;background:transparent;font-size:1.05rem;opacity:.6;border-radius:10px}
+.eye:hover,.eye.on{opacity:1;background:var(--glass2)}
+.rules{margin:0;max-height:340px;overflow:auto;background:rgba(0,0,0,.35);border:1px solid var(--bd);border-radius:12px;padding:14px;font:600 .74rem/1.55 "JetBrains Mono",monospace;color:#c4b5fd;white-space:pre-wrap;word-break:break-all;font-variant-ligatures:none}
+.lockCard{max-width:420px;margin:30px auto;text-align:center;padding:30px 24px}
+.lockCard h2{margin:6px 0 6px;font-size:1.25rem}.lockIc{font-size:2.6rem}
+.lockCard.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
 /* ── Téléphone ── */
 .fab{display:none}
 .sheetHandle{display:none}
@@ -325,23 +333,42 @@ canvas{max-height:270px}
 
   <!-- RÉGLAGES -->
   <section id="v-set" class="view">
+    <div class="card lockCard" id="setLock">
+      <div class="lockIc">🔒</div>
+      <h2 id="lkTitle">Réglages protégés</h2>
+      <p class="hint" id="lkHint">Entre ton mot de passe pour accéder aux réglages.</p>
+      <div class="pw"><input id="lkPass" type="password" placeholder="Mot de passe" autocomplete="current-password" onkeydown="event.key==='Enter'&&unlockSet()"><button type="button" class="eye" onclick="eye(this)">👁</button></div>
+      <div class="pw" id="lkConfWrap" hidden style="margin-top:8px"><input id="lkConf" type="password" placeholder="Confirmer le mot de passe" autocomplete="new-password" onkeydown="event.key==='Enter'&&unlockSet()"><button type="button" class="eye" onclick="eye(this)">👁</button></div>
+      <button class="btn full" id="lkBtn" onclick="unlockSet()">Déverrouiller</button>
+      <button class="ghost sm" id="lkForgot" style="margin-top:14px" onclick="forgotSet()">Mot de passe oublié ?</button>
+    </div>
+    <div id="setBody" hidden>
     <div class="sets">
       <div class="card"><h3>🐙 GitHub</h3>
-        <label style="margin-top:0">Token GitHub (Contents : write)</label><input id="tok" type="password">
+        <label style="margin-top:0">Token GitHub (Contents : write)</label><div class="pw"><input id="tok" type="password"><button type="button" class="eye" onclick="eye(this)" title="Afficher / masquer">👁</button></div>
         <label>Propriétaire</label><input id="own" placeholder="aliand0810">
         <label>Dépôt</label><input id="rep" placeholder="licences">
         <label>Fichier</label><input id="pth" placeholder="licences.json">
-        <label>Secret maître (ne plus le changer)</label><input id="sec" type="password">
+        <label>Secret maître (ne plus le changer)</label><div class="pw"><input id="sec" type="password"><button type="button" class="eye" onclick="eye(this)" title="Afficher / masquer">👁</button></div>
         <label>Logiciels (séparés par des virgules)</label><input id="prods">
       </div>
       <div class="card"><h3>🔥 Firebase (limite d'appareils)</h3>
         <label style="margin-top:0">URL Realtime Database</label><input id="fbUrl">
-        <label>Clé API Web</label><input id="fbKey">
+        <label>Clé API Web</label><div class="pw"><input id="fbKey" type="password"><button type="button" class="eye" onclick="eye(this)" title="Afficher / masquer">👁</button></div>
         <label>E-mail admin Firebase</label><input id="fbMail" type="email" autocomplete="username">
-        <label>Mot de passe admin Firebase</label><input id="fbPass" type="password" autocomplete="current-password">
+        <label>Mot de passe admin Firebase</label><div class="pw"><input id="fbPass" type="password" autocomplete="current-password"><button type="button" class="eye" onclick="eye(this)" title="Afficher / masquer">👁</button></div>
         <button class="btn full" onclick="saveCfg()">💾 Enregistrer et tester</button>
         <button class="ghost" id="instBtn" style="width:100%;margin-top:10px" hidden onclick="install()">📲 Installer l'application</button>
       </div>
+      <div class="card" style="grid-column:1/-1"><h3>📜 Règles Firebase <span class="row" style="display:flex;gap:6px"><button class="ghost sm" onclick="copyTxt($('rulesTxt').textContent)">📋 Copier</button><a class="ghost sm" style="text-decoration:none" target="_blank" href="https://console.firebase.google.com/project/covo-licences/database/covo-licences-default-rtdb/rules">Ouvrir Firebase ↗</a></span></h3>
+        <p class="hint">Règles à coller dans Firebase → Realtime Database → Règles, puis « Publier ».</p>
+        <pre class="rules" id="rulesTxt">Chargement…</pre>
+      </div>
+      <div class="card" style="grid-column:1/-1"><h3>🔒 Sécurité</h3>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="ghost" onclick="changeSetPass()">🔑 Changer le mot de passe</button><button class="ghost" onclick="lockSet(true)">🔒 Verrouiller maintenant</button></div>
+        <p class="hint" style="margin-top:10px">Les réglages se verrouillent automatiquement quand tu quittes cet onglet ou après 5 minutes d'inactivité.</p>
+      </div>
+    </div>
     </div>
   </section>
 </main>
@@ -369,7 +396,7 @@ const pm=p=>PMETA[p]||['📦',PAL[Math.max(0,prods().indexOf(p))%PAL.length]];
 
 /* ── navigation ── */
 const TITLES={dash:["Vue d'ensemble","Tes licences et tes clients en un coup d'œil"],acc:['Comptes clients','Chaque client, ses licences, ses appareils et ses modules'],new:['Nouvelle licence','Crée ou modifie une licence en quelques secondes'],alerts:['Licences en trop','Appareils refusés car la limite est atteinte'],set:['Réglages','Connexions GitHub et Firebase']};
-function go(v){document.querySelectorAll('.view').forEach(x=>x.classList.toggle('on',x.id==='v-'+v));
+function go(v){if(v!=='set'&&UNLOCKED)lockSet();if(v==='set'&&!UNLOCKED)showLock();document.querySelectorAll('.view').forEach(x=>x.classList.toggle('on',x.id==='v-'+v));
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('act',b.dataset.v===v));
   $('vTitle').textContent=TITLES[v][0];$('vSub').textContent=TITLES[v][1];
   document.body.className='on'+v[0].toUpperCase()+v.slice(1);if(v==='dash')drawCharts();window.scrollTo({top:0})}
@@ -593,12 +620,41 @@ function mailKey(mail,prod,key){location.href=`mailto:${mail}?subject=${encodeUR
 
 /* ── réglages ── */
 const CFG_KEYS=['tok','own','rep','pth','sec','prods','fbUrl','fbKey','fbMail','fbPass'];
-function initCfg(){const c=C();CFG_KEYS.forEach(k=>$(k).value=c[k]||'');$('fbUrl').value=c.fbUrl||FB_DEF.fbUrl;$('fbKey').value=c.fbKey||FB_DEF.fbKey;$('prods').value=c.prods||DEF_P;$('pth').value=c.pth||'licences.json';renderConn()}
-async function saveCfg(){const c={...C()};CFG_KEYS.forEach(k=>c[k]=$(k).value.trim());localStorage.setItem('licCfg',JSON.stringify(c));FBT=null;FBOK=false;renderConn();renderTiles();
+function initCfg(){renderConn()}
+async function saveCfg(){if(!UNLOCKED)return showLock();const c={...C()};CFG_KEYS.forEach(k=>c[k]=$(k).value.trim());localStorage.setItem('licCfg',JSON.stringify(c));FBT=null;FBOK=false;renderConn();renderTiles();
   const d=await diag().catch(()=>'GitHub injoignable');if(d)return toast(d,'ko');
   if(c.fbMail&&c.fbPass){try{await fbTok();FBOK=true;renderConn();toast('✔ GitHub et Firebase connectés')}catch(e){return toast(e.message,'ko')}}else toast('✔ GitHub connecté — ajoute Firebase pour limiter les appareils');
   load(true);setDev(DEVN)}
 
+
+/* ── verrou des réglages ── */
+let UNLOCKED=false,lockTimer=null;
+const ADM=()=>{try{return JSON.parse(localStorage.getItem('licAdmin')||'null')}catch(e){return null}};
+async function passHash(p,salt){return sha(salt+'|'+p)}
+function eye(b){const i=b.previousElementSibling;i.type=i.type==='password'?'text':'password';b.classList.toggle('on',i.type==='text');b.textContent=i.type==='text'?'🙈':'👁'}
+function showLock(){const a=ADM();$('setBody').hidden=true;$('setLock').hidden=false;$('lkPass').value='';$('lkConf').value='';
+  $('lkConfWrap').hidden=!!a;$('lkForgot').hidden=!a;$('lkTitle').textContent=a?'Réglages protégés':'Crée ton mot de passe';
+  $('lkHint').textContent=a?'Entre ton mot de passe pour accéder aux réglages.':'Choisis un mot de passe (6 caractères minimum) pour protéger ton token, ton secret et tes accès Firebase.';
+  $('lkBtn').textContent=a?'Déverrouiller':'Créer et déverrouiller';setTimeout(()=>$('lkPass').focus(),100)}
+function bump(){clearTimeout(lockTimer);if(UNLOCKED)lockTimer=setTimeout(()=>lockSet(),5*6e4)}
+['click','keydown','touchstart'].forEach(ev=>addEventListener(ev,bump,{passive:true}));
+function fillCfg(){const c=C();CFG_KEYS.forEach(k=>$(k).value=c[k]||'');$('fbUrl').value=c.fbUrl||FB_DEF.fbUrl;$('fbKey').value=c.fbKey||FB_DEF.fbKey;$('prods').value=c.prods||DEF_P;$('pth').value=c.pth||'licences.json';
+  document.querySelectorAll('#setBody .pw input').forEach(i=>{i.type='password';const b=i.nextElementSibling;b.classList.remove('on');b.textContent='👁'})}
+function clearCfgFields(){CFG_KEYS.forEach(k=>$(k).value='')}
+async function loadRules(){let t='';for(const u of ['firebase-rules.json','https://raw.githubusercontent.com/aliand0810/licences/main/firebase-rules.json']){try{const r=await fetch(u+'?t='+Date.now());if(r.ok){t=await r.text();break}}catch(e){}}
+  $('rulesTxt').textContent=t||'Impossible de charger les règles — ouvre github.com/aliand0810/licences/blob/main/firebase-rules.json'}
+async function unlockSet(){const p=$('lkPass').value,a=ADM();
+  if(!a){if(p.length<6)return failLock('6 caractères minimum');if(p!==$('lkConf').value)return failLock('Les deux mots de passe sont différents');
+    const salt=hex(crypto.getRandomValues(new Uint8Array(16)));localStorage.setItem('licAdmin',JSON.stringify({salt,hash:await passHash(p,salt)}));toast('🔒 Mot de passe créé')}
+  else if(await passHash(p,a.salt)!==a.hash)return failLock('Mot de passe incorrect');
+  UNLOCKED=true;$('setLock').hidden=true;$('setBody').hidden=false;fillCfg();loadRules();bump()}
+function failLock(m){toast(m,'ko');const c=$('setLock');c.classList.remove('shake');void c.offsetWidth;c.classList.add('shake');$('lkPass').select()}
+function lockSet(manual){UNLOCKED=false;clearTimeout(lockTimer);clearCfgFields();if($('v-set').classList.contains('on'))showLock();if(manual)toast('🔒 Réglages verrouillés')}
+async function changeSetPass(){const o=prompt('Mot de passe actuel :');if(o===null)return;const a=ADM();if(a&&await passHash(o,a.salt)!==a.hash)return toast('Mot de passe incorrect','ko');
+  const n=prompt('Nouveau mot de passe (6 caractères minimum) :');if(!n)return;if(n.length<6)return toast('6 caractères minimum','ko');if(prompt('Confirme le nouveau mot de passe :')!==n)return toast('Les mots de passe sont différents','ko');
+  const salt=hex(crypto.getRandomValues(new Uint8Array(16)));localStorage.setItem('licAdmin',JSON.stringify({salt,hash:await passHash(n,salt)}));toast('✔ Mot de passe modifié')}
+function forgotSet(){if(!confirm("Réinitialiser le mot de passe ?\n\nPar sécurité, ton token GitHub, ton secret maître et ton mot de passe Firebase seront effacés de cet appareil. Tu devras les ressaisir (le secret maître doit être EXACTEMENT le même, sinon les clés changeront).\n\nTes licences sur GitHub ne sont pas touchées."))return;
+  const c=C();delete c.tok;delete c.sec;delete c.fbPass;localStorage.setItem('licCfg',JSON.stringify(c));localStorage.removeItem('licAdmin');FBT=null;FBOK=false;renderConn();showLock();toast('Mot de passe réinitialisé — crée-en un nouveau')}
 /* ── chargement ── */
 async function load(manual){if(!C().tok){renderAll();if(manual)go('set');return}
   try{const d=(await ghGet()).data;LIC=d.licences||[];BAN=d.bannis||[];await loadFB();if(manual)toast('↻ Données actualisées')}catch(e){toast(e.message,'ko')}}
