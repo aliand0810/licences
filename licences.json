@@ -33,5 +33,15 @@
     }
   ],
   "bannis": [],
-  "firebase": "https://covo-licences-default-rtdb.europe-west1.firebasedatabase.app"
+  "firebase": "https://covo-licences-default-rtdb.europe-west1.firebasedatabase.app",
+  "configs": {
+    "Mon Planning Pro": {
+      "apiKey": "AIzaSyCzeq8EszBhsDWEFDE9mD4VUgjFqmNLF9U",
+      "authDomain": "agenda-edilians.firebaseapp.com",
+      "projectId": "agenda-edilians",
+      "storageBucket": "agenda-edilians.firebasestorage.app",
+      "messagingSenderId": "1016752950033",
+      "appId": "1:1016752950033:web:9029b2c808fd482b92dab0"
+    }
+  }
 }
