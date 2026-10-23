@@ -180,6 +180,15 @@ canvas{max-height:270px}
 .mg.no{background:var(--glass);opacity:.5}.mg.no i{color:#fda4af}
 
 /* alerts */
+.rq{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:1px solid var(--bd);border-radius:14px;background:var(--glass);margin-bottom:8px;animation:up .35s both}
+.rq.wait{border-color:rgba(124,58,237,.5);background:rgba(124,58,237,.08)}
+.rq .rqb{flex:1;min-width:0}.rq .rqb b{display:block}.rq .rqb small{display:block;color:var(--mut);font-size:.78rem;margin-top:2px;word-break:break-word}
+.rq .rqm{margin-top:6px;font-size:.84rem;white-space:pre-wrap;word-break:break-word;padding:8px 10px;border-radius:10px;background:rgba(0,0,0,.18)}
+.rq .acts2{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.rqst{display:inline-block;font-size:.68rem;font-weight:800;padding:2px 8px;border-radius:999px;margin-left:6px;vertical-align:middle}
+.rqst.attente{background:rgba(124,58,237,.25);color:#c4b5fd}.rqst.accordee{background:rgba(16,185,129,.2);color:#6ee7b7}.rqst.refusee{background:rgba(244,63,94,.2);color:#fda4af}
+.reqbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 12px;border-radius:12px;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.4);margin-bottom:12px;font-size:.88rem}
+.reqbar span{flex:1;min-width:180px}
 .al{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid rgba(244,63,94,.3);border-radius:14px;background:rgba(244,63,94,.06);margin-bottom:8px;animation:up .35s both}
 .al>div:not(.pi){flex:1;min-width:0}.al b{display:block;font-size:.88rem}.al small{font-size:.76rem;color:var(--mut)}
 .al .acts2{display:flex;gap:6px;flex-wrap:wrap}
@@ -258,6 +267,7 @@ canvas{max-height:270px}
     <button data-v="dash" class="act"><span class="ni">📊</span><span>Vue d'ensemble</span></button>
     <button data-v="acc"><span class="ni">👥</span><span>Comptes</span></button>
     <button data-v="new"><span class="ni">➕</span><span>Nouvelle licence</span></button>
+    <button data-v="req"><span class="ni">📨</span><span>Demandes</span><i class="nb" id="nbReq"></i></button>
     <button data-v="alerts"><span class="ni">⚠️</span><span>Alertes</span><i class="nb" id="nbAl"></i></button>
     <button data-v="set"><span class="ni">⚙️</span><span>Réglages</span></button>
   </nav>
@@ -299,6 +309,7 @@ canvas{max-height:270px}
   <section id="v-new" class="view">
     <div class="formgrid">
       <div class="card">
+        <div class="reqbar" id="reqBar" hidden><span id="reqTxt"></span><button class="ghost sm" onclick="cancelReqGrant()">Annuler</button></div>
         <div class="editbar" id="editBar" hidden>✏️ <span id="editTxt"></span><button class="ghost sm" onclick="newLic()">Annuler</button></div>
         <label style="margin-top:4px">E-mail du client</label><input id="mail" type="email" inputmode="email" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="client@exemple.fr" autocomplete="off">
         <label>Logiciel</label><div class="ptiles" id="ptiles"></div>
@@ -324,6 +335,13 @@ canvas{max-height:270px}
       </div>
       <aside class="card preview" id="preview"></aside>
     </div>
+  </section>
+
+  <!-- DEMANDES -->
+  <section id="v-req" class="view">
+    <div class="card"><h3>📨 Demandes de licence <button class="ghost sm" style="margin-left:auto" onclick="loadReq().then(()=>toast('↻ Demandes actualisées'))">↻ Actualiser</button></h3>
+      <p class="hint">Les clients font leur demande depuis l'écran de licence de tes logiciels. « Accorder » ouvre la création de licence : à la génération, la clé est envoyée et activée automatiquement sur l'appareil du client.</p>
+      <div id="reqList"></div></div>
   </section>
 
   <!-- ALERTES -->
@@ -403,7 +421,7 @@ function MODS(){try{return C().mods?JSON.parse(C().mods):DEF_MODS}catch(e){retur
 const pm=p=>PMETA[p]||['📦',PAL[Math.max(0,prods().indexOf(p))%PAL.length]];
 
 /* ── navigation ── */
-const TITLES={dash:["Vue d'ensemble","Tes licences et tes clients en un coup d'œil"],acc:['Comptes clients','Chaque client, ses licences, ses appareils et ses modules'],new:['Nouvelle licence','Crée ou modifie une licence en quelques secondes'],alerts:['Licences en trop','Appareils refusés car la limite est atteinte'],set:['Réglages','Connexions GitHub et Firebase']};
+const TITLES={dash:["Vue d'ensemble","Tes licences et tes clients en un coup d'œil"],acc:['Comptes clients','Chaque client, ses licences, ses appareils et ses modules'],new:['Nouvelle licence','Crée ou modifie une licence en quelques secondes'],alerts:['Licences en trop','Appareils refusés car la limite est atteinte'],req:['Demandes','Demandes de licence envoyées par tes clients'],set:['Réglages','Connexions GitHub et Firebase']};
 function go(v){if(v!=='set'&&UNLOCKED)lockSet();if(v==='set'&&!UNLOCKED)showLock();document.querySelectorAll('.view').forEach(x=>x.classList.toggle('on',x.id==='v-'+v));
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('act',b.dataset.v===v));
   $('vTitle').textContent=TITLES[v][0];$('vSub').textContent=TITLES[v][1];
@@ -575,7 +593,7 @@ function updPrev(){const[ic,col]=pm(PROD),m=getMods(),e=expiry(),mail=$('mail').
    ${EDIT?'<div class="pv-r"><span>Clé</span><b>inchangée</b></div>':''}`}
 $('mail').addEventListener('input',updPrev);
 $('mail').addEventListener('change',()=>{if(EDIT)return;const l=LIC.find(x=>x.email===norm($('mail').value)&&x.produit===PROD);if(l)toast('Ce client a déjà une licence '+PROD+' : elle sera mise à jour (même clé)')});
-function newLic(){EDIT=null;KEEP=false;$('editBar').hidden=true;$('durKeep').hidden=true;$('mail').value='';$('mail').disabled=false;$('durV').value=0;$('durU').value='j';
+function newLic(){EDIT=null;KEEP=false;REQP=null;if($('reqBar'))$('reqBar').hidden=true;$('editBar').hidden=true;$('durKeep').hidden=true;$('mail').value='';$('mail').disabled=false;$('durV').value=0;$('durU').value='j';
   $('kb').classList.remove('show');pickProd(PROD||prods()[0]);setDev(0);updExp();$('gen').textContent='Générer la licence';closeDrawer();go('new')}
 function editLic(id){const l=LIC.find(x=>x.id===id);if(!l)return;EDIT=id;KEEP=true;closeDrawer();
   $('editBar').hidden=false;$('editTxt').textContent='Modification de '+l.produit+' — '+l.email;$('durKeep').hidden=false;
@@ -598,7 +616,7 @@ async function generate(){const mail=norm($('mail').value),prod=PROD,mods=getMod
   if(BAN.includes(mail))return toast('🚫 Adresse bannie — débannis-la d\'abord','ko');
   const b=$('gen'),txt=b.textContent;b.classList.add('load');b.textContent='Enregistrement…';
   try{const e=expiry(),r=await saveLic({mail,prod,mods,maxDev:DEVN,expire:e?e.toISOString():null});
-    $('kb').classList.remove('show');void $('kb').offsetWidth;$('kb').classList.add('show');reveal(r.key);
+    $('kb').classList.remove('show');void $('kb').offsetWidth;$('kb').classList.add('show');reveal(r.key);if(REQP)injectReq(r.key);
     toast(r.updated?'✔ Licence mise à jour':'✔ Licence créée et sauvegardée');if(navigator.vibrate)navigator.vibrate(30);$('kb').scrollIntoView({behavior:'smooth',block:'center'});if(EDIT){EDIT=null;$('editBar').hidden=true;$('durKeep').hidden=true;$('mail').disabled=false;KEEP=false}
   }catch(e){toast(e.message,'ko')}
   b.classList.remove('load');b.textContent=EDIT?txt:'Générer la licence'}
@@ -656,6 +674,42 @@ async function saveAppCfg(){if(!UNLOCKED)return showLock();const p=$('acProd').v
   try{const{data,sha:s}=await ghGet();data.configs={...(data.configs||{}),[p]:cfg};await ghPut(data,s,'Configuration Firebase '+p);APPCFG=data.configs;renderAppCfg();toast('✔ Configuration enregistrée pour '+p)}catch(e){toast(e.message,'ko')}}
 async function delAppCfg(){if(!UNLOCKED)return showLock();const p=$('acProd').value;if(!APPCFG[p]||!confirm('Retirer la configuration Firebase de '+p+' ?\n\nLes appareils déjà reliés restent reliés.'))return;
   try{const{data,sha:s}=await ghGet();data.configs={...(data.configs||{})};delete data.configs[p];await ghPut(data,s,'Retrait configuration Firebase '+p);APPCFG=data.configs;renderAppCfg();toast('Configuration retirée')}catch(e){toast(e.message,'ko')}}
+
+/* ── Demandes de licence en ligne (Firebase « requests ») ── */
+let REQ=[],REQP=null,REQ_ERR='';
+async function loadReq(){REQ_ERR='';
+  try{const t=await fbTok();const r=await fetch(`${FB()}/requests.json?auth=${t}&t=${Date.now()}`);
+    if(r.status===401)throw new Error('Règles Firebase à republier (nœud « requests »)');if(!r.ok)throw new Error('Firebase '+r.status);
+    const j=await r.json()||{};REQ=Object.entries(j).map(([rid,v])=>({rid,...v})).sort((a,b)=>(a.statut==='attente'?0:1)-(b.statut==='attente'?0:1)||b.t-a.t)}
+  catch(e){REQ_ERR=e.message}
+  renderReq()}
+function renderReq(){const n=REQ.filter(r=>r.statut==='attente').length;if($('nbReq'))$('nbReq').textContent=n||'';
+  if(!$('reqList'))return;
+  if(REQ_ERR){$('reqList').innerHTML=`<div class="al" style="border-color:rgba(245,158,11,.45);background:rgba(245,158,11,.08)"><div class="pi" style="--pc:#f59e0b">🔥</div><div><b>Demandes indisponibles</b><small>${esc(REQ_ERR)}. Vérifie ton compte admin Firebase dans Réglages et publie le contenu de firebase-rules.json dans Firebase → Realtime Database → Règles.</small></div></div>`;return}
+  $('reqList').innerHTML=REQ.length?REQ.map((r,i)=>{const[ic,col]=pm(r.produit),u=shortUA(r.ua||'');const lbl={attente:'En attente',accordee:'Accordée',refusee:'Refusée'}[r.statut]||r.statut;
+    const deja=LIC.find(l=>l.email===norm(r.email)&&l.produit===r.produit);
+    return `<div class="rq ${r.statut==='attente'?'wait':''}" style="animation-delay:${i*.03}s"><div class="pi" style="--pc:${col}">${ic}</div><div class="rqb">
+      <b>${esc(r.nom||'—')} · ${esc(r.produit)}${r.module?' · '+esc(r.module):''}<span class="rqst ${esc(r.statut)}">${esc(lbl)}</span></b>
+      <small>✉️ ${esc(r.email)}${r.tel?' · 📞 '+esc(r.tel):''} · reçue le ${fmtD(new Date(r.t))}</small>
+      <small>${u.ic} ${esc(u.txt)}${r.page?' · '+esc(r.page.replace(/^https?:\/\//,'')):''}</small>
+      ${r.message?`<div class="rqm">${esc(r.message)}</div>`:''}
+      ${deja&&r.statut==='attente'?`<small style="color:#fbbf24">⚠️ Ce client a déjà une licence ${esc(r.produit)} — l'accorder la mettra à jour (même clé).</small>`:''}
+      ${r.statut==='accordee'?`<small>✅ Licence injectée le ${fmtD(new Date(r.traite||r.t))}</small>`:''}
+      ${r.statut==='refusee'&&r.motif?`<small>Motif : ${esc(r.motif)}</small>`:''}
+      <div class="acts2">${r.statut==='attente'?`<button class="btn sm" onclick="grantReq('${r.rid}')">✅ Accorder</button><button class="ghost sm" onclick="refuseReq('${r.rid}')">❌ Refuser</button>`:''}
+        <button class="ghost sm" onclick="delReq('${r.rid}')">🗑️ Supprimer</button></div>
+    </div></div>`}).join(''):'<div class="empty">📭 Aucune demande pour le moment</div>'}
+function grantReq(rid){const r=REQ.find(x=>x.rid===rid);if(!r)return;newLic();REQP=rid;
+  $('mail').value=norm(r.email);if(prods().includes(r.produit))pickProd(r.produit);else{PROD=r.produit;renderTiles()}
+  $('reqBar').hidden=false;$('reqTxt').innerHTML=`📨 Demande de <b>${esc(r.nom||r.email)}</b> — choisis la durée et le nombre d'appareils, puis « Générer » : la licence sera <b>injectée automatiquement</b> sur son appareil.`;
+  updExp&&updExp();toast('Configure la licence puis génère-la')}
+function cancelReqGrant(){REQP=null;$('reqBar').hidden=true}
+async function injectReq(key){const rid=REQP;REQP=null;$('reqBar').hidden=true;const r=REQ.find(x=>x.rid===rid);if(!r)return;
+  try{const{rid:_,...v}=r;await fbPut('requests/'+rid,{...v,email:norm($('mail').value)||v.email,produit:PROD,statut:'accordee',cle:key,traite:Date.now()});toast('📲 Licence injectée — elle s\'active toute seule chez le client');await loadReq()}
+  catch(e){toast('Licence créée mais injection impossible : '+e.message,'ko')}}
+async function refuseReq(rid){const r=REQ.find(x=>x.rid===rid);if(!r)return;const motif=prompt('Refuser la demande de '+(r.nom||r.email)+' ?\n\nMotif (facultatif, affiché au client) :','');if(motif===null)return;
+  try{const{rid:_,...v}=r;await fbPut('requests/'+rid,{...v,statut:'refusee',motif:motif.slice(0,200),traite:Date.now()});toast('Demande refusée');await loadReq()}catch(e){toast(e.message,'ko')}}
+async function delReq(rid){if(!confirm('Supprimer cette demande ?'))return;try{await fbPut('requests/'+rid,null);await loadReq();toast('Demande supprimée')}catch(e){toast(e.message,'ko')}}
 let UNLOCKED=false,lockTimer=null;
 const ADM=()=>{try{return JSON.parse(localStorage.getItem('licAdmin')||'null')}catch(e){return null}};
 async function passHash(p,salt){return sha(salt+'|'+p)}
@@ -685,7 +739,8 @@ function forgotSet(){if(!confirm("Réinitialiser le mot de passe ?\n\nPar sécur
   const c=C();delete c.tok;delete c.sec;delete c.fbPass;localStorage.setItem('licCfg',JSON.stringify(c));localStorage.removeItem('licAdmin');FBT=null;FBOK=false;renderConn();showLock();toast('Mot de passe réinitialisé — crée-en un nouveau')}
 /* ── chargement ── */
 async function load(manual){if(!C().tok){renderAll();if(manual)go('set');return}
-  try{const d=(await ghGet()).data;LIC=d.licences||[];BAN=d.bannis||[];await loadFB();if(manual)toast('↻ Données actualisées')}catch(e){toast(e.message,'ko')}}
+  try{const d=(await ghGet()).data;LIC=d.licences||[];BAN=d.bannis||[];await loadFB();if(manual)toast('↻ Données actualisées')}catch(e){toast(e.message,'ko')}
+  if(C().fbMail&&C().fbPass)loadReq()}
 
 /* ── PWA ── */
 let instEvt=null;addEventListener('beforeinstallprompt',e=>{e.preventDefault();instEvt=e;$('instBtn').hidden=false});
