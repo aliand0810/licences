@@ -12,7 +12,8 @@
 
   // Renvoie {ok, expire, msg}
   async function verif(mail,key){
-    mail=mail.trim().toLowerCase();key=key.trim().toUpperCase();
+    mail=String(mail||'').trim().toLowerCase();key=String(key||'').trim().toUpperCase();
+    if(!mail||!key)return{ok:false,msg:''};
     try{
       const d=await (await fetch(SRC+'?t='+Date.now(),{cache:'no-store'})).json();
       if((d.bannis||[]).includes(mail))return{ok:false,msg:'Accès interdit pour cette adresse'};
@@ -84,7 +85,61 @@
   addEventListener('focus',()=>recheck(true));
   addEventListener('online',()=>recheck(true));
 
-  function lock(msg){
+
+  // ── Demande de licence en ligne (Firebase « requests ») + réception automatique ──
+  const FB_DEF='https://covo-licences-default-rtdb.europe-west1.firebasedatabase.app';
+  const RKEY='licReq_'+PRODUIT;
+  const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  let fbBase=null,pollT=null;
+  async function fbUrl(){if(fbBase)return fbBase;try{const d=await (await fetch(SRC+'?t='+Date.now(),{cache:'no-store'})).json();fbBase=(d.firebase||FB_DEF).replace(/\/+$/,'')}catch(e){fbBase=FB_DEF}return fbBase}
+  const getReq=()=>{try{return JSON.parse(localStorage.getItem(RKEY)||'null')}catch(e){return null}};
+  const inp='width:100%;padding:12px;margin-bottom:8px;box-sizing:border-box;border-radius:10px;border:1px solid #334155;background:#0b1220;color:#fff;font-family:inherit';
+  const btn='width:100%;margin-top:6px;padding:13px;background:linear-gradient(135deg,#7c3aed,#06b6d4);color:#fff;border:0;border-radius:10px;font-weight:700;cursor:pointer';
+  const lnk='display:block;margin:12px auto 0;background:none;border:0;color:#93c5fd;cursor:pointer;font-size:.86rem;text-decoration:underline';
+  function box(html){if(!overlay)return;overlay.firstElementChild.innerHTML=`<div style="font-size:2rem">🔑</div><h2 style="margin:8px 0 4px">${esc(PRODUIT)}${MODULE?' · '+esc(MODULE):''}</h2>`+html}
+  function showRequestForm(err){clearInterval(pollT);const s=get();
+    box(`<p style="color:#8b93b0;margin:0 0 14px;font-size:.9rem">Demandez votre licence : elle sera installée automatiquement sur cet appareil dès qu'elle sera accordée.</p>
+      <input id="rn" placeholder="Nom et prénom" maxlength="80" style="${inp}">
+      <input id="rm" type="email" placeholder="E-mail" maxlength="120" style="${inp}" value="${esc(s.mail||'')}">
+      <input id="rt" type="tel" placeholder="Téléphone (facultatif)" maxlength="30" style="${inp}">
+      <textarea id="rx" rows="3" maxlength="1000" placeholder="Message (entreprise, besoin, nombre d'appareils…)" style="${inp};resize:vertical"></textarea>
+      <button id="rs" style="${btn}">Envoyer la demande</button>
+      <div id="re" style="color:#fda4af;margin-top:10px;font-size:.88rem">${esc(err||'')}</div>
+      <button id="rb" style="${lnk}">J'ai déjà une clé de licence</button>`);
+    overlay.querySelector('#rb').onclick=()=>{overlay.remove();overlay=null;lock()};
+    overlay.querySelector('#rs').onclick=async()=>{const nom=overlay.querySelector('#rn').value.trim(),mail=overlay.querySelector('#rm').value.trim().toLowerCase(),tel=overlay.querySelector('#rt').value.trim(),msg=overlay.querySelector('#rx').value.trim(),b=overlay.querySelector('#rs'),e=overlay.querySelector('#re');
+      if(!nom)return e.textContent='Indiquez votre nom';if(!/^\S+@\S+\.\S+$/.test(mail))return e.textContent='E-mail invalide';
+      b.textContent='Envoi…';b.disabled=true;
+      const rid=[...crypto.getRandomValues(new Uint8Array(16))].map(x=>x.toString(16).padStart(2,'0')).join('');
+      const body={nom,email:mail,produit:PRODUIT,t:Date.now(),statut:'attente',ua:UA(),page:location.origin+location.pathname};if(tel)body.tel=tel;if(msg)body.message=msg;if(MODULE)body.module=MODULE;
+      try{const r=await fetch(`${await fbUrl()}/requests/${rid}.json`,{method:'PUT',body:JSON.stringify(body)});if(!r.ok)throw new Error(r.status);
+        localStorage.setItem(RKEY,JSON.stringify({rid,mail,t:body.t}));showWaiting()}
+      catch(x){b.textContent='Envoyer la demande';b.disabled=false;e.textContent='Envoi impossible ('+(x.message||'réseau')+'). Réessayez plus tard.'}};
+  }
+  function showWaiting(info){const q=getReq();if(!q)return showRequestForm();
+    box(`<div style="margin:6px 0 14px;padding:14px;border-radius:12px;background:rgba(124,58,237,.12);border:1px solid rgba(124,58,237,.35)">
+        <div style="font-weight:700">⏳ Demande envoyée</div>
+        <div style="color:#8b93b0;font-size:.86rem;margin-top:4px">le ${new Date(q.t).toLocaleString('fr-FR')} pour <b style="color:#eef2ff">${esc(q.mail)}</b>.<br>Dès qu'elle sera accordée, votre licence s'installera automatiquement : laissez cette page ouverte ou revenez plus tard.</div></div>
+      <div id="rw" style="color:#8b93b0;font-size:.82rem">${esc(info||'Vérification en cours…')}</div>
+      <button id="rk" style="${lnk}">J'ai déjà une clé de licence</button>
+      <button id="rc" style="${lnk};color:#fda4af">Annuler la demande</button>`);
+    overlay.querySelector('#rk').onclick=()=>{clearInterval(pollT);overlay.remove();overlay=null;lock(null,true)};
+    overlay.querySelector('#rc').onclick=()=>{if(!confirm('Annuler cette demande ?'))return;localStorage.removeItem(RKEY);showRequestForm()};
+    clearInterval(pollT);pollReq();pollT=setInterval(pollReq,10000);
+  }
+  async function pollReq(){const q=getReq();if(!q||!overlay)return clearInterval(pollT);const w=overlay.querySelector('#rw');
+    try{const r=await (await fetch(`${await fbUrl()}/requests/${q.rid}.json?t=${Date.now()}`,{cache:'no-store'})).json();
+      if(!r){localStorage.removeItem(RKEY);clearInterval(pollT);return showRequestForm('Votre demande a été clôturée. Vous pouvez en envoyer une nouvelle.')}
+      if(r.statut==='refusee'){localStorage.removeItem(RKEY);clearInterval(pollT);return showRequestForm('Votre demande a été refusée'+(r.motif?' : '+r.motif:'.')+' Vous pouvez contacter le vendeur.')}
+      if(r.statut==='accordee'&&r.cle){clearInterval(pollT);if(w)w.textContent='✅ Licence accordée — installation…';
+        const v=await verif(r.email||q.mail,r.cle);
+        if(v.ok){save(r.email||q.mail,r.cle,v.expire);localStorage.removeItem(RKEY);overlay.remove();overlay=null;watch(v.expire);
+          const t=document.createElement('div');t.textContent='✅ Licence '+PRODUIT+' activée';t.style.cssText='position:fixed;left:50%;top:18px;transform:translateX(-50%);z-index:2147483647;background:#10b981;color:#fff;padding:12px 18px;border-radius:12px;font:600 14px system-ui;box-shadow:0 8px 24px rgba(0,0,0,.3)';document.body.appendChild(t);setTimeout(()=>t.remove(),4000);return}
+        return showWaiting('Licence reçue mais non validée : '+v.msg)}
+      if(w)w.textContent='Toujours en attente — dernière vérification à '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    }catch(e){if(w)w.textContent='Hors ligne — nouvelle tentative dans quelques secondes'}
+  }
+  function lock(msg,skipReq){
     clearInterval(timer);if(overlay)return;
     overlay=document.createElement('div');
     overlay.style.cssText='position:fixed;inset:0;z-index:2147483647;background:rgba(7,11,22,.97);display:flex;align-items:center;justify-content:center;font-family:system-ui,sans-serif';
@@ -94,9 +149,12 @@
       <input id="lm" type="email" placeholder="E-mail" style="width:100%;padding:12px;margin-bottom:8px;box-sizing:border-box;border-radius:10px;border:1px solid #334155;background:#0b1220;color:#fff">
       <input id="lk" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX" style="width:100%;padding:12px;box-sizing:border-box;border-radius:10px;border:1px solid #334155;background:#0b1220;color:#fff;font-family:monospace">
       <button id="lb" style="width:100%;margin-top:14px;padding:13px;background:linear-gradient(135deg,#7c3aed,#06b6d4);color:#fff;border:0;border-radius:10px;font-weight:700;cursor:pointer">Activer</button>
-      <div id="le" style="color:#fda4af;margin-top:10px;font-size:.88rem">${msg||''}</div></div>`;
+      <div id="le" style="color:#fda4af;margin-top:10px;font-size:.88rem">${msg||''}</div>
+      <button id="lr" style="display:block;margin:14px auto 0;background:none;border:0;color:#93c5fd;cursor:pointer;font-size:.86rem;text-decoration:underline">Pas encore de licence ? Faire une demande en ligne</button></div>`;
     (document.body||document.documentElement).appendChild(overlay);
     const s=get();if(s.mail)overlay.querySelector('#lm').value=s.mail;
+    overlay.querySelector('#lr').onclick=()=>showRequestForm();
+    if(!skipReq&&getReq())return showWaiting();
     overlay.querySelector('#lb').onclick=async()=>{
       const m=overlay.querySelector('#lm').value,k=overlay.querySelector('#lk').value,b=overlay.querySelector('#lb');
       b.textContent='Vérification…';Object.keys(localStorage).filter(x=>x.startsWith('licSlot_')).forEach(x=>localStorage.removeItem(x));const r=await verif(m,k);b.textContent='Activer';
