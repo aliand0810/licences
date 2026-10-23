@@ -20,6 +20,9 @@
       ],
       "maxDevices": 5,
       "onglets": [
+        "catalogue",
+        "stats",
+        "predictions",
         "gestionhub",
         "historique",
         "clotures",
