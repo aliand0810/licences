@@ -29,7 +29,7 @@
       "expire": null,
       "actif": true,
       "modules": null,
-      "maxDevices": 1
+      "maxDevices": null
     }
   ],
   "bannis": [],
