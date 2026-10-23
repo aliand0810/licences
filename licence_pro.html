@@ -364,6 +364,14 @@ canvas{max-height:270px}
         <p class="hint">Règles à coller dans Firebase → Realtime Database → Règles, puis « Publier ».</p>
         <pre class="rules" id="rulesTxt">Chargement…</pre>
       </div>
+      <div class="card" style="grid-column:1/-1"><h3>🔗 Connexion des applications (Firebase)</h3>
+        <p class="hint">Enregistre ici l'objet <code>firebaseConfig</code> de chaque logiciel. Une fois la licence activée, l'application se relie toute seule à son projet Firebase : plus besoin de coller la configuration sur chaque appareil.</p>
+        <label style="margin-top:0">Logiciel</label><select id="acProd" onchange="renderAppCfg()" style="width:100%"></select>
+        <div id="acStatus" class="hint" style="margin:8px 0"></div>
+        <label>Configuration Firebase (Console Firebase › Paramètres du projet › Général › Vos applications)</label>
+        <textarea id="acTxt" rows="7" spellcheck="false" placeholder="const firebaseConfig = {&#10;  apiKey: &quot;AIza…&quot;,&#10;  authDomain: &quot;…&quot;,&#10;  projectId: &quot;…&quot;,&#10;  …&#10;};" style="width:100%;box-sizing:border-box;font-family:monospace;font-size:.8rem;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.25);color:inherit;resize:vertical"></textarea>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn" style="flex:2" onclick="saveAppCfg()">💾 Enregistrer dans les licences</button><button class="ghost" style="flex:1" onclick="delAppCfg()">🗑️ Retirer</button></div>
+      </div>
       <div class="card" style="grid-column:1/-1"><h3>🔒 Sécurité</h3>
         <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="ghost" onclick="changeSetPass()">🔑 Changer le mot de passe</button><button class="ghost" onclick="lockSet(true)">🔒 Verrouiller maintenant</button></div>
         <p class="hint" style="margin-top:10px">Les réglages se verrouillent automatiquement quand tu quittes cet onglet ou après 5 minutes d'inactivité.</p>
@@ -628,6 +636,26 @@ async function saveCfg(){if(!UNLOCKED)return showLock();const c={...C()};CFG_KEY
 
 
 /* ── verrou des réglages ── */
+
+/* ── Configurations Firebase des applications (data.configs[produit]) ── */
+let APPCFG={};
+function parseFbCfg(txt){const m=String(txt||'').match(/\{[\s\S]*\}/);if(!m)throw new Error('Objet firebaseConfig introuvable');
+  if(/serviceAccount|credential|private_key/.test(txt))throw new Error('Ce n\'est pas le bon code (Admin SDK). Prends celui de l\'onglet Général › Vos applications');
+  const b=m[0].replace(/\/\/[^\n]*/g,'').replace(/([{,]\s*)([A-Za-z_$][\w$]*)\s*:/g,'$1"$2":').replace(/'/g,'"').replace(/,\s*}/g,'}');
+  let c;try{c=JSON.parse(b)}catch(e){throw new Error('Format non reconnu')}
+  if(!c.apiKey||!c.projectId||!c.authDomain)throw new Error('apiKey, authDomain et projectId sont obligatoires');
+  return{apiKey:c.apiKey,authDomain:c.authDomain,projectId:c.projectId,storageBucket:c.storageBucket||'',messagingSenderId:c.messagingSenderId||'',appId:c.appId||''}}
+async function loadAppCfg(){try{const{data}=await ghGet();APPCFG=data.configs||{}}catch(e){APPCFG={}}
+  const sel=$('acProd');if(sel){const v=sel.value;sel.innerHTML=prods().map(p=>`<option value="${esc(p)}">${pm(p)[0]} ${esc(p)}</option>`).join('');if(v)sel.value=v;else if(prods().includes('Mon Planning Pro'))sel.value='Mon Planning Pro'}
+  renderAppCfg()}
+function renderAppCfg(){const p=$('acProd')&&$('acProd').value,c=APPCFG[p];if(!$('acStatus'))return;
+  $('acStatus').innerHTML=c?`✅ Configurée — projet <b>${esc(c.projectId)}</b>`:'⚪ Aucune configuration pour ce logiciel';
+  $('acTxt').value=c?'const firebaseConfig = '+JSON.stringify(c,null,2)+';':''}
+async function saveAppCfg(){if(!UNLOCKED)return showLock();const p=$('acProd').value;let cfg;
+  try{cfg=parseFbCfg($('acTxt').value)}catch(e){return toast(e.message,'ko')}
+  try{const{data,sha:s}=await ghGet();data.configs={...(data.configs||{}),[p]:cfg};await ghPut(data,s,'Configuration Firebase '+p);APPCFG=data.configs;renderAppCfg();toast('✔ Configuration enregistrée pour '+p)}catch(e){toast(e.message,'ko')}}
+async function delAppCfg(){if(!UNLOCKED)return showLock();const p=$('acProd').value;if(!APPCFG[p]||!confirm('Retirer la configuration Firebase de '+p+' ?\n\nLes appareils déjà reliés restent reliés.'))return;
+  try{const{data,sha:s}=await ghGet();data.configs={...(data.configs||{})};delete data.configs[p];await ghPut(data,s,'Retrait configuration Firebase '+p);APPCFG=data.configs;renderAppCfg();toast('Configuration retirée')}catch(e){toast(e.message,'ko')}}
 let UNLOCKED=false,lockTimer=null;
 const ADM=()=>{try{return JSON.parse(localStorage.getItem('licAdmin')||'null')}catch(e){return null}};
 async function passHash(p,salt){return sha(salt+'|'+p)}
@@ -647,7 +675,7 @@ async function unlockSet(){const p=$('lkPass').value,a=ADM();
   if(!a){if(p.length<6)return failLock('6 caractères minimum');if(p!==$('lkConf').value)return failLock('Les deux mots de passe sont différents');
     const salt=hex(crypto.getRandomValues(new Uint8Array(16)));localStorage.setItem('licAdmin',JSON.stringify({salt,hash:await passHash(p,salt)}));toast('🔒 Mot de passe créé')}
   else if(await passHash(p,a.salt)!==a.hash)return failLock('Mot de passe incorrect');
-  UNLOCKED=true;$('setLock').hidden=true;$('setBody').hidden=false;fillCfg();loadRules();bump()}
+  UNLOCKED=true;$('setLock').hidden=true;$('setBody').hidden=false;fillCfg();loadRules();loadAppCfg();bump()}
 function failLock(m){toast(m,'ko');const c=$('setLock');c.classList.remove('shake');void c.offsetWidth;c.classList.add('shake');$('lkPass').select()}
 function lockSet(manual){UNLOCKED=false;clearTimeout(lockTimer);clearCfgFields();if($('v-set').classList.contains('on'))showLock();if(manual)toast('🔒 Réglages verrouillés')}
 async function changeSetPass(){const o=prompt('Mot de passe actuel :');if(o===null)return;const a=ADM();if(a&&await passHash(o,a.salt)!==a.hash)return toast('Mot de passe incorrect','ko');
