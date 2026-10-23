@@ -131,6 +131,14 @@ canvas{max-height:270px}
 .mods label:has(input:checked){background:rgba(124,58,237,.2);border-color:#7c3aed}
 .mods label:has(input:not(:checked)){opacity:.45}
 .mods label i{margin-left:auto;font-style:normal;font-size:.75rem}
+.mods label.lk{opacity:.35!important;cursor:not-allowed;background:rgba(0,0,0,.2)!important;border-color:var(--bd)!important}
+.mods label small{display:block;font-size:.66rem;color:var(--mut);font-weight:600;white-space:normal;line-height:1.2}
+.mods label .tl{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.gbx{margin-top:18px;padding:14px;border:1px solid rgba(6,182,212,.35);border-radius:14px;background:rgba(6,182,212,.06)}
+.gbx>label:first-of-type{margin-top:0}
+.gbx .gh{display:flex;align-items:center;gap:8px;font-weight:700;font-size:.92rem;margin-bottom:4px}
+.gbx .gh small{margin-left:auto;font-size:.7rem;color:var(--mut);font-weight:600}
+.gst{font-size:.76rem;color:var(--mut);margin-top:6px}.gst.ok{color:#6ee7b7}.gst.ko{color:#fda4af}
 .dur2{display:grid;grid-template-columns:1fr 1.3fr;gap:8px;margin-top:8px}
 .exp{margin-top:8px;font-size:.8rem;color:var(--a2)}
 .devPick{display:flex;align-items:center;gap:10px;background:rgba(0,0,0,.3);border:1px solid var(--bd);border-radius:14px;padding:8px}
@@ -318,6 +326,20 @@ canvas{max-height:270px}
           <p class="hint">Chaque satellite utilise la licence <b id="modParent"></b> : il n'est accessible que s'il est coché ici, et partage la même limite d'appareils.</p>
           <div class="mods" id="mods"></div>
         </div>
+        <div id="tabBox" hidden>
+          <label class="lrow">Onglets de la plateforme <b id="tabParent" style="text-transform:none;letter-spacing:0;color:var(--txt);margin-left:4px"></b> <span><a href="#" onclick="setTabs(1);return false">tout</a> · <a href="#" onclick="setTabs(0);return false">rien</a></span></label>
+          <p class="hint">Décoche un onglet pour le <b>désactiver chez ce client</b> : il disparaît du menu et ne peut plus s'ouvrir (même pour l'administrateur). « Produits » et la caisse restent toujours disponibles. Un onglet relié à un module satellite décoché ci-dessus est désactivé d'office.</p>
+          <div class="mods" id="tabs"></div>
+        </div>
+        <div class="gbx" id="gBox">
+          <div class="gh">☁️ Google Drive <small>injecté automatiquement à l'activation</small></div>
+          <label>Client ID Google (partagé avec COVO Pro et ses satellites)</label>
+          <input id="gCid" autocomplete="off" spellcheck="false" placeholder="123456-abc.apps.googleusercontent.com" oninput="updPrev()">
+          <label>Adresse e-mail du compte Google associé</label>
+          <input id="gMail" type="email" inputmode="email" autocapitalize="off" autocorrect="off" spellcheck="false" autocomplete="off" placeholder="compte@gmail.com" oninput="updPrev()">
+          <div class="gst" id="gSt"></div>
+          <p class="hint" style="margin:8px 0 0">Plus besoin de saisir le Client ID sur chaque appareil : il est installé dans COVO Pro et dans tous ses satellites dès que la licence est validée. L'adresse e-mail est proposée d'office lors de la connexion à Google Drive. <a href="#" onclick="gUseClient();return false">Utiliser l'e-mail du client</a></p>
+        </div>
         <label>Durée</label>
         <div class="seg" id="dur"><button data-v="keep" id="durKeep" hidden>Conserver</button><button data-v="0" data-u="j">∞</button><button data-v="30" data-u="min">30 min</button><button data-v="1" data-u="h">1 h</button><button data-v="24" data-u="h">24 h</button><button data-v="1" data-u="sem">1 sem</button><button data-v="1" data-u="mois">1 mois</button><button data-v="1" data-u="an">1 an</button></div>
         <div class="dur2"><input id="durV" type="number" min="0" value="0"><select id="durU"><option value="min">Minutes</option><option value="h">Heures</option><option value="j" selected>Jours</option><option value="sem">Semaines</option><option value="mois">Mois</option><option value="an">Années</option></select></div>
@@ -383,12 +405,19 @@ canvas{max-height:270px}
         <pre class="rules" id="rulesTxt">Chargement…</pre>
       </div>
       <div class="card" style="grid-column:1/-1"><h3>🔗 Connexion des applications (Firebase)</h3>
-        <p class="hint">Enregistre ici l'objet <code>firebaseConfig</code> de chaque logiciel. Une fois la licence activée, l'application se relie toute seule à son projet Firebase : plus besoin de coller la configuration sur chaque appareil.</p>
+        <p class="hint">Enregistre ici l'objet <code>firebaseConfig</code> et le Client ID Google de chaque logiciel. Une fois la licence activée, l'application se relie toute seule à son projet Firebase : plus besoin de coller la configuration sur chaque appareil.</p>
         <label style="margin-top:0">Logiciel</label><select id="acProd" onchange="renderAppCfg()" style="width:100%"></select>
         <div id="acStatus" class="hint" style="margin:8px 0"></div>
         <label>Configuration Firebase (Console Firebase › Paramètres du projet › Général › Vos applications)</label>
         <textarea id="acTxt" rows="7" spellcheck="false" placeholder="const firebaseConfig = {&#10;  apiKey: &quot;AIza…&quot;,&#10;  authDomain: &quot;…&quot;,&#10;  projectId: &quot;…&quot;,&#10;  …&#10;};" style="width:100%;box-sizing:border-box;font-family:monospace;font-size:.8rem;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.25);color:inherit;resize:vertical"></textarea>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn" style="flex:2" onclick="saveAppCfg()">💾 Enregistrer dans les licences</button><button class="ghost" style="flex:1" onclick="delAppCfg()">🗑️ Retirer</button></div>
+        <div class="gbx" style="margin-top:16px">
+          <div class="gh">☁️ Client ID Google par défaut <small id="agFor"></small></div>
+          <p class="hint" style="margin:0 0 6px">Utilisé pour toutes les licences de ce logiciel dont le champ « Client ID Google » est vide. Le changer ici met à jour tous tes clients à leur prochaine ouverture.</p>
+          <input id="agCid" autocomplete="off" spellcheck="false" placeholder="123456-abc.apps.googleusercontent.com">
+          <div class="gst" id="agSt"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn" style="flex:2" onclick="saveGDef()">💾 Enregistrer le Client ID</button><button class="ghost" style="flex:1" onclick="delGDef()">🗑️ Retirer</button></div>
+        </div>
       </div>
       <div class="card" style="grid-column:1/-1"><h3>🔒 Sécurité</h3>
         <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="ghost" onclick="changeSetPass()">🔑 Changer le mot de passe</button><button class="ghost" onclick="lockSet(true)">🔒 Verrouiller maintenant</button></div>
@@ -412,6 +441,11 @@ const PAL=['#7c3aed','#06b6d4','#10b981','#f59e0b','#f43f5e','#3b82f6','#ec4899'
 const PMETA={'COVO Pro':['🛒','#7c3aed'],'Gestion Terrain Pro':['🗺️','#10b981'],'LivraPro':['🚚','#f59e0b'],'Mon Planning Pro':['📅','#3b82f6'],'Onda Player':['📺','#ec4899'],'Bureau Virtuel Pro':['🖥️','#06b6d4']};
 const MICON={'Caisse':'💳','Gestion':'📦','Investissement':'📈','Finances':'💰','Historique':'🕘','Clôtures':'🔒','Fidélité':'🎁','Admin':'🛡️'};
 const DEF_MODS={'COVO Pro':['Caisse','Gestion','Investissement','Finances','Historique','Clôtures','Fidélité','Admin']};
+/* Onglets de la plateforme désactivables par licence : [clé, icône, nom, détail, module satellite lié] */
+const TABS_DEF={'COVO Pro':[['catalogue','🗂️','Catalogue','Rayons, prix, site web'],['stats','📊','Statistiques','Ventes et graphiques'],['predictions','☂️','Prédictions','Prévisions et ruptures'],['retours','📦','Gestion','Retours · Stocks · Achats'],
+  ['gestionhub','⚙️','Gestion Pro','Heures · Inventaire · Stock','Gestion'],['historique','🧾','Historique','Tickets de caisse','Historique'],['clotures','🗓️','Clôtures','Fins de journée','Clôtures'],['paiements','💸','Paiements','Paie et finances','Finances']]};
+let GDEF={};
+const GCID_RE=/^[\w.-]+\.apps\.googleusercontent\.com$/i;
 const C=()=>{try{return JSON.parse(localStorage.getItem('licCfg')||'{}')}catch(e){return{}}};
 let LIC=[],BAN=[],DEV={},EXC={},EXCN=0,FILTER='all',PER=30,EDIT=null,KEEP=false,PROD='',DEVN=0,LASTID=null,charts={},FBT=null,FBOK=false;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -489,7 +523,10 @@ function shortUA(ua){ua=ua||'';const os=/Windows/.test(ua)?'Windows':/iPhone/.te
 
 /* ── rendu : comptes ── */
 function modRow(l){const all=MODS()[l.produit];if(!all)return'';
-  return `<div class="mrow">${all.map(m=>{const ok=!l.modules||l.modules.includes(m);return `<span class="mi${ok?'':' no'}" title="${esc(m)} — ${ok?'autorisé':'non autorisé'}">${MICON[m]||'•'}</span>`}).join('')}</div>`}
+  const off=tabsOff(l),gc=(l.google&&l.google.clientId)||GDEF[l.produit];
+  return `<div class="mrow">${all.map(m=>{const ok=!l.modules||l.modules.includes(m);return `<span class="mi${ok?'':' no'}" title="${esc(m)} — ${ok?'autorisé':'non autorisé'}">${MICON[m]||'•'}</span>`}).join('')}${off.length?`<span class="mi" style="width:auto;padding:0 7px;background:rgba(244,63,94,.18);font-size:.7rem;font-weight:700" title="Onglets désactivés : ${esc(off.map(t=>t[2]).join(', '))}">🗂️ −${off.length}</span>`:''}${gc?`<span class="mi" style="background:rgba(6,182,212,.18)" title="Google Drive injecté${l.google&&l.google.email?' — '+esc(l.google.email):''}">☁️</span>`:''}</div>`}
+/* onglets désactivés pour une licence (choix direct + modules satellites retirés) */
+function tabsOff(l){const T=TABS_DEF[l.produit];if(!T)return[];return T.filter(t=>(Array.isArray(l.onglets)&&!l.onglets.includes(t[0]))||(t[4]&&Array.isArray(l.modules)&&!l.modules.includes(t[4])))}
 function licRow(l){const[s,c]=status(l),[ic,col]=pm(l.produit),used=devUsed(l.id),max=l.maxDevices,ex=excList(l.id).length;
   const pct=max?Math.min(100,used/max*100):0,mc=ex?'var(--ko)':used>=max?'var(--warn)':'var(--ok)',dur=l.expire?fmtExp(l.expire):'∞ illimitée';
   return `<div class="lic" onclick="openLic('${l.id}')"><div class="pi" style="--pc:${col}">${ic}</div>
@@ -564,6 +601,8 @@ function openLic(id){const l=LIC.find(x=>x.id===id);if(!l)return;const[s,c]=stat
     <h4>📱 Appareils activés${l.maxDevices?` (${devs.length}/${l.maxDevices})`:''}</h4>
     ${!l.maxDevices?'<div class="empty sm">Pas de limite d\'appareils sur cette licence</div>':devs.length?devs.map(([k,v])=>{const u=shortUA(v.ua);return `<div class="dev"><span class="di">${u.ic}</span><div><b>${u.txt}</b><small>Place ${+k+1} · activé le ${fmtD(new Date(v.t))}${v.seen?' · vu '+ago(v.seen):''}</small><small class="ipl">${ipLine(v.lastIp||v.ip,v.lastLoc||v.loc,v)}${v.ip&&v.lastIp&&v.ip!==v.lastIp?` <span class="red">(1ʳᵉ : ${esc(v.ip)})</span>`:''}</small>${histHTML(v)}</div><button class="ghost sm" onclick="devDel('${id}','${k}')">Retirer</button></div>`}).join(''):'<div class="empty sm">Aucun appareil activé pour l\'instant</div>'}
     ${all?`<h4>🧩 Modules satellites</h4><p class="hint">Les satellites utilisent cette licence ${esc(l.produit)} : seuls les modules ✓ sont accessibles, avec la même limite d'appareils.</p><div class="mgrid">${all.map(m=>{const ok=!l.modules||l.modules.includes(m);return `<div class="mg${ok?'':' no'}"><span>${MICON[m]||'•'}</span>${esc(m)}<i>${ok?'✓':'✕'}</i></div>`}).join('')}</div>`:''}
+    ${TABS_DEF[l.produit]?(()=>{const off=tabsOff(l).map(t=>t[0]);return `<h4>🗂️ Onglets de la plateforme</h4><p class="hint">${off.length?off.length+' onglet'+(off.length>1?'s':'')+' désactivé'+(off.length>1?'s':'')+' chez ce client.':'Tous les onglets sont disponibles.'}</p><div class="mgrid">${TABS_DEF[l.produit].map(t=>{const ok=!off.includes(t[0]);return `<div class="mg${ok?'':' no'}"><span>${t[1]}</span>${esc(t[2])}<i>${ok?'✓':'✕'}</i></div>`}).join('')}</div>`})():''}
+    ${(()=>{const g=l.google||{},cid=g.clientId||GDEF[l.produit]||'';return `<h4>☁️ Google Drive</h4><div class="kv"><div style="grid-column:1/-1"><span>Client ID Google${g.clientId?'':cid?' (par défaut)':''}</span><b style="font-family:'JetBrains Mono',monospace;font-size:.72rem;word-break:break-all">${cid?esc(cid):'— non injecté'}</b></div><div style="grid-column:1/-1"><span>Compte Google associé</span><b>${g.email?esc(g.email):'—'}</b></div></div>`})()}
   </div>
   <div class="dw-f"><button class="btn" onclick="editLic('${id}')">✏️ Modifier</button><button class="ghost${l.actif?' danger':''}" onclick="revoke('${id}')">${l.actif?'⛔ Révoquer':'↺ Réactiver'}</button>${!l.actif?`<button class="ghost danger" title="Supprimer et bannir" onclick="delLic('${id}')">🗑</button>`:''}</div>`;
   $('drawer').classList.add('on');
@@ -571,8 +610,27 @@ function openLic(id){const l=LIC.find(x=>x.id===id);if(!l)return;const[s,c]=stat
 
 /* ── formulaire ── */
 function renderTiles(){$('ptiles').innerHTML=prods().map(p=>{const[ic,col]=pm(p);return `<button type="button" class="pt${p===PROD?' act':''}" style="--pc:${col}" onclick="pickProd('${esc(p)}')"><span class="pi" style="--pc:${col}">${ic}</span>${esc(p)}</button>`}).join('')}
-function pickProd(p,sel){PROD=p;renderTiles();const m=MODS()[p];$('modBox').hidden=!m;$('modParent').textContent=p;
-  if(m)$('mods').innerHTML=m.map(x=>`<label><input type="checkbox" value="${esc(x)}" ${!sel||sel.includes(x)?'checked':''} onchange="updPrev()">${MICON[x]||''} ${esc(x)}<i>✓</i></label>`).join('');updPrev()}
+function pickProd(p,sel,tsel){PROD=p;renderTiles();const m=MODS()[p];$('modBox').hidden=!m;$('modParent').textContent=p;
+  if(m)$('mods').innerHTML=m.map(x=>`<label><input type="checkbox" value="${esc(x)}" ${!sel||sel.includes(x)?'checked':''} onchange="updPrev()">${MICON[x]||''} ${esc(x)}<i>✓</i></label>`).join('');
+  const T=TABS_DEF[p];$('tabBox').hidden=!T;$('tabParent').textContent=p;
+  if(T)$('tabs').innerHTML=T.map(t=>`<label data-mod="${esc(t[4]||'')}" title="${esc(t[2]+' — '+t[3])}"><input type="checkbox" value="${esc(t[0])}" ${!tsel||tsel.includes(t[0])?'checked':''} onchange="updPrev()"><span class="tl">${t[1]} ${esc(t[2])}<small data-d="${esc(t[3])}">${esc(t[3])}</small></span><i>✓</i></label>`).join('');
+  $('gCid').placeholder=GDEF[p]?'Par défaut : '+GDEF[p]:'123456-abc.apps.googleusercontent.com';updPrev()}
+/* onglet relié à un module satellite retiré : grisé et désactivé d'office */
+function syncTabs(){const m=getMods();document.querySelectorAll('#tabs label').forEach(lb=>{const mod=lb.dataset.mod,lk=!!(mod&&m&&!m.includes(mod)),i=lb.querySelector('input'),sm=lb.querySelector('small');
+  i.disabled=lk;lb.classList.toggle('lk',lk);if(sm)sm.textContent=lk?'module « '+mod+' » retiré':sm.dataset.d})}
+function setTabs(v){document.querySelectorAll('#tabs input:not(:disabled)').forEach(i=>i.checked=!!v);updPrev()}
+/* null = tous les onglets ; sinon liste des onglets autorisés */
+function getTabs(){const T=TABS_DEF[PROD];if(!T)return null;const on=[...document.querySelectorAll('#tabs input:checked')].map(i=>i.value);return on.length===T.length?null:on}
+function tabsOffNow(){const T=TABS_DEF[PROD];if(!T)return[];return tabsOff({produit:PROD,onglets:getTabs(),modules:getMods()})}
+function getGoogle(){const c=$('gCid').value.trim(),m=norm($('gMail').value);return c||m?{clientId:c,email:m}:null}
+function gUseClient(){$('gMail').value=norm($('mail').value);updPrev()}
+function gStatus(){const c=$('gCid').value.trim(),m=norm($('gMail').value),d=GDEF[PROD],el=$('gSt');if(!el)return true;let t,k='',ok=true;
+  if(c&&!GCID_RE.test(c)){t='⚠️ Format attendu : …apps.googleusercontent.com';k='ko';ok=false}
+  else if(m&&!/^\S+@\S+\.\S+$/.test(m)){t='⚠️ Adresse e-mail du compte Google invalide';k='ko';ok=false}
+  else if(c){t='✓ Client ID propre à ce client'+(m?' · compte '+m:'');k='ok'}
+  else if(d){t='✓ Client ID par défaut utilisé'+(m?' · compte '+m:'');k='ok'}
+  else t=m?'Compte Google associé : '+m+' (aucun Client ID : le client le saisira lui-même)':'Aucun Client ID : le client le saisira lui-même dans COVO Pro';
+  el.textContent=t;el.className='gst '+k;return ok}
 function setMods(v){document.querySelectorAll('#mods input').forEach(i=>i.checked=!!v);updPrev()}
 const getMods=()=>MODS()[PROD]?[...document.querySelectorAll('#mods input:checked')].map(i=>i.value):null;
 function setDev(n){DEVN=Math.min(99,Math.max(0,parseInt(n,10)||0));
@@ -584,27 +642,32 @@ function updExp(){const e=expiry();$('expTxt').textContent=KEEP&&EDIT?(e?'Expira
   document.querySelectorAll('#dur button').forEach(b=>b.classList.toggle('act',b.dataset.v==='keep'?KEEP:!KEEP&&(+b.dataset.v===+$('durV').value&&b.dataset.u===$('durU').value||!+$('durV').value&&b.dataset.v==='0')));updPrev()}
 document.querySelectorAll('#dur button').forEach(b=>b.onclick=()=>{if(b.dataset.v==='keep')KEEP=true;else{KEEP=false;$('durV').value=b.dataset.v;$('durU').value=b.dataset.u}updExp()});
 $('durV').oninput=$('durU').onchange=()=>{KEEP=false;updExp()};
-function updPrev(){const[ic,col]=pm(PROD),m=getMods(),e=expiry(),mail=$('mail').value.trim();
-  $('mSum').textContent=`${ic} ${PROD} · ${e?'jusqu\'au '+e.toLocaleDateString('fr-FR'):'illimitée'} · 📱 ${DEVN||'∞'}${m?' · 🧩 '+m.length+'/'+MODS()[PROD].length:''}`;
+function updPrev(){const[ic,col]=pm(PROD),m=getMods(),e=expiry(),mail=$('mail').value.trim();syncTabs();gStatus();
+  const T=TABS_DEF[PROD],off=tabsOffNow(),g=getGoogle(),gc=(g&&g.clientId)||GDEF[PROD];
+  $('mSum').textContent=`${ic} ${PROD} · ${e?'jusqu\'au '+e.toLocaleDateString('fr-FR'):'illimitée'} · 📱 ${DEVN||'∞'}${m?' · 🧩 '+m.length+'/'+MODS()[PROD].length:''}${T?' · 🗂️ '+(T.length-off.length)+'/'+T.length:''}${gc?' · ☁️':''}`;
   $('preview').innerHTML=`<h3>👁 Aperçu de la licence</h3><div class="pv-h"><div class="pi lg" style="--pc:${col}">${ic}</div><div><b>${esc(PROD||'—')}</b><span>${esc(mail||'e-mail du client')}</span></div></div>
    <div class="pv-r"><span>Durée</span><b>${e?'jusqu\'au '+fmtD(e):'Illimitée'}</b></div>
    <div class="pv-r"><span>Appareils</span><b>${DEVN?DEVN+' max — le '+(DEVN+1)+'ᵉ sera refusé':'Illimités'}</b></div>
    ${m?`<div class="pv-r"><span>Satellites</span><b>${m.length}/${MODS()[PROD].length}</b></div><div class="mrow" style="justify-content:flex-end">${MODS()[PROD].map(x=>`<span class="mi${m.includes(x)?'':' no'}" title="${esc(x)}">${MICON[x]||'•'}</span>`).join('')}</div>`:''}
+   ${T?`<div class="pv-r"><span>Onglets</span><b>${T.length-off.length}/${T.length}</b></div><div class="mrow" style="justify-content:flex-end">${T.map(t=>`<span class="mi${off.includes(t)?' no':''}" title="${esc(t[2])}">${t[1]}</span>`).join('')}</div>`:''}
+   <div class="pv-r"><span>Google Drive</span><b>${gc?(g&&g.clientId?'Client ID injecté':'Client ID par défaut'):'—'}</b></div>
+   ${g&&g.email?`<div class="pv-r"><span>Compte Google</span><b>${esc(g.email)}</b></div>`:''}
    ${EDIT?'<div class="pv-r"><span>Clé</span><b>inchangée</b></div>':''}`}
 $('mail').addEventListener('input',updPrev);
 $('mail').addEventListener('change',()=>{if(EDIT)return;const l=LIC.find(x=>x.email===norm($('mail').value)&&x.produit===PROD);if(l)toast('Ce client a déjà une licence '+PROD+' : elle sera mise à jour (même clé)')});
-function newLic(){EDIT=null;KEEP=false;REQP=null;if($('reqBar'))$('reqBar').hidden=true;$('editBar').hidden=true;$('durKeep').hidden=true;$('mail').value='';$('mail').disabled=false;$('durV').value=0;$('durU').value='j';
+function newLic(){EDIT=null;KEEP=false;REQP=null;if($('reqBar'))$('reqBar').hidden=true;$('editBar').hidden=true;$('durKeep').hidden=true;$('mail').value='';$('mail').disabled=false;$('gCid').value='';$('gMail').value='';$('durV').value=0;$('durU').value='j';
   $('kb').classList.remove('show');pickProd(PROD||prods()[0]);setDev(0);updExp();$('gen').textContent='Générer la licence';closeDrawer();go('new')}
 function editLic(id){const l=LIC.find(x=>x.id===id);if(!l)return;EDIT=id;KEEP=true;closeDrawer();
   $('editBar').hidden=false;$('editTxt').textContent='Modification de '+l.produit+' — '+l.email;$('durKeep').hidden=false;
-  $('mail').value=l.email;$('mail').disabled=true;pickProd(l.produit,l.modules);setDev(l.maxDevices||0);updExp();
+  $('mail').value=l.email;$('mail').disabled=true;$('gCid').value=(l.google&&l.google.clientId)||'';$('gMail').value=(l.google&&l.google.email)||'';pickProd(l.produit,l.modules,l.onglets);setDev(l.maxDevices||0);updExp();
   $('kb').classList.remove('show');$('gen').textContent='💾 Enregistrer les modifications';go('new')}
 
 /* ── enregistrement ── */
-async function saveLic({mail,prod,mods,maxDev,expire}){
+async function saveLic({mail,prod,mods,maxDev,expire,tabs,google}){
   if(maxDev&&!(C().fbMail&&C().fbPass)){go('set');$('fbMail').focus();throw new Error('Ajoute ton compte admin Firebase pour limiter les appareils')}
   const key=await makeKey(mail,prod),{data,sha:s}=await ghGet(),id=await sha(mail+'|'+prod);
   const lic={id,email:mail,produit:prod,hash:await sha(mail+'|'+prod+'|'+key),cree:new Date().toISOString().slice(0,10),expire:expire||null,actif:true,modules:mods||null,maxDevices:maxDev||null};
+  if(tabs!==undefined)lic.onglets=tabs||null;if(google!==undefined)lic.google=google||null;GDEF=data.google||{};
   const i=data.licences.findIndex(l=>l.id===id);i>=0?data.licences[i]={...data.licences[i],...lic,cree:data.licences[i].cree,actif:data.licences[i].actif}:data.licences.push(lic);
   if(maxDev||data.firebase){data.firebase=FB();await fbPut('limits/'+id,maxDev?String(maxDev).padStart(2,'0'):null);FBOK=true}
   await ghPut(data,s,(i>=0?'Mise à jour':'Nouvelle')+' licence '+prod+' — '+mail);
@@ -612,10 +675,11 @@ async function saveLic({mail,prod,mods,maxDev,expire}){
 async function generate(){const mail=norm($('mail').value),prod=PROD,mods=getMods();
   if(!/^\S+@\S+\.\S+$/.test(mail))return toast('E-mail invalide','ko');
   if(mods&&!mods.length)return toast('Coche au moins un module','ko');
+  if(!gStatus())return toast($('gSt').textContent.replace(/^⚠️ /,''),'ko');
   if(!C().sec||!C().tok){go('set');return toast('Configure GitHub et le secret maître','ko')}
   if(BAN.includes(mail))return toast('🚫 Adresse bannie — débannis-la d\'abord','ko');
   const b=$('gen'),txt=b.textContent;b.classList.add('load');b.textContent='Enregistrement…';
-  try{const e=expiry(),r=await saveLic({mail,prod,mods,maxDev:DEVN,expire:e?e.toISOString():null});
+  try{const e=expiry(),r=await saveLic({mail,prod,mods,maxDev:DEVN,expire:e?e.toISOString():null,tabs:getTabs(),google:getGoogle()});
     $('kb').classList.remove('show');void $('kb').offsetWidth;$('kb').classList.add('show');reveal(r.key);if(REQP)injectReq(r.key);
     toast(r.updated?'✔ Licence mise à jour':'✔ Licence créée et sauvegardée');if(navigator.vibrate)navigator.vibrate(30);$('kb').scrollIntoView({behavior:'smooth',block:'center'});if(EDIT){EDIT=null;$('editBar').hidden=true;$('durKeep').hidden=true;$('mail').disabled=false;KEEP=false}
   }catch(e){toast(e.message,'ko')}
@@ -663,12 +727,18 @@ function parseFbCfg(txt){const m=String(txt||'').match(/\{[\s\S]*\}/);if(!m)thro
   let c;try{c=JSON.parse(b)}catch(e){throw new Error('Format non reconnu')}
   if(!c.apiKey||!c.projectId||!c.authDomain)throw new Error('apiKey, authDomain et projectId sont obligatoires');
   return{apiKey:c.apiKey,authDomain:c.authDomain,projectId:c.projectId,storageBucket:c.storageBucket||'',messagingSenderId:c.messagingSenderId||'',appId:c.appId||''}}
-async function loadAppCfg(){try{const{data}=await ghGet();APPCFG=data.configs||{}}catch(e){APPCFG={}}
+async function loadAppCfg(){try{const{data}=await ghGet();APPCFG=data.configs||{};GDEF=data.google||{}}catch(e){APPCFG={}}
   const sel=$('acProd');if(sel){const v=sel.value;sel.innerHTML=prods().map(p=>`<option value="${esc(p)}">${pm(p)[0]} ${esc(p)}</option>`).join('');if(v)sel.value=v;else if(prods().includes('Mon Planning Pro'))sel.value='Mon Planning Pro'}
   renderAppCfg()}
 function renderAppCfg(){const p=$('acProd')&&$('acProd').value,c=APPCFG[p];if(!$('acStatus'))return;
   $('acStatus').innerHTML=c?`✅ Configurée — projet <b>${esc(c.projectId)}</b>`:'⚪ Aucune configuration pour ce logiciel';
-  $('acTxt').value=c?'const firebaseConfig = '+JSON.stringify(c,null,2)+';':''}
+  $('acTxt').value=c?'const firebaseConfig = '+JSON.stringify(c,null,2)+';':'';
+  if($('agCid')){$('agFor').textContent='pour '+p;$('agCid').value=GDEF[p]||'';$('agSt').textContent=GDEF[p]?'✅ Client ID par défaut actif pour '+p:'⚪ Aucun Client ID par défaut pour '+p;$('agSt').className='gst'+(GDEF[p]?' ok':'')}}
+async function saveGDef(){if(!UNLOCKED)return showLock();const p=$('acProd').value,c=$('agCid').value.trim();
+  if(!GCID_RE.test(c))return toast('Client ID invalide — format attendu : …apps.googleusercontent.com','ko');
+  try{const{data,sha:s}=await ghGet();data.google={...(data.google||{}),[p]:c};await ghPut(data,s,'Client ID Google par défaut '+p);GDEF=data.google;renderAppCfg();renderAll();toast('✔ Client ID Google enregistré pour '+p)}catch(e){toast(e.message,'ko')}}
+async function delGDef(){if(!UNLOCKED)return showLock();const p=$('acProd').value;if(!GDEF[p]||!confirm('Retirer le Client ID Google par défaut de '+p+' ?\n\nLes appareils où il est déjà installé le gardent.'))return;
+  try{const{data,sha:s}=await ghGet();data.google={...(data.google||{})};delete data.google[p];await ghPut(data,s,'Retrait Client ID Google '+p);GDEF=data.google;renderAppCfg();renderAll();toast('Client ID retiré')}catch(e){toast(e.message,'ko')}}
 async function saveAppCfg(){if(!UNLOCKED)return showLock();const p=$('acProd').value;let cfg;
   try{cfg=parseFbCfg($('acTxt').value)}catch(e){return toast(e.message,'ko')}
   try{const{data,sha:s}=await ghGet();data.configs={...(data.configs||{}),[p]:cfg};await ghPut(data,s,'Configuration Firebase '+p);APPCFG=data.configs;renderAppCfg();toast('✔ Configuration enregistrée pour '+p)}catch(e){toast(e.message,'ko')}}
@@ -739,7 +809,7 @@ function forgotSet(){if(!confirm("Réinitialiser le mot de passe ?\n\nPar sécur
   const c=C();delete c.tok;delete c.sec;delete c.fbPass;localStorage.setItem('licCfg',JSON.stringify(c));localStorage.removeItem('licAdmin');FBT=null;FBOK=false;renderConn();showLock();toast('Mot de passe réinitialisé — crée-en un nouveau')}
 /* ── chargement ── */
 async function load(manual){if(!C().tok){renderAll();if(manual)go('set');return}
-  try{const d=(await ghGet()).data;LIC=d.licences||[];BAN=d.bannis||[];await loadFB();if(manual)toast('↻ Données actualisées')}catch(e){toast(e.message,'ko')}
+  try{const d=(await ghGet()).data;LIC=d.licences||[];BAN=d.bannis||[];GDEF=d.google||{};if($('gCid')&&PROD)$('gCid').placeholder=GDEF[PROD]?'Par défaut : '+GDEF[PROD]:'123456-abc.apps.googleusercontent.com';await loadFB();if(manual)toast('↻ Données actualisées')}catch(e){toast(e.message,'ko')}
   if(C().fbMail&&C().fbPass)loadReq()}
 
 /* ── PWA ── */
