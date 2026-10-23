@@ -127,17 +127,38 @@
     overlay.querySelector('#rc').onclick=()=>{if(!confirm('Annuler cette demande ?'))return;localStorage.removeItem(RKEY);showRequestForm()};
     clearInterval(pollT);pollReq();pollT=setInterval(pollReq,10000);
   }
-  async function pollReq(){const q=getReq();if(!q||!overlay)return clearInterval(pollT);const w=overlay.querySelector('#rw');
+  let pollBusy=false;
+  async function pollReq(){const q=getReq();if(!q||!overlay)return clearInterval(pollT);if(pollBusy)return;pollBusy=true;const w=overlay.querySelector('#rw');
     try{const r=await (await fetch(`${await fbUrl()}/requests/${q.rid}.json?t=${Date.now()}`,{cache:'no-store'})).json();
       if(!r){localStorage.removeItem(RKEY);clearInterval(pollT);return showRequestForm('Votre demande a été clôturée. Vous pouvez en envoyer une nouvelle.')}
       if(r.statut==='refusee'){localStorage.removeItem(RKEY);clearInterval(pollT);return showRequestForm('Votre demande a été refusée'+(r.motif?' : '+r.motif:'.')+' Vous pouvez contacter le vendeur.')}
       if(r.statut==='accordee'&&r.cle){clearInterval(pollT);if(w)w.textContent='✅ Licence accordée — installation…';
+        Object.keys(localStorage).filter(x=>x.startsWith('licSlot_')).forEach(x=>localStorage.removeItem(x));
         const v=await verif(r.email||q.mail,r.cle);
         if(v.ok){save(r.email||q.mail,r.cle,v.expire);localStorage.removeItem(RKEY);overlay.remove();overlay=null;watch(v.expire);
           const t=document.createElement('div');t.textContent='✅ Licence '+PRODUIT+' activée';t.style.cssText='position:fixed;left:50%;top:18px;transform:translateX(-50%);z-index:2147483647;background:#10b981;color:#fff;padding:12px 18px;border-radius:12px;font:600 14px system-ui;box-shadow:0 8px 24px rgba(0,0,0,.3)';document.body.appendChild(t);setTimeout(()=>t.remove(),4000);return}
-        return showWaiting('Licence reçue mais non validée : '+v.msg)}
+        return showRefusInstall(r,q,v.msg)}
       if(w)w.textContent='Toujours en attente — dernière vérification à '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
     }catch(e){if(w)w.textContent='Hors ligne — nouvelle tentative dans quelques secondes'}
+    finally{pollBusy=false}
+  }
+  // Licence accordée mais refusée à l'installation (ex. limite d'appareils) : écran fixe, réessai uniquement à la demande
+  function showRefusInstall(r,q,msg){clearInterval(pollT);
+    box(`<div style="margin:6px 0 14px;padding:14px;border-radius:12px;background:rgba(244,63,94,.1);border:1px solid rgba(244,63,94,.4)">
+        <div style="font-weight:700">⚠️ Licence accordée, mais non activée sur cet appareil</div>
+        <div style="color:#fda4af;font-size:.88rem;margin-top:6px">${esc(msg||'Validation impossible')}</div>
+        <div style="color:#8b93b0;font-size:.82rem;margin-top:8px">Le vendeur doit autoriser cet appareil (ou augmenter le nombre d'appareils de la licence). Appuyez ensuite sur « Réessayer ».</div></div>
+      <button id="ry" style="${btn}">Réessayer</button>
+      <div id="rw" style="color:#8b93b0;font-size:.82rem;margin-top:8px"></div>
+      <button id="rk" style="${lnk}">J'ai déjà une clé de licence</button>
+      <button id="rn2" style="${lnk};color:#fda4af">Faire une nouvelle demande</button>`);
+    overlay.querySelector('#ry').onclick=async()=>{const b=overlay.querySelector('#ry');b.textContent='Vérification…';b.disabled=true;
+      Object.keys(localStorage).filter(x=>x.startsWith('licSlot_')).forEach(x=>localStorage.removeItem(x));
+      const v=await verif(r.email||q.mail,r.cle);
+      if(v.ok){save(r.email||q.mail,r.cle,v.expire);localStorage.removeItem(RKEY);overlay.remove();overlay=null;watch(v.expire);return}
+      b.textContent='Réessayer';b.disabled=false;overlay.querySelector('#rw').textContent='Toujours refusée : '+(v.msg||'')+' ('+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})+')'};
+    overlay.querySelector('#rk').onclick=()=>{overlay.remove();overlay=null;lock(null,true)};
+    overlay.querySelector('#rn2').onclick=()=>{localStorage.removeItem(RKEY);showRequestForm()};
   }
   function lock(msg,skipReq){
     clearInterval(timer);if(overlay)return;
