@@ -23,6 +23,9 @@
       "google": {
         "clientId": "531822941380-u6o0c9lsk4jsppau5mmrt1enst973r9d.apps.googleusercontent.com",
         "email": "covo.trv@gmail.com"
+      },
+      "sav": {
+        "on": false
       }
     },
     {
