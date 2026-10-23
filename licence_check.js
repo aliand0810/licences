@@ -71,7 +71,8 @@
   // ── Réglages injectés par Licence Pro ──
   function extra(l,d){const g=l.google||{},dg=(d.google||{})[PRODUIT]||'';
     return{onglets:Array.isArray(l.onglets)?l.onglets:null,modules:Array.isArray(l.modules)?l.modules:null,
-      google:{clientId:String(g.clientId||dg||'').trim(),email:String(g.email||'').trim().toLowerCase()}}}
+      google:{clientId:String(g.clientId||dg||'').trim(),email:String(g.email||'').trim().toLowerCase()},
+      sav:(l.sav&&l.sav.on&&(!l.sav.until||new Date(l.sav.until)>new Date())&&!(d.sav&&d.sav.visible===false))?{until:l.sav.until||l.expire||null,contact:d.sav||{}}:null}}
   function applyData(x){if(!x)return;
     try{const old=localStorage.getItem('licData_'+PRODUIT)||'',nv=JSON.stringify(x);if(old!==nv)localStorage.setItem('licData_'+PRODUIT,nv);
       const g=x.google||{};
@@ -79,7 +80,7 @@
       if(g.clientId&&localStorage.getItem('gdrive_client_id')!==g.clientId)localStorage.setItem('gdrive_client_id',g.clientId);
       if(g.email&&localStorage.getItem('gdrive_hint_email')!==g.email)localStorage.setItem('gdrive_hint_email',g.email);
     }catch(e){}
-    window.LICENCE_DATA=x;try{dispatchEvent(new CustomEvent('licence:data',{detail:x}))}catch(e){}}
+    window.LICENCE_DATA=x;try{dispatchEvent(new CustomEvent('licence:data',{detail:x}))}catch(e){}savUI(x)}
   try{const c=JSON.parse(localStorage.getItem('licData_'+PRODUIT)||'null');if(c)window.LICENCE_DATA=c}catch(e){}
 
   function save(mail,key,expire){localStorage.setItem(KEY,JSON.stringify({mail:mail.trim().toLowerCase(),key:key.trim().toUpperCase(),expire,t:Date.now()}))}
@@ -217,6 +218,39 @@
   window.licenceLink=withLic;
   document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[href]');if(a&&!overlay){const o=a.href,n=withLic(o);if(n!==o){a.href=n;setTimeout(()=>a.href=o,500)}}},true);
   const _open=window.open;window.open=function(u,...r){return _open.call(window,u?withLic(String(u)):u,...r)};
+
+  // ── Service après-vente : bouton 🛟 visible uniquement si le SAV est inclus dans la licence ──
+  let savBtn=null,savPanel=null;
+  function savUI(x){const on=x&&x.sav;
+    if(!on){if(savBtn){savBtn.remove();savBtn=null}if(savPanel){savPanel.remove();savPanel=null}return}
+    savBtn&&(savBtn._x=x);if(savBtn)return;
+    const mount=()=>{if(!document.body)return setTimeout(mount,200);
+      savBtn=document.createElement('button');savBtn._x=x;savBtn.type='button';savBtn.textContent='🛟 SAV';savBtn.title='Service après-vente';
+      savBtn.style.cssText='position:fixed;left:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:2147483600;padding:9px 14px;border:0;border-radius:999px;background:linear-gradient(135deg,#7c3aed,#06b6d4);color:#fff;font:700 13px system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.35);cursor:pointer;opacity:.92';
+      savBtn.onclick=()=>openSav(savBtn._x);document.body.appendChild(savBtn)};mount()}
+  function openSav(x){const c=(x.sav&&x.sav.contact)||{},s=get(),until=x.sav.until?new Date(x.sav.until).toLocaleDateString('fr-FR'):'';
+    if(savPanel)savPanel.remove();savPanel=document.createElement('div');
+    savPanel.style.cssText='position:fixed;inset:0;z-index:2147483646;background:rgba(7,11,22,.7);backdrop-filter:blur(4px);display:flex;align-items:flex-end;justify-content:center;font-family:system-ui,sans-serif';
+    const wa=String(c.whatsapp||'').replace(/[^\d]/g,''),row=(ic,t,h)=>t?`<a ${h?`href="${h}" target="_blank" rel="noopener"`:''} style="display:flex;gap:10px;align-items:center;padding:11px 12px;border-radius:12px;background:rgba(255,255,255,.05);color:#eef2ff;text-decoration:none;margin-bottom:6px;font-size:14px"><span style="font-size:18px">${ic}</span>${esc(t)}</a>`:'';
+    const inp='width:100%;box-sizing:border-box;padding:12px;border-radius:12px;border:1px solid #334155;background:#0b1220;color:#fff;font:16px system-ui,sans-serif;margin-top:6px';
+    savPanel.innerHTML=`<div style="width:min(460px,100%);max-height:92vh;overflow:auto;background:#111827;color:#eef2ff;border:1px solid rgba(255,255,255,.1);border-radius:22px 22px 0 0;padding:22px 20px calc(20px + env(safe-area-inset-bottom));box-shadow:0 -20px 60px rgba(0,0,0,.5)">
+      <div style="display:flex;align-items:center;gap:10px"><div style="font-size:28px">🛟</div><div style="flex:1"><b style="font-size:17px">Service après-vente</b><div style="font-size:12px;color:#8b93b0">${esc(PRODUIT)}${until?' · inclus jusqu\'au '+until:' · inclus avec votre licence'}</div></div><button data-x style="background:rgba(255,255,255,.08);border:0;color:#fff;width:34px;height:34px;border-radius:10px;font-size:16px;cursor:pointer">✕</button></div>
+      ${c.message?`<p style="font-size:13px;color:#cbd5e1;line-height:1.5;margin:14px 0 4px;white-space:pre-wrap">${esc(c.message)}</p>`:''}
+      <div style="margin-top:12px">${row('✉️',c.email,c.email?'mailto:'+c.email+'?subject='+encodeURIComponent('SAV '+PRODUIT):'')}${row('📞',c.tel,c.tel?'tel:'+String(c.tel).replace(/\s/g,''):'')}${row('💬',wa?'WhatsApp':'',wa?'https://wa.me/'+wa:'')}${row('🕘',c.horaires,'')}</div>
+      <div style="margin-top:14px;font-size:12px;color:#8b93b0;text-transform:uppercase;letter-spacing:.06em;font-weight:600">Envoyer une demande d'assistance</div>
+      <select data-s style="${inp}"><option>Problème technique</option><option>Question d'utilisation</option><option>Facturation / licence</option><option>Autre demande</option></select>
+      <textarea data-m rows="5" maxlength="2000" placeholder="Décrivez votre demande…" style="${inp};resize:vertical"></textarea>
+      <input data-t type="tel" placeholder="Téléphone (facultatif)" style="${inp}">
+      <button data-go style="width:100%;margin-top:12px;padding:13px;background:linear-gradient(135deg,#7c3aed,#06b6d4);color:#fff;border:0;border-radius:12px;font:700 15px system-ui,sans-serif;cursor:pointer">Envoyer au SAV</button>
+      <div data-r style="margin-top:10px;font-size:13px;text-align:center"></div></div>`;
+    document.body.appendChild(savPanel);const q=k=>savPanel.querySelector(k);
+    savPanel.onclick=e=>{if(e.target===savPanel)savPanel.remove()};q('[data-x]').onclick=()=>savPanel.remove();
+    q('[data-go]').onclick=async()=>{const m=q('[data-m]').value.trim();if(m.length<5){q('[data-r]').style.color='#fda4af';q('[data-r]').textContent='Merci de décrire votre demande.';return}
+      q('[data-go]').disabled=true;q('[data-go]').textContent='Envoi…';
+      const tid=[...crypto.getRandomValues(new Uint8Array(12))].map(b=>b.toString(16).padStart(2,'0')).join('');
+      try{const r=await fetch(`${await fbUrl()}/support/${tid}.json`,{method:'PUT',body:JSON.stringify({email:s.mail||'',produit:PRODUIT,module:MODULE||'',t:Date.now(),sujet:q('[data-s]').value,message:m.slice(0,2000),tel:q('[data-t]').value.trim().slice(0,30),ua:UA(),page:location.href.split('#')[0].slice(0,200),statut:'nouveau'})});
+        if(!r.ok)throw 0;q('[data-r]').style.color='#6ee7b7';q('[data-r]').textContent='✔ Votre demande a bien été envoyée. Nous revenons vers vous rapidement.';q('[data-m]').value='';q('[data-go]').textContent='Envoyé'}
+      catch(e){q('[data-r]').style.color='#fda4af';q('[data-r]').textContent='Envoi impossible. Contactez-nous directement par e-mail ou téléphone.';q('[data-go]').disabled=false;q('[data-go]').textContent='Réessayer'}}}
 
   (async()=>{
     const s=get();

@@ -217,6 +217,14 @@ canvas{max-height:270px}
 .lockCard.shake{animation:shake .4s}
 @keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
 
+.savBox{background:rgba(0,0,0,.25);border:1px solid var(--bd);border-radius:14px;padding:12px}
+.sw{display:flex;align-items:center;gap:12px;margin:0;cursor:pointer;text-transform:none;letter-spacing:0;color:var(--txt);font-size:.9rem}
+.sw input{display:none}.sw .knob{width:46px;height:26px;border-radius:99px;background:rgba(255,255,255,.12);position:relative;flex-shrink:0;transition:.2s}
+.sw .knob::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s}
+.sw input:checked+.knob{background:var(--grad)}.sw input:checked+.knob::after{left:23px}
+.sw small{display:block;font-size:.74rem;color:var(--mut);font-weight:500;margin-top:2px}
+.savCard{display:flex;gap:12px;align-items:center;margin-top:14px;padding:12px 14px;border-radius:14px;border:1px solid var(--bd);background:var(--glass)}
+.savCard.on{border-color:rgba(16,185,129,.4);background:rgba(16,185,129,.07)}.savCard .si{font-size:1.4rem}.savCard>div{flex:1;min-width:0}.savCard b{display:block;font-size:.9rem}.savCard small{font-size:.75rem;color:var(--mut)}
 /* modale */
 .mdl{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none}
 .md-bg{position:absolute;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);opacity:0;transition:.2s}
@@ -379,6 +387,11 @@ textarea:focus{border-color:var(--a2);box-shadow:0 0 0 4px rgba(6,182,212,.14)}
         <div class="seg" id="dur"><button data-v="keep" id="durKeep" hidden>Conserver</button><button data-v="0" data-u="j">∞</button><button data-v="30" data-u="min">30 min</button><button data-v="1" data-u="h">1 h</button><button data-v="24" data-u="h">24 h</button><button data-v="1" data-u="sem">1 sem</button><button data-v="1" data-u="mois">1 mois</button><button data-v="1" data-u="an">1 an</button></div>
         <div class="dur2"><input id="durV" type="number" min="0" value="0"><select id="durU"><option value="min">Minutes</option><option value="h">Heures</option><option value="j" selected>Jours</option><option value="sem">Semaines</option><option value="mois">Mois</option><option value="an">Années</option></select></div>
         <div class="exp" id="expTxt">Licence illimitée</div>
+        <label>🛟 Service après-vente (SAV)</label>
+        <div class="savBox">
+          <label class="sw"><input type="checkbox" id="savOn" onchange="updSav()"><span class="knob"></span><span><b id="savTxt">SAV non inclus</b><small id="savSub">Le bouton 🛟 SAV ne s'affichera pas chez le client</small></span></label>
+          <div id="savOpts" hidden><div class="seg" id="savDur" style="margin-top:10px"><button type="button" data-s="keep" id="savKeep" hidden>Conserver</button><button type="button" data-s="lic" class="act">Durée de la licence</button><button type="button" data-s="3">3 mois</button><button type="button" data-s="6">6 mois</button><button type="button" data-s="12">1 an</button></div></div>
+        </div>
         <label>Appareils autorisés (ordinateurs, téléphones…)</label>
         <div class="devPick">
           <button type="button" class="stp" id="devMinus" onclick="setDev(DEVN-1)">−</button>
@@ -399,6 +412,9 @@ textarea:focus{border-color:var(--a2);box-shadow:0 0 0 4px rgba(6,182,212,.14)}
     <div class="card"><h3>📨 Demandes de licence <span style="display:flex;gap:6px;margin-left:auto"><button class="ghost sm danger" onclick="openRefuse()">🚫 Refuser une demande reçue ailleurs</button><button class="ghost sm" onclick="loadReq().then(()=>toast('↻ Demandes actualisées'))">↻</button></span></h3>
       <p class="hint">Les clients font leur demande depuis l'écran de licence de tes logiciels. « Accorder » ouvre la création de licence : à la génération, la clé est envoyée et activée automatiquement sur l'appareil du client.</p>
       <div id="reqList"></div></div>
+    <div class="card" style="margin-top:16px"><h3>🛟 Demandes SAV <button class="ghost sm" style="margin-left:auto" onclick="loadSup().then(()=>toast('↻ SAV actualisé'))">↻</button></h3>
+      <p class="hint">Demandes d'assistance envoyées par les clients depuis le bouton 🛟 SAV de leurs logiciels.</p>
+      <div id="supList"></div></div>
   </section>
 
   <!-- NOTES -->
@@ -442,6 +458,13 @@ textarea:focus{border-color:var(--a2);box-shadow:0 0 0 4px rgba(6,182,212,.14)}
         <label>Mot de passe admin Firebase</label><div class="pw"><input id="fbPass" type="password" autocomplete="current-password"><button type="button" class="eye" onclick="eye(this)" title="Afficher / masquer">👁</button></div>
         <button class="btn full" onclick="saveCfg()">💾 Enregistrer et tester</button>
         <button class="ghost" id="instBtn" style="width:100%;margin-top:10px" hidden onclick="install()">📲 Installer l'application</button>
+      </div>
+      <div class="card" style="grid-column:1/-1"><h3>🛟 Service après-vente <span class="row" style="display:flex;gap:6px"><button class="ghost sm" onclick="saveSavCfg()">💾 Enregistrer</button></span></h3>
+        <p class="hint">Coordonnées affichées dans le bouton 🛟 SAV des logiciels — uniquement pour les clients dont la licence inclut le SAV.</p>
+        <label class="sw" style="margin-bottom:6px"><input type="checkbox" id="svVis" checked><span class="knob"></span><span><b>Bouton SAV visible dans les logiciels</b><small>Désactive-le pour masquer le SAV chez tous les clients</small></span></label>
+        <div class="g2"><div><label>E-mail SAV</label><input id="svMail" type="email" placeholder="sav@exemple.fr"></div><div><label>Téléphone</label><input id="svTel" type="tel" placeholder="06 12 34 56 78"></div></div>
+        <div class="g2"><div><label>WhatsApp (numéro international)</label><input id="svWa" placeholder="33612345678"></div><div><label>Horaires</label><input id="svH" placeholder="Lun–ven, 9 h–18 h"></div></div>
+        <label>Message d'accueil</label><textarea id="svMsg" rows="3" placeholder="Notre équipe vous répond sous 24 h ouvrées."></textarea>
       </div>
       <div class="card" style="grid-column:1/-1"><h3>📜 Règles Firebase <span class="row" style="display:flex;gap:6px"><button class="ghost sm" onclick="copyTxt($('rulesTxt').textContent)">📋 Copier</button><a class="ghost sm" style="text-decoration:none" target="_blank" href="https://console.firebase.google.com/project/covo-licences/database/covo-licences-default-rtdb/rules">Ouvrir Firebase ↗</a></span></h3>
         <p class="hint">Règles à coller dans Firebase → Realtime Database → Règles, puis « Publier ».</p>
@@ -576,8 +599,8 @@ function licRow(l){const[s,c]=status(l),[ic,col]=pm(l.produit),used=devUsed(l.id
   const pct=max?Math.min(100,used/max*100):0,mc=ex?'var(--ko)':used>=max?'var(--warn)':'var(--ok)',dur=l.expire?fmtExp(l.expire):'∞ illimitée';
   return `<div class="lic" onclick="openLic('${l.id}')"><div class="pi" style="--pc:${col}">${ic}</div>
     <div class="lm"><div class="lt"><b>${esc(l.produit)}</b><span class="badge ${c}">${s}</span></div>
-    ${max?`<div class="meter"><i style="width:${pct}%;background:${mc}"></i></div><div class="ls">📱 <b>${used}/${max}</b> appareil${max>1?'s':''}${ex?` · <span class="red">⚠ ${ex} en trop</span>`:''} · ${dur}</div>`
-         :`<div class="ls" style="margin-top:6px">📱 appareils illimités · ${dur}</div>`}
+    ${max?`<div class="meter"><i style="width:${pct}%;background:${mc}"></i></div><div class="ls">📱 <b>${used}/${max}</b> appareil${max>1?'s':''}${ex?` · <span class="red">⚠ ${ex} en trop</span>`:''} · ${dur}${savActive(l)?' · 🛟 SAV':''}</div>`
+         :`<div class="ls" style="margin-top:6px">📱 appareils illimités · ${dur}${savActive(l)?' · 🛟 SAV':''}</div>`}
     ${modRow(l)}</div><span class="chev">›</span></div>`}
 function renderAcc(){const q=$('q').value.toLowerCase(),g={};LIC.forEach(l=>(g[l.email]=g[l.email]||[]).push(l));
   const ok=l=>{const k=status(l)[2];return FILTER==='all'||(FILTER==='exc'?excList(l.id).length>0:FILTER==='act'?k!=='off':k===FILTER)};
@@ -641,6 +664,7 @@ function openLic(id){const l=LIC.find(x=>x.id===id);if(!l)return;const[s,c]=stat
   <div class="dw-b">
     <div class="kv"><div><span>Statut</span><b class="badge ${c}">${s}</b></div><div><span>Expiration</span><b>${l.expire?fmtD(new Date(l.expire)):'Illimitée'}</b></div>
       <div><span>Appareils</span><b>${l.maxDevices?devs.length+' / '+l.maxDevices:'Illimités'}</b></div><div><span>Créée le</span><b>${l.cree?new Date(l.cree).toLocaleDateString('fr-FR'):'—'}</b></div></div>
+    ${savBlock(l)}
     <div class="keyb"><span>Clé de licence</span><code id="dwKey">${C().sec?'…':'Secret maître manquant'}</code><div class="row"><button class="ghost sm" onclick="copyTxt($('dwKey').textContent)">📋 Copier</button><button class="ghost sm" onclick="shareKey('${esc(l.email)}','${esc(l.produit)}',$('dwKey').textContent)">📤 Partager</button><button class="ghost sm" onclick="mailKey('${esc(l.email)}','${esc(l.produit)}',$('dwKey').textContent)">✉️ E-mail</button></div></div>
     ${ex.length?`<h4 class="red">⚠ Licence en trop — ${ex.length} appareil${ex.length>1?'s':''} refusé${ex.length>1?'s':''}</h4>`+ex.map(e=>{const u=shortUA(e.ua);return `<div class="dev bad"><span class="di">${u.ic}</span><div><b>${u.txt}</b><small>Tentative le ${fmtD(new Date(e.t))}</small><small class="ipl">${ipLine(e.ip,e.loc,e)}</small></div><button class="ghost sm" onclick="allowExtra('${id}','${e.dev}')">+1</button><button class="ghost sm" onclick="ignoreExc('${id}','${e.dev}')">Ignorer</button></div>`}).join(''):''}
     <h4>📱 Appareils activés${l.maxDevices?` (${devs.length}/${l.maxDevices})`:''}</h4>
@@ -698,22 +722,23 @@ function updPrev(){const[ic,col]=pm(PROD),m=getMods(),e=expiry(),mail=$('mail').
    ${T?`<div class="pv-r"><span>Onglets</span><b>${T.length-off.length}/${T.length}</b></div><div class="mrow" style="justify-content:flex-end">${T.map(t=>`<span class="mi${off.includes(t)?' no':''}" title="${esc(t[2])}">${t[1]}</span>`).join('')}</div>`:''}
    <div class="pv-r"><span>Google Drive</span><b>${gc?(g&&g.clientId?'Client ID injecté':'Client ID par défaut'):'—'}</b></div>
    ${g&&g.email?`<div class="pv-r"><span>Compte Google</span><b>${esc(g.email)}</b></div>`:''}
+   <div class="pv-r"><span>SAV</span><b>${$('savOn')&&$('savOn').checked?'🛟 Inclus':'Non inclus'}</b></div>
    ${EDIT?'<div class="pv-r"><span>Clé</span><b>inchangée</b></div>':''}`}
 $('mail').addEventListener('input',updPrev);
 $('mail').addEventListener('change',()=>{if(EDIT)return;const l=LIC.find(x=>x.email===norm($('mail').value)&&x.produit===PROD);if(l)toast('Ce client a déjà une licence '+PROD+' : elle sera mise à jour (même clé)')});
-function newLic(){EDIT=null;KEEP=false;REQP=null;if($('reqBar'))$('reqBar').hidden=true;$('editBar').hidden=true;$('durKeep').hidden=true;$('mail').value='';$('mail').disabled=false;$('gCid').value='';$('gMail').value='';$('durV').value=0;$('durU').value='j';
+function newLic(){setSav(null);EDIT=null;KEEP=false;REQP=null;if($('reqBar'))$('reqBar').hidden=true;$('editBar').hidden=true;$('durKeep').hidden=true;$('mail').value='';$('mail').disabled=false;$('gCid').value='';$('gMail').value='';$('durV').value=0;$('durU').value='j';
   $('kb').classList.remove('show');pickProd(PROD||prods()[0]);setDev(0);updExp();$('gen').textContent='Générer la licence';closeDrawer();go('new')}
 function editLic(id){const l=LIC.find(x=>x.id===id);if(!l)return;EDIT=id;KEEP=true;closeDrawer();
   $('editBar').hidden=false;$('editTxt').textContent='Modification de '+l.produit+' — '+l.email;$('durKeep').hidden=false;
   $('mail').value=l.email;$('mail').disabled=true;$('gCid').value=(l.google&&l.google.clientId)||'';$('gMail').value=(l.google&&l.google.email)||'';pickProd(l.produit,l.modules,l.onglets);setDev(l.maxDevices||0);updExp();
-  $('kb').classList.remove('show');$('gen').textContent='💾 Enregistrer les modifications';go('new')}
+  setSav(l.sav);$('kb').classList.remove('show');$('gen').textContent='💾 Enregistrer les modifications';go('new')}
 
 /* ── enregistrement ── */
-async function saveLic({mail,prod,mods,maxDev,expire,tabs,google}){
+async function saveLic({mail,prod,mods,maxDev,expire,tabs,google,sav}){
   if(maxDev&&!(C().fbMail&&C().fbPass)){go('set');$('fbMail').focus();throw new Error('Ajoute ton compte admin Firebase pour limiter les appareils')}
   const key=await makeKey(mail,prod),{data,sha:s}=await ghGet(),id=await sha(mail+'|'+prod);
   const lic={id,email:mail,produit:prod,hash:await sha(mail+'|'+prod+'|'+key),cree:new Date().toISOString().slice(0,10),expire:expire||null,actif:true,modules:mods||null,maxDevices:maxDev||null};
-  if(tabs!==undefined)lic.onglets=tabs||null;if(google!==undefined)lic.google=google||null;GDEF=data.google||{};
+  if(sav!==undefined)lic.sav=sav;if(tabs!==undefined)lic.onglets=tabs||null;if(google!==undefined)lic.google=google||null;GDEF=data.google||{};
   const i=data.licences.findIndex(l=>l.id===id);i>=0?data.licences[i]={...data.licences[i],...lic,cree:data.licences[i].cree,actif:data.licences[i].actif}:data.licences.push(lic);
   if(maxDev||data.firebase){data.firebase=FB();await fbPut('limits/'+id,maxDev?String(maxDev).padStart(2,'0'):null);FBOK=true}
   await ghPut(data,s,(i>=0?'Mise à jour':'Nouvelle')+' licence '+prod+' — '+mail);
@@ -725,7 +750,7 @@ async function generate(){const mail=norm($('mail').value),prod=PROD,mods=getMod
   if(!C().sec||!C().tok){go('set');return toast('Configure GitHub et le secret maître','ko')}
   if(BAN.includes(mail))return toast('🚫 Adresse bannie — débannis-la d\'abord','ko');
   const b=$('gen'),txt=b.textContent;b.classList.add('load');b.textContent='Enregistrement…';
-  try{const e=expiry(),r=await saveLic({mail,prod,mods,maxDev:DEVN,expire:e?e.toISOString():null,tabs:getTabs(),google:getGoogle()});
+  try{const e=expiry(),r=await saveLic({mail,prod,mods,maxDev:DEVN,expire:e?e.toISOString():null,tabs:getTabs(),google:getGoogle(),sav:getSav()});
     $('kb').classList.remove('show');void $('kb').offsetWidth;$('kb').classList.add('show');reveal(r.key);if(REQP)injectReq(r.key);
     toast(r.updated?'✔ Licence mise à jour':'✔ Licence créée et sauvegardée');if(navigator.vibrate)navigator.vibrate(30);$('kb').scrollIntoView({behavior:'smooth',block:'center'});if(EDIT){EDIT=null;$('editBar').hidden=true;$('durKeep').hidden=true;$('mail').disabled=false;KEEP=false}
   }catch(e){toast(e.message,'ko')}
@@ -846,7 +871,7 @@ async function unlockSet(){const p=$('lkPass').value,a=ADM();
   if(!a){if(p.length<6)return failLock('6 caractères minimum');if(p!==$('lkConf').value)return failLock('Les deux mots de passe sont différents');
     const salt=hex(crypto.getRandomValues(new Uint8Array(16)));localStorage.setItem('licAdmin',JSON.stringify({salt,hash:await passHash(p,salt)}));toast('🔒 Mot de passe créé')}
   else if(await passHash(p,a.salt)!==a.hash)return failLock('Mot de passe incorrect');
-  UNLOCKED=true;$('setLock').hidden=true;$('setBody').hidden=false;fillCfg();loadRules();loadAppCfg();bump()}
+  UNLOCKED=true;$('setLock').hidden=true;$('setBody').hidden=false;fillCfg();fillSavCfg();loadRules();loadAppCfg();bump()}
 function failLock(m){toast(m,'ko');const c=$('setLock');c.classList.remove('shake');void c.offsetWidth;c.classList.add('shake');$('lkPass').select()}
 function lockSet(manual){UNLOCKED=false;clearTimeout(lockTimer);clearCfgFields();if($('v-set').classList.contains('on'))showLock();if(manual)toast('🔒 Réglages verrouillés')}
 async function changeSetPass(){const o=prompt('Mot de passe actuel :');if(o===null)return;const a=ADM();if(a&&await passHash(o,a.salt)!==a.hash)return toast('Mot de passe incorrect','ko');
@@ -996,10 +1021,54 @@ async function doRefuse(send){const mail=norm($('rMail').value),prod=$('rProd').
   }catch(e){toast(e.message,'ko')}
   b&&b.classList.remove('load')}
 
+
+/* ── SAV ── */
+let SAVDUR='lic',SAVCFG={},SUP=[],SUP_ERR='';
+const savActive=l=>!!(l&&l.sav&&l.sav.on&&(!l.sav.until||new Date(l.sav.until)>new Date()));
+function savEnd(l){return l.sav&&l.sav.until?new Date(l.sav.until):l.expire?new Date(l.expire):null}
+function setSav(sv){$('savOn').checked=!!(sv&&sv.on);$('savKeep').hidden=!(sv&&sv.on&&sv.until);SAVDUR=sv&&sv.on&&sv.until?'keep':'lic';updSav()}
+function updSav(){const on=$('savOn').checked;$('savOpts').hidden=!on;
+  document.querySelectorAll('#savDur button').forEach(b=>b.classList.toggle('act',b.dataset.s===SAVDUR));
+  const g=getSav();$('savTxt').textContent=on?'SAV inclus':'SAV non inclus';
+  $('savSub').textContent=on?(g.until?'Jusqu\'au '+new Date(g.until).toLocaleDateString('fr-FR')+' — bouton 🛟 SAV visible chez le client':'Pendant toute la durée de la licence — bouton 🛟 SAV visible chez le client'):'Le bouton 🛟 SAV ne s\'affichera pas chez le client';
+  if(typeof updPrev==='function')try{updPrev()}catch(e){}}
+document.querySelectorAll('#savDur button').forEach(b=>b.onclick=()=>{SAVDUR=b.dataset.s;updSav()});
+function getSav(){if(!$('savOn').checked)return{on:false};if(SAVDUR==='keep'){const l=LIC.find(x=>x.id===EDIT);return{on:true,until:l&&l.sav?l.sav.until||null:null}}
+  if(SAVDUR==='lic')return{on:true,until:null};const d=new Date();d.setMonth(d.getMonth()+(+SAVDUR));return{on:true,until:d.toISOString()}}
+function savBlock(l){const a=savActive(l),e=savEnd(l),exp=l.sav&&l.sav.on&&!a;
+  return `<div class="savCard ${a?'on':''}"><span class="si">🛟</span><div><b>${a?'SAV inclus':exp?'SAV expiré':'SAV non inclus'}</b><small>${a?(e?'jusqu\'au '+e.toLocaleDateString('fr-FR'):'pendant toute la licence')+' · bouton visible chez le client':exp?'depuis le '+new Date(l.sav.until).toLocaleDateString('fr-FR'):'Le client ne voit pas le bouton SAV'}</small></div>
+    <button class="ghost sm" onclick="quickSav('${l.id}',${a?'false':'true'})">${a?'Retirer':'Activer'}</button></div>`}
+async function quickSav(id,on){const l=LIC.find(x=>x.id===id);if(!l)return;
+  try{await saveLic({mail:l.email,prod:l.produit,mods:l.modules,maxDev:l.maxDevices,expire:l.expire,sav:on?{on:true,until:null}:{on:false}});toast(on?'🛟 SAV activé — le bouton apparaît chez le client':'SAV retiré');openLic(id)}catch(e){toast(e.message,'ko')}}
+function fillSavCfg(){const c=SAVCFG||{};$('svVis').checked=c.visible!==false;$('svMail').value=c.email||'';$('svTel').value=c.tel||'';$('svWa').value=c.whatsapp||'';$('svH').value=c.horaires||'';$('svMsg').value=c.message||''}
+async function saveSavCfg(){if(!UNLOCKED)return showLock();const v={visible:$('svVis').checked,email:$('svMail').value.trim(),tel:$('svTel').value.trim(),whatsapp:$('svWa').value.replace(/[^\d]/g,''),horaires:$('svH').value.trim(),message:$('svMsg').value.trim().slice(0,500)};
+  if(!v.email&&!v.tel&&!v.whatsapp)return toast('Indique au moins un e-mail, un téléphone ou un WhatsApp','ko');
+  try{const{data,sha:s}=await ghGet();data.sav=v;await ghPut(data,s,'Coordonnées SAV');SAVCFG=v;toast('✔ Coordonnées SAV enregistrées')}catch(e){toast(e.message,'ko')}}
+async function loadSup(){SUP_ERR='';
+  try{const t=await fbTok(),r=await fetch(`${FB()}/support.json?auth=${t}&t=${Date.now()}`);
+    if(r.status===401)throw new Error('Règles Firebase à republier (nœud « support »)');if(!r.ok)throw new Error('Firebase '+r.status);
+    SUP=Object.entries(await r.json()||{}).map(([tid,v])=>({tid,...v})).sort((a,b)=>(a.statut==='traite')-(b.statut==='traite')||b.t-a.t)}catch(e){SUP_ERR=e.message}
+  renderSup()}
+function renderSup(){const n=SUP.filter(x=>x.statut!=='traite').length;if($('nbReq')){const rq=REQ.filter(r=>r.statut==='attente').length;$('nbReq').textContent=(rq+n)||''}
+  if(!$('supList'))return;
+  if(SUP_ERR){$('supList').innerHTML=`<div class="al" style="border-color:rgba(245,158,11,.45);background:rgba(245,158,11,.08)"><div class="pi" style="--pc:#f59e0b">🔥</div><div><b>SAV indisponible</b><small>${esc(SUP_ERR)}. Les règles à jour sont dans Réglages → 📜 Règles Firebase.</small></div></div>`;return}
+  $('supList').innerHTML=SUP.length?SUP.map((x,i)=>{const[ic,col]=pm(x.produit),u=shortUA(x.ua||''),l=LIC.find(k=>k.email===x.email&&k.produit===x.produit);
+    return `<div class="rq ${x.statut!=='traite'?'wait':''}" style="animation-delay:${i*.03}s"><div class="pi" style="--pc:${col}">${ic}</div><div class="rqb">
+      <b>${esc(x.sujet||'Demande SAV')} · ${esc(x.produit)}${x.module?' · '+esc(x.module):''}<span class="rqst ${x.statut==='traite'?'accordee':'attente'}">${x.statut==='traite'?'Traitée':'Nouvelle'}</span></b>
+      <small>✉️ ${esc(x.email||'—')}${x.tel?' · 📞 '+esc(x.tel):''} · ${fmtD(new Date(x.t))} · ${u.ic} ${esc(u.txt)}</small>
+      ${l&&!savActive(l)?'<small style="color:#fbbf24">⚠️ Le SAV de ce client n\'est plus actif</small>':''}
+      <div class="rqm">${esc(x.message||'')}</div>
+      <div class="acts2"><button class="btn sm" onclick="replySup('${x.tid}')">✉️ Répondre</button>${x.statut!=='traite'?`<button class="ghost sm" onclick="doneSup('${x.tid}')">✓ Traitée</button>`:''}<button class="ghost sm" onclick="noteSup('${x.tid}')">📝 Note</button><button class="ghost sm" onclick="delSup('${x.tid}')">🗑️</button></div></div></div>`}).join(''):'<div class="empty sm">📭 Aucune demande SAV</div>'}
+function replySup(tid){const x=SUP.find(k=>k.tid===tid);if(!x)return;const sign=localStorage.getItem('licSign')||'ALIANDpro';
+  mailTo(x.email,'Re : '+(x.sujet||'Votre demande SAV')+' — '+x.produit,`Bonjour,\n\nNous avons bien reçu votre demande concernant ${x.produit} et nous vous en remercions.\n\n[Votre réponse]\n\nNous restons à votre disposition pour toute question complémentaire.\n\nCordialement,\n${sign}\n\n— Votre message du ${fmtD(new Date(x.t))} —\n${x.message||''}`)}
+async function doneSup(tid){const x=SUP.find(k=>k.tid===tid);if(!x)return;const{tid:_,...v}=x;try{await fbPut('support/'+tid,{...v,statut:'traite',traite:Date.now()});await loadSup();toast('✓ Demande SAV traitée')}catch(e){toast(e.message,'ko')}}
+async function delSup(tid){if(!confirm('Supprimer cette demande SAV ?'))return;try{await fbPut('support/'+tid,null);await loadSup();toast('Demande supprimée')}catch(e){toast(e.message,'ko')}}
+function noteSup(tid){const x=SUP.find(k=>k.tid===tid);if(x)openNote(null,{type:'Incident',email:x.email,prod:x.produit,title:'SAV — '+(x.sujet||'Demande'),body:`Demande reçue le ${fmtD(new Date(x.t))}${x.tel?' · Tél. '+x.tel:''}\n\nMessage du client :\n${x.message||''}\n\nDiagnostic :\n\nAction menée / résolution :\n`})}
+
 /* ── chargement ── */
 async function load(manual){if(!C().tok){renderAll();if(manual)go('set');return}
-  try{const d=(await ghGet()).data;LIC=d.licences||[];BAN=d.bannis||[];GDEF=d.google||{};if($('gCid')&&PROD)$('gCid').placeholder=GDEF[PROD]?'Par défaut : '+GDEF[PROD]:'123456-abc.apps.googleusercontent.com';await loadFB();if(manual)toast('↻ Données actualisées')}catch(e){toast(e.message,'ko')}
-  if(C().fbMail&&C().fbPass){loadReq();loadNotes()}else renderNotes()}
+  try{const d=(await ghGet()).data;LIC=d.licences||[];BAN=d.bannis||[];SAVCFG=d.sav||{};GDEF=d.google||{};if($('gCid')&&PROD)$('gCid').placeholder=GDEF[PROD]?'Par défaut : '+GDEF[PROD]:'123456-abc.apps.googleusercontent.com';await loadFB();if(manual)toast('↻ Données actualisées')}catch(e){toast(e.message,'ko')}
+  if(C().fbMail&&C().fbPass){loadReq().then(()=>loadSup());loadNotes()}else renderNotes()}
 
 /* ── PWA ── */
 let instEvt=null;addEventListener('beforeinstallprompt',e=>{e.preventDefault();instEvt=e;$('instBtn').hidden=false});
