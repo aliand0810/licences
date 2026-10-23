@@ -1,5 +1,7 @@
 // Usage : <script src="https://aliand0810.github.io/licences/licence_check.js" data-produit="COVO Pro" data-module="Caisse"></script>
 // data-module est facultatif (uniquement pour les satellites)
+// Après validation, les réglages de la licence (onglets autorisés, Client ID Google, compte Google associé)
+// sont enregistrés dans localStorage « licData_<produit> » et envoyés à l'appli via l'événement « licence:data ».
 (function(){
   const DS=(document.currentScript&&document.currentScript.dataset)||{};
   const PRODUIT=DS.produit||'COVO Pro', MODULE=DS.module||'';
@@ -24,7 +26,7 @@
       if(!notExpired(l.expire))return{ok:false,msg:'Licence expirée'};
       if(MODULE&&Array.isArray(l.modules)&&!l.modules.includes(MODULE))return{ok:false,msg:`Le module « ${MODULE} » n'est pas inclus dans votre licence`};
       if(l.maxDevices&&d.firebase){const r=await device(d.firebase,l);if(!r.ok)return r}
-      return{ok:true,expire:l.expire||null};
+      return{ok:true,expire:l.expire||null,data:extra(l,d)};
     }catch(e){ // hors ligne : dernière validation, 7 jours max, sans dépasser l'expiration
       const s=get();
       const ok=s.mail===mail&&s.key===key&&Date.now()-s.t<7*864e5&&notExpired(s.expire);
@@ -66,6 +68,20 @@
     return{ok:false,msg:`Licence en trop : ce code est déjà utilisé sur ${l.maxDevices} appareil${l.maxDevices>1?'s':''}. Contactez le vendeur.`};
   }
 
+  // ── Réglages injectés par Licence Pro ──
+  function extra(l,d){const g=l.google||{},dg=(d.google||{})[PRODUIT]||'';
+    return{onglets:Array.isArray(l.onglets)?l.onglets:null,modules:Array.isArray(l.modules)?l.modules:null,
+      google:{clientId:String(g.clientId||dg||'').trim(),email:String(g.email||'').trim().toLowerCase()}}}
+  function applyData(x){if(!x)return;
+    try{const old=localStorage.getItem('licData_'+PRODUIT)||'',nv=JSON.stringify(x);if(old!==nv)localStorage.setItem('licData_'+PRODUIT,nv);
+      const g=x.google||{};
+      // Client ID Google partagé (COVO Pro et ses satellites lisent tous « gdrive_client_id »)
+      if(g.clientId&&localStorage.getItem('gdrive_client_id')!==g.clientId)localStorage.setItem('gdrive_client_id',g.clientId);
+      if(g.email&&localStorage.getItem('gdrive_hint_email')!==g.email)localStorage.setItem('gdrive_hint_email',g.email);
+    }catch(e){}
+    window.LICENCE_DATA=x;try{dispatchEvent(new CustomEvent('licence:data',{detail:x}))}catch(e){}}
+  try{const c=JSON.parse(localStorage.getItem('licData_'+PRODUIT)||'null');if(c)window.LICENCE_DATA=c}catch(e){}
+
   function save(mail,key,expire){localStorage.setItem(KEY,JSON.stringify({mail:mail.trim().toLowerCase(),key:key.trim().toUpperCase(),expire,t:Date.now()}))}
 
   // Bloque l'app à l'expiration (contrôle chaque seconde) et revérifie la révocation toutes les 20 s
@@ -74,7 +90,7 @@
     if(overlay||busy||(!force&&Date.now()-last<20000))return;
     busy=true;last=Date.now();
     const s=get();const r=await verif(s.mail,s.key);busy=false;
-    if(r.ok){save(s.mail,s.key,r.expire);curExp=r.expire}else lock(r.msg);
+    if(r.ok){save(s.mail,s.key,r.expire);applyData(r.data);curExp=r.expire}else lock(r.msg);
   }
   let curExp=null;
   function watch(expire){
@@ -135,7 +151,7 @@
       if(r.statut==='accordee'&&r.cle){clearInterval(pollT);if(w)w.textContent='✅ Licence accordée — installation…';
         Object.keys(localStorage).filter(x=>x.startsWith('licSlot_')).forEach(x=>localStorage.removeItem(x));
         const v=await verif(r.email||q.mail,r.cle);
-        if(v.ok){save(r.email||q.mail,r.cle,v.expire);localStorage.removeItem(RKEY);overlay.remove();overlay=null;watch(v.expire);
+        if(v.ok){save(r.email||q.mail,r.cle,v.expire);applyData(v.data);localStorage.removeItem(RKEY);overlay.remove();overlay=null;watch(v.expire);
           const t=document.createElement('div');t.textContent='✅ Licence '+PRODUIT+' activée';t.style.cssText='position:fixed;left:50%;top:18px;transform:translateX(-50%);z-index:2147483647;background:#10b981;color:#fff;padding:12px 18px;border-radius:12px;font:600 14px system-ui;box-shadow:0 8px 24px rgba(0,0,0,.3)';document.body.appendChild(t);setTimeout(()=>t.remove(),4000);return}
         return showRefusInstall(r,q,v.msg)}
       if(w)w.textContent='Toujours en attente — dernière vérification à '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
@@ -155,7 +171,7 @@
     overlay.querySelector('#ry').onclick=async()=>{const b=overlay.querySelector('#ry');b.textContent='Vérification…';b.disabled=true;
       Object.keys(localStorage).filter(x=>x.startsWith('licSlot_')).forEach(x=>localStorage.removeItem(x));
       const v=await verif(r.email||q.mail,r.cle);
-      if(v.ok){save(r.email||q.mail,r.cle,v.expire);localStorage.removeItem(RKEY);overlay.remove();overlay=null;watch(v.expire);return}
+      if(v.ok){save(r.email||q.mail,r.cle,v.expire);applyData(v.data);localStorage.removeItem(RKEY);overlay.remove();overlay=null;watch(v.expire);return}
       b.textContent='Réessayer';b.disabled=false;overlay.querySelector('#rw').textContent='Toujours refusée : '+(v.msg||'')+' ('+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})+')'};
     overlay.querySelector('#rk').onclick=()=>{overlay.remove();overlay=null;lock(null,true)};
     overlay.querySelector('#rn2').onclick=()=>{localStorage.removeItem(RKEY);showRequestForm()};
@@ -179,7 +195,7 @@
     overlay.querySelector('#lb').onclick=async()=>{
       const m=overlay.querySelector('#lm').value,k=overlay.querySelector('#lk').value,b=overlay.querySelector('#lb');
       b.textContent='Vérification…';Object.keys(localStorage).filter(x=>x.startsWith('licSlot_')).forEach(x=>localStorage.removeItem(x));const r=await verif(m,k);b.textContent='Activer';
-      if(r.ok){save(m,k,r.expire);overlay.remove();overlay=null;watch(r.expire)}
+      if(r.ok){save(m,k,r.expire);applyData(r.data);overlay.remove();overlay=null;watch(r.expire)}
       else overlay.querySelector('#le').textContent=r.msg;
     };
   }
@@ -204,7 +220,7 @@
 
   (async()=>{
     const s=get();
-    if(s.mail){const r=await verif(s.mail,s.key);if(r.ok){save(s.mail,s.key,r.expire);return watch(r.expire)}lock(r.msg)}
+    if(s.mail){const r=await verif(s.mail,s.key);if(r.ok){save(s.mail,s.key,r.expire);applyData(r.data);return watch(r.expire)}lock(r.msg)}
     else lock();
   })();
 })();
