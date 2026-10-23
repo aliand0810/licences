@@ -18,7 +18,14 @@
         "Fidélité",
         "Admin"
       ],
-      "maxDevices": 5
+      "maxDevices": 5,
+      "onglets": [
+        "gestionhub",
+        "historique",
+        "clotures",
+        "paiements"
+      ],
+      "google": null
     },
     {
       "id": "4dd7a434fd4813907afaaab9fe377a11c09f02ec9317bdbefa5d9246d6ade619",
