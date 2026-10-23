@@ -2,7 +2,9 @@
   "rules": {
     "limits": {
       ".read": true,
-      "$lic": { ".write": "auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63'" }
+      "$lic": {
+        ".write": "auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63'"
+      }
     },
     "devices": {
       ".read": true,
@@ -22,6 +24,14 @@
           ".write": "newData.exists() && $dev.length <= 40 && root.child('limits').child($lic).exists()",
           ".validate": "newData.hasChildren(['t'])"
         }
+      }
+    },
+    "requests": {
+      ".read": "auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63'",
+      "$rid": {
+        ".read": true,
+        ".write": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (!data.exists() && newData.exists())",
+        ".validate": "$rid.length >= 20 && $rid.length <= 40 && newData.hasChildren(['email','produit','t']) && newData.child('email').isString() && newData.child('email').val().length <= 120 && newData.child('produit').isString() && newData.child('produit').val().length <= 60 && (!newData.child('message').exists() || (newData.child('message').isString() && newData.child('message').val().length <= 1000)) && (!newData.child('nom').exists() || (newData.child('nom').isString() && newData.child('nom').val().length <= 80))"
       }
     }
   }
