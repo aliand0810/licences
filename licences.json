@@ -25,7 +25,10 @@
         "clotures",
         "paiements"
       ],
-      "google": null
+      "google": {
+        "clientId": "531822941380-u6o0c9lsk4jsppau5mmrt1enst973r9d.apps.googleusercontent.com",
+        "email": "covo.trv@gmail.com"
+      }
     },
     {
       "id": "4dd7a434fd4813907afaaab9fe377a11c09f02ec9317bdbefa5d9246d6ade619",
