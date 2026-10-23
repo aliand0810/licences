@@ -216,6 +216,34 @@ canvas{max-height:270px}
 .lockCard h2{margin:6px 0 6px;font-size:1.25rem}.lockIc{font-size:2.6rem}
 .lockCard.shake{animation:shake .4s}
 @keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+
+/* modale */
+.mdl{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none}
+.md-bg{position:absolute;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);opacity:0;transition:.2s}
+.md{position:relative;width:min(660px,94vw);max-height:90vh;display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--bd);border-radius:22px;transform:scale(.96) translateY(12px);opacity:0;transition:.25s cubic-bezier(.2,.9,.3,1);box-shadow:0 30px 80px rgba(0,0,0,.5)}
+.mdl.on{pointer-events:auto}.mdl.on .md-bg{opacity:1}.mdl.on .md{transform:none;opacity:1}
+.md-h{display:flex;gap:12px;align-items:center;padding:18px 20px;border-bottom:1px solid var(--bd)}.md-h h2{margin:0;font-size:1.12rem}.md-h span{font-size:.78rem;color:var(--mut)}
+.md-h .x{margin-left:auto;background:var(--glass);border:1px solid var(--bd);width:36px;height:36px;padding:0;flex-shrink:0}
+.md-b{overflow:auto;padding:16px 20px 20px}
+.md-f{display:flex;gap:8px;justify-content:flex-end;padding:14px 20px calc(14px + env(safe-area-inset-bottom));border-top:1px solid var(--bd);flex-wrap:wrap}
+textarea{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--bd);background:rgba(0,0,0,.3);color:var(--txt);font:inherit;font-size:.9rem;line-height:1.6;resize:vertical;outline:none;transition:.2s}
+textarea:focus{border-color:var(--a2);box-shadow:0 0 0 4px rgba(6,182,212,.14)}
+.tchips{display:flex;flex-wrap:wrap;gap:6px}.tchips button{padding:8px 12px;border-radius:999px;background:var(--glass);border:1px solid var(--bd);color:var(--txt);font-size:.82rem;font-weight:600}
+.tchips button.act{background:rgba(124,58,237,.25);border-color:#7c3aed}.tchips.red button.act{background:rgba(244,63,94,.2);border-color:#f43f5e;color:#fecdd3}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.chk{display:flex;align-items:center;gap:10px;text-transform:none;letter-spacing:0;font-size:.88rem;color:var(--txt);font-weight:600;margin-top:16px;cursor:pointer}.chk input{width:20px;height:20px;accent-color:#7c3aed;flex-shrink:0}
+.opt{text-transform:none;letter-spacing:0;font-weight:500;color:var(--mut)}
+.dueRow{display:flex;gap:6px}.dueRow input{flex:1;min-width:0}
+#nPrio button{font-size:.78rem;padding:8px 6px}
+/* notes */
+.notes{display:grid;gap:10px}
+.nbar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.note{border:1px solid var(--bd);border-left:4px solid var(--nc);border-radius:14px;background:var(--glass);padding:12px 14px;animation:up .35s both}
+.note.done{opacity:.62}
+.nh{display:flex;gap:10px;align-items:flex-start}.nic{font-size:1.3rem;line-height:1.2}.nm{flex:1;min-width:0}.nm b{display:block;font-size:.93rem}.nm small{color:var(--mut);font-size:.75rem}
+.nb2{margin-top:8px;font-size:.86rem;line-height:1.6;white-space:pre-wrap;word-break:break-word;max-height:8em;overflow:hidden;cursor:pointer;-webkit-mask-image:linear-gradient(#000 65%,transparent);mask-image:linear-gradient(#000 65%,transparent);padding:10px 12px;border-radius:10px;background:rgba(0,0,0,.18)}
+.nb2.open{max-height:none;-webkit-mask-image:none;mask-image:none}
+.nf{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:10px}.nact{margin-left:auto;display:flex;gap:4px}
 /* ── Téléphone ── */
 .fab{display:none}
 .sheetHandle{display:none}
@@ -229,6 +257,11 @@ canvas{max-height:270px}
  .chips button{flex-shrink:0}
  .toolbar input{max-width:none}
  .lic{padding:14px 16px}
+ .mdl{place-items:end center}.md{width:100%;max-height:94vh;border-radius:22px 22px 0 0;transform:translateY(100%)}.mdl.on .md{transform:none}
+ .g2{grid-template-columns:1fr;gap:0}.md-f .btn{flex:1 1 100%;order:-1}.md-f .ghost{flex:1}
+ textarea,select{font-size:16px}
+ .nact{margin-left:0;width:100%;justify-content:flex-end}
+ nav button span:not(.ni){font-size:.56rem}
  .fab{display:grid;place-items:center;position:fixed;right:18px;bottom:calc(84px + env(safe-area-inset-bottom));width:58px;height:58px;border-radius:18px;background:var(--grad);font-size:1.8rem;box-shadow:0 12px 30px rgba(124,58,237,.5);z-index:35}
  body.onNew .fab,body.onSet .fab{display:none}
  /* panneau détail en feuille du bas */
@@ -276,6 +309,7 @@ canvas{max-height:270px}
     <button data-v="acc"><span class="ni">👥</span><span>Comptes</span></button>
     <button data-v="new"><span class="ni">➕</span><span>Nouvelle licence</span></button>
     <button data-v="req"><span class="ni">📨</span><span>Demandes</span><i class="nb" id="nbReq"></i></button>
+    <button data-v="notes"><span class="ni">📝</span><span>Notes</span><i class="nb" id="nbNotes"></i></button>
     <button data-v="alerts"><span class="ni">⚠️</span><span>Alertes</span><i class="nb" id="nbAl"></i></button>
     <button data-v="set"><span class="ni">⚙️</span><span>Réglages</span></button>
   </nav>
@@ -301,6 +335,7 @@ canvas{max-height:270px}
       <div class="card"><h3>🍩 Par logiciel</h3><canvas id="cDonut"></canvas></div>
     </div>
     <div class="card"><h3>⚠️ Dernières alertes <button class="ghost sm" onclick="go('alerts')">Tout voir</button></h3><div id="dashAl"></div></div>
+    <div class="card" style="margin-top:16px"><h3>📌 Notes à traiter <span style="display:flex;gap:6px"><button class="ghost sm" onclick="openNote()">＋ Note</button><button class="ghost sm" onclick="go('notes')">Tout voir</button></span></h3><div id="dashNotes" class="notes"></div></div>
   </section>
 
   <!-- COMPTES -->
@@ -361,9 +396,17 @@ canvas{max-height:270px}
 
   <!-- DEMANDES -->
   <section id="v-req" class="view">
-    <div class="card"><h3>📨 Demandes de licence <button class="ghost sm" style="margin-left:auto" onclick="loadReq().then(()=>toast('↻ Demandes actualisées'))">↻ Actualiser</button></h3>
+    <div class="card"><h3>📨 Demandes de licence <span style="display:flex;gap:6px;margin-left:auto"><button class="ghost sm danger" onclick="openRefuse()">🚫 Refuser une demande reçue ailleurs</button><button class="ghost sm" onclick="loadReq().then(()=>toast('↻ Demandes actualisées'))">↻</button></span></h3>
       <p class="hint">Les clients font leur demande depuis l'écran de licence de tes logiciels. « Accorder » ouvre la création de licence : à la génération, la clé est envoyée et activée automatiquement sur l'appareil du client.</p>
       <div id="reqList"></div></div>
+  </section>
+
+  <!-- NOTES -->
+  <section id="v-notes" class="view">
+    <div class="toolbar"><input id="nq" placeholder="🔎 Rechercher dans les notes…" oninput="renderNotes()">
+      <div class="chips" id="nflt"><button data-f="open" class="act">À traiter</button><button data-f="due">📌 Rappels</button><button data-f="ref">🚫 Refus</button><button data-f="done">✓ Traitées</button><button data-f="all">Toutes</button></div></div>
+    <div class="nbar"><button class="btn" onclick="openNote()">＋ Nouvelle note</button><button class="ghost danger" onclick="openRefuse()">🚫 Refuser une demande</button></div>
+    <div id="notesList" class="notes"></div>
   </section>
 
   <!-- ALERTES -->
@@ -429,6 +472,8 @@ canvas{max-height:270px}
 </main>
 </div>
 
+<div class="mdl" id="mdl"><div class="md-bg" onclick="closeModal()"></div><div class="md" id="md"></div></div>
+<datalist id="mailList"></datalist>
 <div class="drawer" id="drawer"><div class="dw-bg" onclick="closeDrawer()"></div><div class="dw" id="dw"></div></div>
 <button class="fab" onclick="newLic()" aria-label="Nouvelle licence">＋</button>
 <div class="toast" id="toast"></div>
@@ -455,7 +500,7 @@ function MODS(){try{return C().mods?JSON.parse(C().mods):DEF_MODS}catch(e){retur
 const pm=p=>PMETA[p]||['📦',PAL[Math.max(0,prods().indexOf(p))%PAL.length]];
 
 /* ── navigation ── */
-const TITLES={dash:["Vue d'ensemble","Tes licences et tes clients en un coup d'œil"],acc:['Comptes clients','Chaque client, ses licences, ses appareils et ses modules'],new:['Nouvelle licence','Crée ou modifie une licence en quelques secondes'],alerts:['Licences en trop','Appareils refusés car la limite est atteinte'],req:['Demandes','Demandes de licence envoyées par tes clients'],set:['Réglages','Connexions GitHub et Firebase']};
+const TITLES={dash:["Vue d'ensemble","Tes licences et tes clients en un coup d'œil"],acc:['Comptes clients','Chaque client, ses licences, ses appareils et ses modules'],new:['Nouvelle licence','Crée ou modifie une licence en quelques secondes'],alerts:['Licences en trop','Appareils refusés car la limite est atteinte'],req:['Demandes','Demandes de licence envoyées par tes clients'],notes:['Notes','Journal professionnel : appels, échanges, suivis et refus'],set:['Réglages','Connexions GitHub et Firebase']};
 function go(v){if(v!=='set'&&UNLOCKED)lockSet();if(v==='set'&&!UNLOCKED)showLock();document.querySelectorAll('.view').forEach(x=>x.classList.toggle('on',x.id==='v-'+v));
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('act',b.dataset.v===v));
   $('vTitle').textContent=TITLES[v][0];$('vSub').textContent=TITLES[v][1];
@@ -603,6 +648,7 @@ function openLic(id){const l=LIC.find(x=>x.id===id);if(!l)return;const[s,c]=stat
     ${all?`<h4>🧩 Modules satellites</h4><p class="hint">Les satellites utilisent cette licence ${esc(l.produit)} : seuls les modules ✓ sont accessibles, avec la même limite d'appareils.</p><div class="mgrid">${all.map(m=>{const ok=!l.modules||l.modules.includes(m);return `<div class="mg${ok?'':' no'}"><span>${MICON[m]||'•'}</span>${esc(m)}<i>${ok?'✓':'✕'}</i></div>`}).join('')}</div>`:''}
     ${TABS_DEF[l.produit]?(()=>{const off=tabsOff(l).map(t=>t[0]);return `<h4>🗂️ Onglets de la plateforme</h4><p class="hint">${off.length?off.length+' onglet'+(off.length>1?'s':'')+' désactivé'+(off.length>1?'s':'')+' chez ce client.':'Tous les onglets sont disponibles.'}</p><div class="mgrid">${TABS_DEF[l.produit].map(t=>{const ok=!off.includes(t[0]);return `<div class="mg${ok?'':' no'}"><span>${t[1]}</span>${esc(t[2])}<i>${ok?'✓':'✕'}</i></div>`}).join('')}</div>`})():''}
     ${(()=>{const g=l.google||{},cid=g.clientId||GDEF[l.produit]||'';return `<h4>☁️ Google Drive</h4><div class="kv"><div style="grid-column:1/-1"><span>Client ID Google${g.clientId?'':cid?' (par défaut)':''}</span><b style="font-family:'JetBrains Mono',monospace;font-size:.72rem;word-break:break-all">${cid?esc(cid):'— non injecté'}</b></div><div style="grid-column:1/-1"><span>Compte Google associé</span><b>${g.email?esc(g.email):'—'}</b></div></div>`})()}
+    ${clientNotesHTML(l)}
   </div>
   <div class="dw-f"><button class="btn" onclick="editLic('${id}')">✏️ Modifier</button><button class="ghost${l.actif?' danger':''}" onclick="revoke('${id}')">${l.actif?'⛔ Révoquer':'↺ Réactiver'}</button>${!l.actif?`<button class="ghost danger" title="Supprimer et bannir" onclick="delLic('${id}')">🗑</button>`:''}</div>`;
   $('drawer').classList.add('on');
@@ -767,7 +813,7 @@ function renderReq(){const n=REQ.filter(r=>r.statut==='attente').length;if($('nb
       ${r.statut==='accordee'?`<small>✅ Licence injectée le ${fmtD(new Date(r.traite||r.t))}</small>`:''}
       ${r.statut==='refusee'&&r.motif?`<small>Motif : ${esc(r.motif)}</small>`:''}
       <div class="acts2">${r.statut==='attente'?`<button class="btn sm" onclick="grantReq('${r.rid}')">✅ Accorder</button><button class="ghost sm" onclick="refuseReq('${r.rid}')">❌ Refuser</button>`:''}
-        <button class="ghost sm" onclick="delReq('${r.rid}')">🗑️ Supprimer</button></div>
+        <button class="ghost sm" onclick="noteReq('${r.rid}')">📝 Note</button><button class="ghost sm" onclick="delReq('${r.rid}')">🗑️ Supprimer</button></div>
     </div></div>`}).join(''):'<div class="empty">📭 Aucune demande pour le moment</div>'}
 function grantReq(rid){const r=REQ.find(x=>x.rid===rid);if(!r)return;newLic();REQP=rid;
   $('mail').value=norm(r.email);if(prods().includes(r.produit))pickProd(r.produit);else{PROD=r.produit;renderTiles()}
@@ -777,7 +823,8 @@ function cancelReqGrant(){REQP=null;$('reqBar').hidden=true}
 async function injectReq(key){const rid=REQP;REQP=null;$('reqBar').hidden=true;const r=REQ.find(x=>x.rid===rid);if(!r)return;
   try{const{rid:_,...v}=r;await fbPut('requests/'+rid,{...v,email:norm($('mail').value)||v.email,produit:PROD,statut:'accordee',cle:key,traite:Date.now()});toast('📲 Licence injectée — elle s\'active toute seule chez le client');await loadReq()}
   catch(e){toast('Licence créée mais injection impossible : '+e.message,'ko')}}
-async function refuseReq(rid){const r=REQ.find(x=>x.rid===rid);if(!r)return;const motif=prompt('Refuser la demande de '+(r.nom||r.email)+' ?\n\nMotif (facultatif, affiché au client) :','');if(motif===null)return;
+function refuseReq(rid){openRefuse(rid)}
+async function refuseReqOld(rid){const r=REQ.find(x=>x.rid===rid);if(!r)return;const motif=prompt('Refuser la demande de '+(r.nom||r.email)+' ?\n\nMotif (facultatif, affiché au client) :','');if(motif===null)return;
   try{const{rid:_,...v}=r;await fbPut('requests/'+rid,{...v,statut:'refusee',motif:motif.slice(0,200),traite:Date.now()});toast('Demande refusée');await loadReq()}catch(e){toast(e.message,'ko')}}
 async function delReq(rid){if(!confirm('Supprimer cette demande ?'))return;try{await fbPut('requests/'+rid,null);await loadReq();toast('Demande supprimée')}catch(e){toast(e.message,'ko')}}
 let UNLOCKED=false,lockTimer=null;
@@ -807,10 +854,152 @@ async function changeSetPass(){const o=prompt('Mot de passe actuel :');if(o===nu
   const salt=hex(crypto.getRandomValues(new Uint8Array(16)));localStorage.setItem('licAdmin',JSON.stringify({salt,hash:await passHash(n,salt)}));toast('✔ Mot de passe modifié')}
 function forgotSet(){if(!confirm("Réinitialiser le mot de passe ?\n\nPar sécurité, ton token GitHub, ton secret maître et ton mot de passe Firebase seront effacés de cet appareil. Tu devras les ressaisir (le secret maître doit être EXACTEMENT le même, sinon les clés changeront).\n\nTes licences sur GitHub ne sont pas touchées."))return;
   const c=C();delete c.tok;delete c.sec;delete c.fbPass;localStorage.setItem('licCfg',JSON.stringify(c));localStorage.removeItem('licAdmin');FBT=null;FBOK=false;renderConn();showLock();toast('Mot de passe réinitialisé — crée-en un nouveau')}
+
+/* ── Fenêtre modale ── */
+function openModal(html){$('md').innerHTML=html;$('mdl').classList.add('on');setTimeout(()=>{const f=$('md').querySelector('input:not([type=checkbox]),textarea');if(f&&innerWidth>860)f.focus()},150)}
+function closeModal(){$('mdl').classList.remove('on')}
+document.addEventListener('keydown',e=>e.key==='Escape'&&closeModal());
+function chips(id,cb){$(id).querySelectorAll('button').forEach(b=>b.onclick=()=>{$(id).querySelectorAll('button').forEach(x=>x.classList.remove('act'));b.classList.add('act');cb(b)})}
+function mailTo(to,subj,body){location.href=`mailto:${to}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`}
+function shareTxt(title,text){if(navigator.share)navigator.share({title,text}).catch(()=>{});else copyTxt(text)}
+const uid=()=>'n'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const today=()=>{const d=new Date();return new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,10)};
+const dfr=d=>new Date(d+'T12:00').toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'});
+
+/* ── Notes professionnelles (Firebase « crm/notes », privé) ── */
+const NTYPES={'Appel':'📞','E-mail':'✉️','Rendez-vous':'📅','Demande de licence':'🧾','Demande refusée':'🚫','Incident':'🛠️','Facturation':'💶','Suivi':'📌','Autre':'📝'};
+const NTPL={
+ 'Appel':"Interlocuteur : {client}\nObjet de l'appel : \n\nPoints abordés :\n• \n• \n\nDécisions / engagements :\n• \n\nProchaine étape : ",
+ 'E-mail':"Expéditeur : {client}\nObjet : \n\nRésumé de l'échange :\n\n\nRéponse apportée :\n\nSuite à donner : ",
+ 'Rendez-vous':"Participants : {client}\nDate / lieu : \nOrdre du jour :\n• \n\nCompte rendu :\n\n\nActions à mener :\n• ",
+ 'Demande de licence':"Client : {client}\nLogiciel demandé : {prod}\nNombre d'appareils souhaité : \nDurée souhaitée : \nModules demandés : \n\nVérifications :\n• Identité / société : \n• Paiement : \n\nDécision : ",
+ 'Incident':"Client : {client}\nLogiciel : {prod}\nAppareil / navigateur : \n\nDescription du problème :\n\n\nDiagnostic :\n\nAction menée / résolution :\n\nStatut : ",
+ 'Facturation':"Client : {client}\nLogiciel : {prod}\nMontant : \nÉchéance : \nMoyen de paiement : \nStatut du paiement : \n\nRemarques : ",
+ 'Suivi':"Client : {client}\nObjet du suivi : \n\nÉtat actuel :\n\nProchaine action : ",
+ 'Demande refusée':'','Autre':''};
+let NOTES=[],NOTES_ERR='',NFILTER='open',NE=null;
+async function loadNotes(){NOTES_ERR='';
+  if(!(C().fbMail&&C().fbPass)){NOTES_ERR='Ajoute ton compte admin Firebase dans Réglages pour activer les notes';renderNotes();return}
+  try{const t=await fbTok(),r=await fetch(`${FB()}/crm/notes.json?auth=${t}&t=${Date.now()}`);
+    if(r.status===401)throw new Error('Règles Firebase à republier (nœud « crm »)');if(!r.ok)throw new Error('Firebase '+r.status);
+    NOTES=Object.values(await r.json()||{}).filter(Boolean).sort((a,b)=>(b.u||b.t)-(a.u||a.t))}catch(e){NOTES_ERR=e.message}
+  renderNotes()}
+const isDue=n=>n.status!=='done'&&n.due&&n.due<=today();
+function noteCard(n,i=0){const ic=NTYPES[n.type]||'📝',pc={Haute:'#f59e0b',Urgente:'#f43f5e'}[n.prio]||(n.type==='Demande refusée'?'#f43f5e':'#7c3aed'),pi=n.prod?pm(n.prod)[0]:'';
+  const due=n.due&&n.status!=='done'?`<span class="badge ${isDue(n)?'b-ko':'b-w'}">📌 ${isDue(n)?'À relancer depuis le':'Rappel le'} ${dfr(n.due)}</span>`:'';
+  return `<article class="note${n.status==='done'?' done':''}" style="--nc:${pc};animation-delay:${Math.min(i,10)*.03}s">
+    <div class="nh"><span class="nic">${ic}</span><div class="nm"><b>${esc(n.title||n.type)}</b><small>${esc(n.type)}${n.client||n.email?' · 👤 '+esc(n.client||n.email):''}${n.prod?' · '+pi+' '+esc(n.prod):''} · ${fmtD(new Date(n.t))}${n.u&&n.u-n.t>6e4?' · modifiée':''}</small></div></div>
+    ${n.body?`<div class="nb2" onclick="this.classList.toggle('open')">${esc(n.body)}</div>`:''}
+    <div class="nf">${n.prio&&n.prio!=='Normale'?`<span class="badge" style="background:color-mix(in srgb,${pc} 20%,transparent);color:${pc}">${n.prio==='Urgente'?'🔴':'🟠'} ${n.prio}</span>`:''}${due}${n.motif?`<span class="badge b-ko">${esc(n.motif)}</span>`:''}${n.status==='done'?'<span class="badge b-ok">✓ Traitée</span>':''}
+      <span class="nact"><button class="ghost sm" title="${n.status==='done'?'Rouvrir':'Marquer comme traitée'}" onclick="toggleNote('${n.id}')">${n.status==='done'?'↺':'✓'}</button><button class="ghost sm" title="Modifier" onclick="openNote('${n.id}')">✏️</button><button class="ghost sm" title="Exporter en PDF / imprimer" onclick="printNote('${n.id}')">🖨</button><button class="ghost sm" title="Supprimer" onclick="delNote('${n.id}')">🗑</button></span></div></article>`}
+function renderNotes(){const due=NOTES.filter(isDue).length;if($('nbNotes'))$('nbNotes').textContent=due||'';
+  const warn=NOTES_ERR?`<div class="al" style="border-color:rgba(245,158,11,.45);background:rgba(245,158,11,.08)"><div class="pi" style="--pc:#f59e0b">🔥</div><div><b>Notes indisponibles</b><small>${esc(NOTES_ERR)}. Les règles à jour sont dans Réglages → 📜 Règles Firebase.</small></div></div>`:'';
+  if($('notesList')){const q=($('nq').value||'').toLowerCase();
+    const L=NOTES.filter(n=>NFILTER==='all'||(NFILTER==='open'?n.status!=='done':NFILTER==='done'?n.status==='done':NFILTER==='due'?isDue(n)||(n.due&&n.status!=='done'):n.type==='Demande refusée'))
+      .filter(n=>[n.title,n.body,n.email,n.client,n.prod,n.type,n.motif].join(' ').toLowerCase().includes(q));
+    if(NFILTER==='due')L.sort((a,b)=>(a.due||'').localeCompare(b.due||''));
+    $('notesList').innerHTML=warn+(L.length?L.map(noteCard).join(''):`<div class="empty">${NOTES.length?'Aucune note dans cette vue':'📝 Aucune note — clique sur « Nouvelle note » pour commencer'}</div>`)}
+  if($('dashNotes')){const D=NOTES.filter(n=>n.status!=='done').sort((a,b)=>(isDue(b)-isDue(a))||(a.due||'9').localeCompare(b.due||'9')).slice(0,3);
+    $('dashNotes').innerHTML=warn+(D.length?D.map(noteCard).join(''):'<div class="empty sm">✅ Rien à traiter</div>')}
+  const ml=$('mailList');if(ml)ml.innerHTML=[...new Set([...LIC.map(l=>l.email),...REQ.map(r=>norm(r.email)),...NOTES.map(n=>n.email).filter(Boolean)])].map(m=>`<option value="${esc(m)}">`).join('')}
+document.querySelectorAll('#nflt button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#nflt button').forEach(x=>x.classList.remove('act'));b.classList.add('act');NFILTER=b.dataset.f;renderNotes()});
+function clientNotesHTML(l){const ns=NOTES.filter(n=>n.email===l.email);
+  return `<h4 style="display:flex;justify-content:space-between;align-items:center">📝 Notes sur ce client (${ns.length}) <button class="ghost sm" onclick="openNote(null,{email:'${esc(l.email)}',prod:'${esc(l.produit)}',type:'Suivi'})">＋ Note</button></h4>${ns.length?ns.slice(0,5).map(noteCard).join(''):'<div class="empty sm">Aucune note pour ce client</div>'}`}
+function fillTpl(t){return (NTPL[t]||'').replace('{client}',[$('nClient').value.trim(),$('nMail').value.trim()].filter(Boolean).join(' — ')).replace('{prod}',$('nProd').value||'')}
+function insertTpl(){const t=NE.type,b=$('nBody');if(b.value.trim()&&!confirm('Remplacer le contenu par le modèle « '+t+' » ?'))return;b.value=fillTpl(t);b.focus()}
+function dueIn(d){const x=new Date();x.setDate(x.getDate()+d);$('nDue').value=new Date(x-x.getTimezoneOffset()*6e4).toISOString().slice(0,10)}
+function openNote(id,preset={}){const n=id?NOTES.find(x=>x.id===id):{type:'Appel',prio:'Normale',status:'open',...preset};if(!n)return;NE={...n};closeDrawer();
+  openModal(`<div class="md-h"><div class="pi" style="--pc:#7c3aed">${NTYPES[n.type]||'📝'}</div><div><h2>${id?'Modifier la note':'Nouvelle note'}</h2><span>${id?'Créée le '+fmtD(new Date(n.t)):'Note professionnelle privée — visible uniquement par toi'}</span></div><button class="x" onclick="closeModal()">✕</button></div>
+  <div class="md-b">
+    <label style="margin-top:0">Type de note</label><div class="tchips" id="nType">${Object.keys(NTYPES).filter(t=>t!=='Demande refusée'||n.type===t).map(t=>`<button type="button" data-t="${t}" class="${t===n.type?'act':''}">${NTYPES[t]} ${t}</button>`).join('')}</div>
+    <div class="g2"><div><label>Client (e-mail)</label><input id="nMail" list="mailList" type="email" inputmode="email" autocapitalize="off" spellcheck="false" value="${esc(n.email||'')}" placeholder="client@exemple.fr"></div>
+      <div><label>Nom / société</label><input id="nClient" value="${esc(n.client||'')}" placeholder="Facultatif"></div></div>
+    <label>Logiciel concerné</label><select id="nProd"><option value="">— Aucun —</option>${prods().map(p=>`<option ${p===n.prod?'selected':''}>${esc(p)}</option>`).join('')}</select>
+    <label>Objet</label><input id="nTitle" value="${esc(n.title||'')}" placeholder="Ex. : Appel de suivi — installation sur 2 postes">
+    <label class="lrow">Compte rendu <a href="#" onclick="insertTpl();return false">📋 Modèle « <span id="nTplName">${esc(n.type)}</span> »</a></label>
+    <textarea id="nBody" rows="10" placeholder="Rédige ta note…">${esc(n.body||'')}</textarea>
+    <div class="g2"><div><label>Priorité</label><div class="seg" id="nPrio">${['Normale','Haute','Urgente'].map(p=>`<button type="button" data-p="${p}" class="${p===(n.prio||'Normale')?'act':''}">${{Normale:'⚪',Haute:'🟠',Urgente:'🔴'}[p]} ${p}</button>`).join('')}</div></div>
+      <div><label>Rappel / date de suivi</label><div class="dueRow"><input id="nDue" type="date" value="${n.due||''}"><button type="button" class="ghost sm" onclick="dueIn(1)">Demain</button><button type="button" class="ghost sm" onclick="dueIn(7)">+7 j</button><button type="button" class="ghost sm" title="Sans rappel" onclick="$('nDue').value=''">✕</button></div></div></div>
+    <label class="chk"><input type="checkbox" id="nDone" ${n.status==='done'?'checked':''}> ✓ Note traitée (archivée)</label>
+  </div>
+  <div class="md-f"><button class="ghost" onclick="closeModal()">Annuler</button><button class="btn" id="nSave" onclick="saveNoteForm()">💾 Enregistrer la note</button></div>`);
+  chips('nType',b=>{const old=NE.type;NE.type=b.dataset.t;$('nTplName').textContent=NE.type;const body=$('nBody');if(!body.value.trim()||body.value===fillTpl(old))body.value=fillTpl(NE.type);$('md').querySelector('.md-h .pi').textContent=NTYPES[NE.type]});
+  chips('nPrio',b=>NE.prio=b.dataset.p);
+  if(!id&&!$('nBody').value)$('nBody').value=fillTpl(n.type)}
+async function saveNoteForm(){const title=$('nTitle').value.trim(),body=$('nBody').value.trim(),email=norm($('nMail').value);
+  if(!title&&!body)return toast('Ajoute au moins un objet ou un compte rendu','ko');
+  if(email&&!/^\S+@\S+\.\S+$/.test(email))return toast('E-mail du client invalide','ko');
+  const now=Date.now(),n={...NE,id:NE.id||uid(),t:NE.t||now,u:now,email,client:$('nClient').value.trim(),prod:$('nProd').value,title:title||NE.type,body,prio:NE.prio||'Normale',due:$('nDue').value||'',status:$('nDone').checked?'done':'open'};
+  const b=$('nSave');b.classList.add('load');
+  try{await fbPut('crm/notes/'+n.id,n);closeModal();toast('📝 Note enregistrée');await loadNotes();renderAcc()}catch(e){toast(e.message.includes('401')?'Règles Firebase à republier (nœud « crm ») — voir Réglages':e.message,'ko')}
+  b.classList.remove('load')}
+async function toggleNote(id){const n=NOTES.find(x=>x.id===id);if(!n)return;try{await fbPut('crm/notes/'+id,{...n,status:n.status==='done'?'open':'done',u:Date.now()});await loadNotes();toast(n.status==='done'?'↺ Note rouverte':'✓ Note traitée')}catch(e){toast(e.message,'ko')}}
+async function delNote(id){if(!confirm('Supprimer définitivement cette note ?'))return;try{await fbPut('crm/notes/'+id,null);await loadNotes();toast('Note supprimée')}catch(e){toast(e.message,'ko')}}
+function printNote(id){const n=NOTES.find(x=>x.id===id);if(!n)return;const w=window.open('','_blank');if(!w)return toast('Autorise les fenêtres pop-up pour exporter','ko');
+  const row=(k,v)=>v?`<tr><td>${k}</td><td>${esc(v)}</td></tr>`:'';
+  w.document.write(`<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>${esc(n.title||n.type)}</title><style>
+  body{font-family:Inter,Arial,sans-serif;color:#111827;max-width:740px;margin:40px auto;padding:0 28px;line-height:1.6}
+  header{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #7c3aed;padding-bottom:14px;margin-bottom:24px}
+  .brand{color:#7c3aed;font-weight:800;letter-spacing:.02em}h1{font-size:21px;margin:4px 0 0}
+  table{border-collapse:collapse;width:100%;margin-bottom:22px;font-size:13px}td{padding:7px 10px;border-bottom:1px solid #eee;vertical-align:top}td:first-child{color:#6b7280;width:160px}
+  .body{white-space:pre-wrap;font-size:14px;padding:16px 18px;border:1px solid #e5e7eb;border-radius:10px;background:#fafafa}
+  footer{margin-top:44px;font-size:11px;color:#9ca3af;border-top:1px solid #eee;padding-top:8px}@media print{body{margin:0 auto}}</style></head><body>
+  <header><div><div class="brand">🔑 Licence Pro — ${esc(NTYPES[n.type]||'')} ${esc(n.type)}</div><h1>${esc(n.title||n.type)}</h1></div><div style="font-size:12px;color:#6b7280;text-align:right">${fmtD(new Date(n.t))}${n.u&&n.u-n.t>6e4?'<br>modifiée le '+fmtD(new Date(n.u)):''}</div></header>
+  <table>${row('Client',[n.client,n.email].filter(Boolean).join(' — '))}${row('Logiciel',n.prod)}${row('Priorité',n.prio!=='Normale'?n.prio:'')}${row('Motif',n.motif)}${row('Date de suivi',n.due?new Date(n.due+'T12:00').toLocaleDateString('fr-FR'):'')}${row('Statut',n.status==='done'?'Traitée':'À traiter')}</table>
+  <div class="body">${esc(n.body||'')}</div><footer>Document généré par Licence Pro le ${fmtD(new Date())}</footer>
+  <script>onload=()=>setTimeout(()=>print(),300)<\/script></body></html>`);w.document.close()}
+function noteReq(rid){const r=REQ.find(x=>x.rid===rid);if(r)openNote(null,{type:'Demande de licence',email:norm(r.email),client:r.nom||'',prod:r.produit})}
+
+/* ── Refus d'une demande : fenêtre complète ── */
+const MOTIFS={'Informations incomplètes':['les informations transmises sont incomplètes',"Nous vous invitons à renouveler votre demande en précisant votre nom, votre société et le nombre d'appareils souhaité."],
+ 'Paiement non reçu':["le règlement correspondant n'a pas encore été reçu",'Dès réception de votre paiement, votre licence pourra être activée.'],
+ 'Licence déjà existante':['une licence est déjà associée à cette adresse e-mail','Si vous avez égaré votre clé, nous pouvons vous la transmettre à nouveau.'],
+ "Trop d'appareils":["le nombre d'appareils demandé dépasse notre offre actuelle","Nous pouvons vous proposer une licence adaptée à un nombre d'appareils plus réduit."],
+ 'Logiciel indisponible':["ce logiciel n'est pas ouvert à de nouvelles licences pour le moment","Nous vous informerons dès qu'il sera de nouveau disponible."],
+ 'Usage non conforme':["l'usage envisagé n'est pas conforme aux conditions d'utilisation du logiciel",''],
+ 'Autre motif':['','']};
+let RF=null,RF_EDITED=false;
+function openRefuse(rid){const r=rid?REQ.find(x=>x.rid===rid):null;RF={rid:rid||null,motif:'Informations incomplètes'};RF_EDITED=false;
+  openModal(`<div class="md-h"><div class="pi" style="--pc:#f43f5e">🚫</div><div><h2>Refuser une demande de licence</h2><span>${r?'Demande reçue le '+fmtD(new Date(r.t))+' depuis le logiciel':'Demande reçue par e-mail, téléphone ou en direct'}</span></div><button class="x" onclick="closeModal()">✕</button></div>
+  <div class="md-b">
+    ${r&&r.message?`<div class="rqm" style="margin-bottom:6px"><b>💬 Message du client</b>\n${esc(r.message)}</div>`:''}
+    <div class="g2"><div><label style="margin-top:${r&&r.message?14:0}px">E-mail du client</label><input id="rMail" list="mailList" type="email" inputmode="email" autocapitalize="off" spellcheck="false" value="${esc(r?norm(r.email):'')}" placeholder="client@exemple.fr"></div>
+      <div><label style="margin-top:${r&&r.message?14:0}px">Nom / société</label><input id="rNom" value="${esc(r&&r.nom||'')}" placeholder="Pour personnaliser le message"></div></div>
+    <label>Logiciel demandé</label><select id="rProd">${[...new Set([...(r?[r.produit]:[]),...prods()])].map(p=>`<option ${r&&p===r.produit?'selected':''}>${esc(p)}</option>`).join('')}</select>
+    <label>Motif du refus</label><div class="tchips red" id="rMotif">${Object.keys(MOTIFS).map(m=>`<button type="button" data-m="${esc(m)}" class="${m===RF.motif?'act':''}">${esc(m)}</button>`).join('')}</div>
+    <label><span id="rPrecLbl">Précision</span> <span class="opt">(facultatif — ajoutée au message)</span></label><input id="rPrec" placeholder="Ex. : merci d'indiquer le nom de votre société">
+    <label class="lrow">Message au client <a href="#" onclick="RF_EDITED=false;buildRefuse();return false">↺ Régénérer</a></label>
+    <textarea id="rMsg" rows="12"></textarea>
+    <div class="g2"><div><label>Signature</label><input id="rSign" value="${esc(localStorage.getItem('licSign')||'ALIANDpro')}"></div><div><label>Note interne <span class="opt">(privée)</span></label><input id="rNote" placeholder="Visible uniquement par toi"></div></div>
+    <label class="chk"><input type="checkbox" id="rBan"> 🚫 Bannir cette adresse (accès interdit à tous tes logiciels)</label>
+    <p class="hint" style="margin-top:10px">${r?'Le client verra aussi « Votre demande a été refusée : <i>motif</i> » directement dans le logiciel. ':''}Le refus est archivé dans 📝 Notes.</p>
+  </div>
+  <div class="md-f"><button class="ghost" onclick="copyTxt($('rMsg').value)">📋 Copier</button><button class="ghost" onclick="shareTxt('Votre demande de licence',$('rMsg').value)">📤 Partager</button><button class="ghost" id="rSave" onclick="doRefuse(false)">💾 Enregistrer</button><button class="btn" onclick="doRefuse(true)">✉️ Envoyer par e-mail</button></div>`);
+  chips('rMotif',b=>{RF.motif=b.dataset.m;$('rPrecLbl').textContent=RF.motif==='Autre motif'?'Motif à indiquer au client':'Précision';buildRefuse()});
+  ['rNom','rPrec','rSign'].forEach(i=>$(i).addEventListener('input',buildRefuse));$('rProd').onchange=buildRefuse;$('rMsg').addEventListener('input',()=>RF_EDITED=true);buildRefuse()}
+function buildRefuse(){if(RF_EDITED)return;const[ph,comp]=MOTIFS[RF.motif],prec=$('rPrec').value.trim(),nom=$('rNom').value.trim(),prod=$('rProd').value;
+  const raison=RF.motif==='Autre motif'?(prec||'[motif à préciser]'):ph;
+  $('rMsg').value=`Bonjour${nom?' '+nom:''},\n\nNous vous remercions de l'intérêt que vous portez à ${prod} et de votre demande de licence.\n\nAprès étude de votre demande, nous ne sommes malheureusement pas en mesure d'y donner une suite favorable : ${raison}.${RF.motif!=='Autre motif'&&prec?'\n'+prec+(/[.!?]$/.test(prec)?'':'.'):''}${comp?'\n\n'+comp:''}\n\nNous restons à votre disposition pour tout renseignement complémentaire.\n\nCordialement,\n${$('rSign').value.trim()||'ALIANDpro'}`}
+async function doRefuse(send){const mail=norm($('rMail').value),prod=$('rProd').value,msg=$('rMsg').value.trim(),prec=$('rPrec').value.trim();
+  if(!/^\S+@\S+\.\S+$/.test(mail))return toast('E-mail du client invalide','ko');
+  if(RF.motif==='Autre motif'&&!prec)return toast('Indique le motif à communiquer au client','ko');
+  try{localStorage.setItem('licSign',$('rSign').value.trim())}catch(e){}
+  const motifTxt=(RF.motif==='Autre motif'?prec:MOTIFS[RF.motif][0]+(prec?' — '+prec:'')).slice(0,200),b=$('rSave');b.classList.add('load');
+  try{
+    if(RF.rid){const r=REQ.find(x=>x.rid===RF.rid);if(r){const{rid:_,...v}=r;await fbPut('requests/'+RF.rid,{...v,statut:'refusee',motif:motifTxt,traite:Date.now()})}}
+    const id=uid(),inote=$('rNote').value.trim();let noteOk=true;
+    await fbPut('crm/notes/'+id,{id,t:Date.now(),u:Date.now(),type:'Demande refusée',email:mail,client:$('rNom').value.trim(),prod,title:'Refus de licence — '+prod,motif:RF.motif,body:'Message envoyé au client :\n\n'+msg+(inote?'\n\n— Note interne —\n'+inote:''),prio:'Normale',due:'',status:'done'}).catch(()=>noteOk=false);
+    if($('rBan').checked){const{data,sha:s}=await ghGet();data.bannis=[...new Set([...(data.bannis||[]),mail])];await ghPut(data,s,'Bannissement '+mail);BAN=data.bannis;renderAll()}
+    closeModal();toast(noteOk?'🚫 Demande refusée — archivée dans les notes':'🚫 Demande refusée (note non archivée : règles Firebase à republier)',noteOk?'ok':'ko');
+    if(send)mailTo(mail,'Votre demande de licence '+prod,msg);
+    loadReq();loadNotes()
+  }catch(e){toast(e.message,'ko')}
+  b&&b.classList.remove('load')}
+
 /* ── chargement ── */
 async function load(manual){if(!C().tok){renderAll();if(manual)go('set');return}
   try{const d=(await ghGet()).data;LIC=d.licences||[];BAN=d.bannis||[];GDEF=d.google||{};if($('gCid')&&PROD)$('gCid').placeholder=GDEF[PROD]?'Par défaut : '+GDEF[PROD]:'123456-abc.apps.googleusercontent.com';await loadFB();if(manual)toast('↻ Données actualisées')}catch(e){toast(e.message,'ko')}
-  if(C().fbMail&&C().fbPass)loadReq()}
+  if(C().fbMail&&C().fbPass){loadReq();loadNotes()}else renderNotes()}
 
 /* ── PWA ── */
 let instEvt=null;addEventListener('beforeinstallprompt',e=>{e.preventDefault();instEvt=e;$('instBtn').hidden=false});
