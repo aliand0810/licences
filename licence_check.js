@@ -220,37 +220,70 @@
   const _open=window.open;window.open=function(u,...r){return _open.call(window,u?withLic(String(u)):u,...r)};
 
   // ── Service après-vente : bouton 🛟 visible uniquement si le SAV est inclus dans la licence ──
-  let savBtn=null,savPanel=null;
+  // Conversation dans l'application (Firebase « support/<id>/msgs ») + WhatsApp / e-mail / téléphone
+  let savBtn=null,savPanel=null,savPoll=null,savBg=null,savView='home',savTid=null;
+  const SKEY='licSav_'+PRODUIT,myT=()=>{try{return JSON.parse(localStorage.getItem(SKEY)||'[]')}catch(e){return[]}},
+    seen=t=>+(localStorage.getItem('licSavSeen_'+t)||0),markSeen=t=>localStorage.setItem('licSavSeen_'+t,Date.now());
+  const waNum=v=>{let d=String(v||'').replace(/[^\d]/g,'');if(/^0\d{9}$/.test(d))d='33'+d.slice(1);return d};
+  const fmt=t=>new Date(t).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+  async function getT(tid){try{return await (await fetch(`${await fbUrl()}/support/${tid}.json?t=${Date.now()}`,{cache:'no-store'})).json()}catch(e){return null}}
+  const msgsOf=t=>[{from:'client',text:t.message,t:t.t},...Object.values(t.msgs||{})].filter(m=>m&&m.text).sort((a,b)=>a.t-b.t);
+  async function unread(){let n=0;for(const tid of myT()){const t=await getT(tid);if(t)n+=msgsOf(t).filter(m=>m.from==='sav'&&m.t>seen(tid)).length}return n}
+  function setBadge(n){if(!savBtn)return;savBtn.textContent=n?`🛟 SAV · ${n} nouveau${n>1?'x':''} message${n>1?'s':''}`:'🛟 SAV';savBtn.style.animation=n?'licPulse 1.6s infinite':''}
   function savUI(x){const on=x&&x.sav;
-    if(!on){if(savBtn){savBtn.remove();savBtn=null}if(savPanel){savPanel.remove();savPanel=null}return}
-    savBtn&&(savBtn._x=x);if(savBtn)return;
+    if(!on){clearInterval(savBg);if(savBtn){savBtn.remove();savBtn=null}if(savPanel){savPanel.remove();savPanel=null}return}
+    if(savBtn){savBtn._x=x;return}
     const mount=()=>{if(!document.body)return setTimeout(mount,200);
+      if(!document.getElementById('licSavCss')){const st=document.createElement('style');st.id='licSavCss';st.textContent='@keyframes licPulse{50%{box-shadow:0 0 0 8px rgba(124,58,237,.25)}}';document.head.appendChild(st)}
       savBtn=document.createElement('button');savBtn._x=x;savBtn.type='button';savBtn.textContent='🛟 SAV';savBtn.title='Service après-vente';
-      savBtn.style.cssText='position:fixed;left:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:2147483600;padding:9px 14px;border:0;border-radius:999px;background:linear-gradient(135deg,#7c3aed,#06b6d4);color:#fff;font:700 13px system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.35);cursor:pointer;opacity:.92';
-      savBtn.onclick=()=>openSav(savBtn._x);document.body.appendChild(savBtn)};mount()}
-  function openSav(x){const c=(x.sav&&x.sav.contact)||{},s=get(),until=x.sav.until?new Date(x.sav.until).toLocaleDateString('fr-FR'):'';
-    if(savPanel)savPanel.remove();savPanel=document.createElement('div');
+      savBtn.style.cssText='position:fixed;left:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:2147483600;padding:9px 14px;border:0;border-radius:999px;background:linear-gradient(135deg,#7c3aed,#06b6d4);color:#fff;font:700 13px system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.35);cursor:pointer;opacity:.95';
+      savBtn.onclick=()=>openSav(savBtn._x);document.body.appendChild(savBtn);
+      const bg=async()=>setBadge(await unread());bg();clearInterval(savBg);savBg=setInterval(bg,60000)};mount()}
+  const IN='width:100%;box-sizing:border-box;padding:12px;border-radius:12px;border:1px solid #334155;background:#0b1220;color:#fff;font:16px system-ui,sans-serif;margin-top:6px';
+  const BTN='padding:12px;border:0;border-radius:12px;font:700 14px system-ui,sans-serif;cursor:pointer;color:#fff';
+  function openSav(x,view,tid){savView=view||'home';savTid=tid||null;if(savPanel)savPanel.remove();clearInterval(savPoll);
+    savPanel=document.createElement('div');savPanel._x=x;
     savPanel.style.cssText='position:fixed;inset:0;z-index:2147483646;background:rgba(7,11,22,.7);backdrop-filter:blur(4px);display:flex;align-items:flex-end;justify-content:center;font-family:system-ui,sans-serif';
-    const wa=String(c.whatsapp||'').replace(/[^\d]/g,''),row=(ic,t,h)=>t?`<a ${h?`href="${h}" target="_blank" rel="noopener"`:''} style="display:flex;gap:10px;align-items:center;padding:11px 12px;border-radius:12px;background:rgba(255,255,255,.05);color:#eef2ff;text-decoration:none;margin-bottom:6px;font-size:14px"><span style="font-size:18px">${ic}</span>${esc(t)}</a>`:'';
-    const inp='width:100%;box-sizing:border-box;padding:12px;border-radius:12px;border:1px solid #334155;background:#0b1220;color:#fff;font:16px system-ui,sans-serif;margin-top:6px';
-    savPanel.innerHTML=`<div style="width:min(460px,100%);max-height:92vh;overflow:auto;background:#111827;color:#eef2ff;border:1px solid rgba(255,255,255,.1);border-radius:22px 22px 0 0;padding:22px 20px calc(20px + env(safe-area-inset-bottom));box-shadow:0 -20px 60px rgba(0,0,0,.5)">
-      <div style="display:flex;align-items:center;gap:10px"><div style="font-size:28px">🛟</div><div style="flex:1"><b style="font-size:17px">Service après-vente</b><div style="font-size:12px;color:#8b93b0">${esc(PRODUIT)}${until?' · inclus jusqu\'au '+until:' · inclus avec votre licence'}</div></div><button data-x style="background:rgba(255,255,255,.08);border:0;color:#fff;width:34px;height:34px;border-radius:10px;font-size:16px;cursor:pointer">✕</button></div>
-      ${c.message?`<p style="font-size:13px;color:#cbd5e1;line-height:1.5;margin:14px 0 4px;white-space:pre-wrap">${esc(c.message)}</p>`:''}
-      <div style="margin-top:12px">${row('✉️',c.email,c.email?'mailto:'+c.email+'?subject='+encodeURIComponent('SAV '+PRODUIT):'')}${row('📞',c.tel,c.tel?'tel:'+String(c.tel).replace(/\s/g,''):'')}${row('💬',wa?'WhatsApp':'',wa?'https://wa.me/'+wa:'')}${row('🕘',c.horaires,'')}</div>
-      <div style="margin-top:14px;font-size:12px;color:#8b93b0;text-transform:uppercase;letter-spacing:.06em;font-weight:600">Envoyer une demande d'assistance</div>
-      <select data-s style="${inp}"><option>Problème technique</option><option>Question d'utilisation</option><option>Facturation / licence</option><option>Autre demande</option></select>
-      <textarea data-m rows="5" maxlength="2000" placeholder="Décrivez votre demande…" style="${inp};resize:vertical"></textarea>
-      <input data-t type="tel" placeholder="Téléphone (facultatif)" style="${inp}">
-      <button data-go style="width:100%;margin-top:12px;padding:13px;background:linear-gradient(135deg,#7c3aed,#06b6d4);color:#fff;border:0;border-radius:12px;font:700 15px system-ui,sans-serif;cursor:pointer">Envoyer au SAV</button>
-      <div data-r style="margin-top:10px;font-size:13px;text-align:center"></div></div>`;
-    document.body.appendChild(savPanel);const q=k=>savPanel.querySelector(k);
-    savPanel.onclick=e=>{if(e.target===savPanel)savPanel.remove()};q('[data-x]').onclick=()=>savPanel.remove();
-    q('[data-go]').onclick=async()=>{const m=q('[data-m]').value.trim();if(m.length<5){q('[data-r]').style.color='#fda4af';q('[data-r]').textContent='Merci de décrire votre demande.';return}
-      q('[data-go]').disabled=true;q('[data-go]').textContent='Envoi…';
-      const tid=[...crypto.getRandomValues(new Uint8Array(12))].map(b=>b.toString(16).padStart(2,'0')).join('');
-      try{const r=await fetch(`${await fbUrl()}/support/${tid}.json`,{method:'PUT',body:JSON.stringify({email:s.mail||'',produit:PRODUIT,module:MODULE||'',t:Date.now(),sujet:q('[data-s]').value,message:m.slice(0,2000),tel:q('[data-t]').value.trim().slice(0,30),ua:UA(),page:location.href.split('#')[0].slice(0,200),statut:'nouveau'})});
-        if(!r.ok)throw 0;q('[data-r]').style.color='#6ee7b7';q('[data-r]').textContent='✔ Votre demande a bien été envoyée. Nous revenons vers vous rapidement.';q('[data-m]').value='';q('[data-go]').textContent='Envoyé'}
-      catch(e){q('[data-r]').style.color='#fda4af';q('[data-r]').textContent='Envoi impossible. Contactez-nous directement par e-mail ou téléphone.';q('[data-go]').disabled=false;q('[data-go]').textContent='Réessayer'}}}
+    savPanel.innerHTML='<div data-box style="width:min(480px,100%);height:min(88vh,760px);display:flex;flex-direction:column;background:#111827;color:#eef2ff;border:1px solid rgba(255,255,255,.1);border-radius:22px 22px 0 0;box-shadow:0 -20px 60px rgba(0,0,0,.5);overflow:hidden"></div>';
+    savPanel.onclick=e=>{if(e.target===savPanel)closeSav()};document.body.appendChild(savPanel);renderSav()}
+  function closeSav(){clearInterval(savPoll);if(savPanel){savPanel.remove();savPanel=null}unread().then(setBadge)}
+  async function renderSav(){if(!savPanel)return;const x=savPanel._x,c=(x.sav&&x.sav.contact)||{},box=savPanel.querySelector('[data-box]'),until=x.sav.until?new Date(x.sav.until).toLocaleDateString('fr-FR'):'';
+    const head=(title,back)=>`<div style="display:flex;align-items:center;gap:10px;padding:16px 18px;border-bottom:1px solid rgba(255,255,255,.08)">${back?'<button data-back style="background:rgba(255,255,255,.08);border:0;color:#fff;width:34px;height:34px;border-radius:10px;font-size:16px;cursor:pointer">←</button>':'<div style="font-size:26px">🛟</div>'}<div style="flex:1;min-width:0"><b style="font-size:16px">${title}</b><div style="font-size:12px;color:#8b93b0">${esc(PRODUIT)}${until?' · SAV inclus jusqu\'au '+until:' · SAV inclus'}</div></div><button data-x style="background:rgba(255,255,255,.08);border:0;color:#fff;width:34px;height:34px;border-radius:10px;font-size:16px;cursor:pointer">✕</button></div>`;
+    const wa=waNum(c.whatsapp),ch=(ic,t,h)=>`<a href="${h}" target="_blank" rel="noopener" style="flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:12px;background:rgba(255,255,255,.06);color:#eef2ff;text-decoration:none;font-size:12px"><span style="font-size:20px">${ic}</span>${t}</a>`;
+    const chans=`<div style="display:flex;gap:6px">${wa?ch('💬','WhatsApp','https://wa.me/'+wa+'?text='+encodeURIComponent('Bonjour, je vous contacte au sujet du SAV '+PRODUIT+'.')):''}${c.tel?ch('📞','Appeler','tel:'+String(c.tel).replace(/\s/g,'')):''}${c.email?ch('✉️','E-mail','mailto:'+c.email+'?subject='+encodeURIComponent('SAV '+PRODUIT)):''}</div>`;
+    if(savView==='home'){const ids=myT(),list=[];for(const tid of ids){const t=await getT(tid);if(t)list.push({tid,...t})}list.sort((a,b)=>b.t-a.t);
+      box.innerHTML=head('Service après-vente')+`<div style="flex:1;overflow:auto;padding:16px 18px">
+        ${c.message?`<p style="font-size:13px;color:#cbd5e1;line-height:1.5;margin:0 0 12px;white-space:pre-wrap">${esc(c.message)}</p>`:''}${chans}${c.horaires?`<div style="font-size:12px;color:#8b93b0;margin-top:8px;text-align:center">🕘 ${esc(c.horaires)}</div>`:''}
+        <button data-new style="${BTN};width:100%;margin-top:16px;background:linear-gradient(135deg,#7c3aed,#06b6d4)">✍️ Nouvelle demande d'assistance</button>
+        ${list.length?`<div style="margin-top:18px;font-size:12px;color:#8b93b0;text-transform:uppercase;letter-spacing:.06em;font-weight:600">Mes échanges</div>`+list.map(t=>{const m=msgsOf(t),last=m[m.length-1],nu=m.filter(k=>k.from==='sav'&&k.t>seen(t.tid)).length;
+          return `<button data-open="${t.tid}" style="display:block;width:100%;text-align:left;margin-top:8px;padding:12px;border-radius:14px;border:1px solid ${nu?'#7c3aed':'rgba(255,255,255,.08)'};background:${nu?'rgba(124,58,237,.15)':'rgba(255,255,255,.04)'};color:#eef2ff;cursor:pointer;font-family:inherit">
+            <div style="display:flex;justify-content:space-between;gap:8px"><b style="font-size:14px">${esc(t.sujet||'Demande')}</b><span style="font-size:11px;color:${t.statut==='traite'?'#6ee7b7':t.statut==='repondu'?'#67e8f9':'#fcd34d'}">${t.statut==='traite'?'Résolue':t.statut==='repondu'?'Réponse reçue':'En cours'}</span></div>
+            <div style="font-size:12px;color:#8b93b0;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${last.from==='sav'?'🛟 ':'Vous : '}${esc(last.text)}</div>
+            <div style="font-size:11px;color:#64748b;margin-top:2px">${fmt(last.t)}${nu?` · <b style="color:#c4b5fd">${nu} nouveau${nu>1?'x':''}</b>`:''}</div></button>`}).join(''):''}</div>`}
+    else if(savView==='new'){box.innerHTML=head('Nouvelle demande',1)+`<div style="flex:1;overflow:auto;padding:16px 18px">
+        <select data-s style="${IN}"><option>Problème technique</option><option>Question d'utilisation</option><option>Facturation / licence</option><option>Autre demande</option></select>
+        <textarea data-m rows="7" maxlength="2000" placeholder="Décrivez votre demande…" style="${IN};resize:vertical"></textarea>
+        <input data-t type="tel" placeholder="Téléphone / WhatsApp (facultatif)" style="${IN}">
+        <button data-go style="${BTN};width:100%;margin-top:12px;background:linear-gradient(135deg,#7c3aed,#06b6d4)">Envoyer au SAV</button><div data-r style="margin-top:10px;font-size:13px;text-align:center"></div></div>`}
+    else{const t=await getT(savTid);if(!t){savView='home';return renderSav()}const m=msgsOf(t);markSeen(savTid);
+      box.innerHTML=head(esc(t.sujet||'Demande SAV'),1)+`<div data-th style="flex:1;overflow:auto;padding:14px 14px 6px;display:flex;flex-direction:column;gap:8px">
+        ${m.map(k=>{const me=k.from==='client';return `<div style="align-self:${me?'flex-end':'flex-start'};max-width:82%"><div style="padding:9px 12px;border-radius:${me?'14px 14px 4px 14px':'14px 14px 14px 4px'};background:${me?'linear-gradient(135deg,#7c3aed,#4f46e5)':'#1f2937'};font-size:14px;line-height:1.45;white-space:pre-wrap;word-break:break-word">${esc(k.text)}</div><div style="font-size:10.5px;color:#64748b;margin:3px 4px;text-align:${me?'right':'left'}">${me?'Vous':'🛟 SAV'}${k.via&&k.via!=='app'?' · via '+({whatsapp:'WhatsApp','e-mail':'e-mail'}[k.via]||esc(k.via)):''} · ${fmt(k.t)}</div></div>`}).join('')}
+        ${t.statut==='traite'?'<div style="text-align:center;font-size:12px;color:#6ee7b7;margin:6px 0">✓ Demande marquée comme résolue — vous pouvez répondre pour la rouvrir</div>':''}</div>
+        <div style="display:flex;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));border-top:1px solid rgba(255,255,255,.08)"><textarea data-rep rows="1" maxlength="2000" placeholder="Votre message…" style="${IN};margin:0;resize:none;max-height:120px"></textarea><button data-send style="${BTN};background:linear-gradient(135deg,#7c3aed,#06b6d4);padding:0 16px">➤</button></div>`;
+      const th=box.querySelector('[data-th]');th.scrollTop=th.scrollHeight;
+      box.querySelector('[data-send]').onclick=async()=>{const ta=box.querySelector('[data-rep]'),v=ta.value.trim();if(!v)return;ta.disabled=true;
+        const mid='m'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),fb=await fbUrl();
+        try{const r=await fetch(`${fb}/support/${savTid}/msgs/${mid}.json`,{method:'PUT',body:JSON.stringify({from:'client',text:v.slice(0,2000),t:Date.now(),via:'app'})});if(!r.ok)throw 0;
+          fetch(`${fb}/support/${savTid}/statut.json`,{method:'PUT',body:'"nouveau"'}).catch(()=>{});renderSav()}catch(e){ta.disabled=false;alert('Envoi impossible, réessayez.')}};
+      clearInterval(savPoll);savPoll=setInterval(async()=>{const n=await getT(savTid);if(n&&msgsOf(n).length!==m.length&&savView==='thread'&&!box.querySelector('[data-rep]').value)renderSav()},10000)}
+    const q=k=>box.querySelector(k);q('[data-x]').onclick=closeSav;if(q('[data-back]'))q('[data-back]').onclick=()=>{clearInterval(savPoll);savView='home';renderSav()};
+    if(q('[data-new]'))q('[data-new]').onclick=()=>{savView='new';renderSav()};
+    box.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>{savView='thread';savTid=b.dataset.open;renderSav()});
+    if(q('[data-go]'))q('[data-go]').onclick=async()=>{const s=get(),msg=q('[data-m]').value.trim();if(msg.length<5){q('[data-r]').style.color='#fda4af';q('[data-r]').textContent='Merci de décrire votre demande.';return}
+      q('[data-go]').disabled=true;q('[data-go]').textContent='Envoi…';const tid=[...crypto.getRandomValues(new Uint8Array(12))].map(b=>b.toString(16).padStart(2,'0')).join('');
+      try{const r=await fetch(`${await fbUrl()}/support/${tid}.json`,{method:'PUT',body:JSON.stringify({email:s.mail||'',produit:PRODUIT,module:MODULE||'',t:Date.now(),sujet:q('[data-s]').value,message:msg.slice(0,2000),tel:q('[data-t]').value.trim().slice(0,30),ua:UA(),page:location.href.split('#')[0].slice(0,200),statut:'nouveau'})});
+        if(!r.ok)throw 0;localStorage.setItem(SKEY,JSON.stringify([tid,...myT()].slice(0,30)));markSeen(tid);savView='thread';savTid=tid;renderSav()}
+      catch(e){q('[data-r]').style.color='#fda4af';q('[data-r]').textContent='Envoi impossible. Contactez-nous par WhatsApp, téléphone ou e-mail.';q('[data-go]').disabled=false;q('[data-go]').textContent='Réessayer'}}}
 
   (async()=>{
     const s=get();

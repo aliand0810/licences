@@ -228,6 +228,11 @@ canvas{max-height:270px}
 .secWarn{display:flex;gap:12px;align-items:center;padding:14px 16px;margin-bottom:16px;border-radius:16px;border:1px solid rgba(244,63,94,.5);background:rgba(244,63,94,.1);animation:up .35s both}
 .secWarn>div:not(.pi){flex:1;min-width:0}.secWarn b{display:block}.secWarn small{color:#fecdd3;font-size:.8rem}
 .secState{margin-bottom:6px}.kok{font-style:normal;margin-left:8px;font-size:.7rem;text-transform:none;letter-spacing:0;font-weight:700}.kok.ok{color:#6ee7b7}.kok.ko{color:#fda4af}
+.chatB{display:flex;flex-direction:column;gap:8px;min-height:240px;background:rgba(0,0,0,.15)}
+.bub{align-self:flex-start;max-width:80%}.bub>div{padding:9px 13px;border-radius:14px 14px 14px 4px;background:var(--glass2);font-size:.88rem;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+.bub.me{align-self:flex-end}.bub.me>div{background:linear-gradient(135deg,#7c3aed,#4f46e5);border-radius:14px 14px 4px 14px}
+.bub small{display:block;font-size:.68rem;color:var(--mut);margin:3px 4px}.bub.me small{text-align:right}
+.chatF{padding:12px 16px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--bd)}.chatA{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;align-items:center}
 /* modale */
 .mdl{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none}
 .md-bg{position:absolute;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);opacity:0;transition:.2s}
@@ -1065,16 +1070,16 @@ async function loadSup(){SUP_ERR='';
     if(r.status===401)throw new Error('Règles Firebase à republier (nœud « support »)');if(!r.ok)throw new Error('Firebase '+r.status);
     SUP=Object.entries(await r.json()||{}).map(([tid,v])=>({tid,...v})).sort((a,b)=>(a.statut==='traite')-(b.statut==='traite')||b.t-a.t)}catch(e){SUP_ERR=e.message}
   renderSup()}
-function renderSup(){const n=SUP.filter(x=>x.statut!=='traite').length;if($('nbReq')){const rq=REQ.filter(r=>r.statut==='attente').length;$('nbReq').textContent=(rq+n)||''}
+function renderSup(){const n=SUP.filter(x=>x.statut!=='traite'&&supUnread(x)).length;if($('nbReq')){const rq=REQ.filter(r=>r.statut==='attente').length;$('nbReq').textContent=(rq+n)||''}
   if(!$('supList'))return;
   if(SUP_ERR){$('supList').innerHTML=`<div class="al" style="border-color:rgba(245,158,11,.45);background:rgba(245,158,11,.08)"><div class="pi" style="--pc:#f59e0b">🔥</div><div><b>SAV indisponible</b><small>${esc(SUP_ERR)}. Les règles à jour sont dans Réglages → 📜 Règles Firebase.</small></div></div>`;return}
   $('supList').innerHTML=SUP.length?SUP.map((x,i)=>{const[ic,col]=pm(x.produit),u=shortUA(x.ua||''),l=LIC.find(k=>k.email===x.email&&k.produit===x.produit);
     return `<div class="rq ${x.statut!=='traite'?'wait':''}" style="animation-delay:${i*.03}s"><div class="pi" style="--pc:${col}">${ic}</div><div class="rqb">
-      <b>${esc(x.sujet||'Demande SAV')} · ${esc(x.produit)}${x.module?' · '+esc(x.module):''}<span class="rqst ${x.statut==='traite'?'accordee':'attente'}">${x.statut==='traite'?'Traitée':'Nouvelle'}</span></b>
+      <b>${esc(x.sujet||'Demande SAV')} · ${esc(x.produit)}${x.module?' · '+esc(x.module):''}<span class="rqst ${x.statut==='traite'?'accordee':x.statut==='repondu'?'':'attente'}">${x.statut==='traite'?'Traitée':x.statut==='repondu'?'Répondu':supUnread(x)?'Nouveau message':'En attente'}</span></b>
       <small>✉️ ${esc(x.email||'—')}${x.tel?' · 📞 '+esc(x.tel):''} · ${fmtD(new Date(x.t))} · ${u.ic} ${esc(u.txt)}</small>
       ${l&&!savActive(l)?'<small style="color:#fbbf24">⚠️ Le SAV de ce client n\'est plus actif</small>':''}
-      <div class="rqm">${esc(x.message||'')}</div>
-      <div class="acts2"><button class="btn sm" onclick="replySup('${x.tid}')">✉️ Répondre</button>${x.statut!=='traite'?`<button class="ghost sm" onclick="doneSup('${x.tid}')">✓ Traitée</button>`:''}<button class="ghost sm" onclick="noteSup('${x.tid}')">📝 Note</button><button class="ghost sm" onclick="delSup('${x.tid}')">🗑️</button></div></div></div>`}).join(''):'<div class="empty sm">📭 Aucune demande SAV</div>'}
+      <div class="rqm">${esc((supMsgs(x).slice(-1)[0]||{}).text||x.message||'')}</div><small>${supMsgs(x).length} message${supMsgs(x).length>1?'s':''} · dernier ${fmtD(new Date((supMsgs(x).slice(-1)[0]||x).t))}</small>
+      <div class="acts2"><button class="btn sm" onclick="openSup('${x.tid}')">💬 Ouvrir l'échange${supUnread(x)?' · '+supUnread(x)+' nouveau'+(supUnread(x)>1?'x':''):''}</button>${x.statut!=='traite'?`<button class="ghost sm" onclick="doneSup('${x.tid}')">✓ Traitée</button>`:''}<button class="ghost sm" onclick="noteSup('${x.tid}')">📝 Note</button><button class="ghost sm" onclick="delSup('${x.tid}')">🗑️</button></div></div></div>`}).join(''):'<div class="empty sm">📭 Aucune demande SAV</div>'}
 function replySup(tid){const x=SUP.find(k=>k.tid===tid);if(!x)return;const sign=localStorage.getItem('licSign')||'ALIANDpro';
   mailTo(x.email,'Re : '+(x.sujet||'Votre demande SAV')+' — '+x.produit,`Bonjour,\n\nNous avons bien reçu votre demande concernant ${x.produit} et nous vous en remercions.\n\n[Votre réponse]\n\nNous restons à votre disposition pour toute question complémentaire.\n\nCordialement,\n${sign}\n\n— Votre message du ${fmtD(new Date(x.t))} —\n${x.message||''}`)}
 async function doneSup(tid){const x=SUP.find(k=>k.tid===tid);if(!x)return;const{tid:_,...v}=x;try{await fbPut('support/'+tid,{...v,statut:'traite',traite:Date.now()});await loadSup();toast('✓ Demande SAV traitée')}catch(e){toast(e.message,'ko')}}
@@ -1114,6 +1119,35 @@ async function doImport(){const parts=$('iCode').value.trim().replace(/\s+/g,'')
     FBT=null;FBOK=false;closeModal();fillCfg();renderConn();renderTiles();toast('✔ Réglages importés — vérification des clés…');await load(true);
     if(C().fbMail&&C().fbPass)fbTok().then(()=>{FBOK=true;renderConn()}).catch(()=>{})}
   catch(e){toast('Mot de passe de transfert incorrect ou code abîmé','ko')}}
+
+
+/* ── Conversation SAV (dans l'application + WhatsApp / e-mail) ── */
+const supMsgs=x=>[{from:'client',text:x.message,t:x.t},...Object.values(x.msgs||{})].filter(m=>m&&m.text).sort((a,b)=>a.t-b.t);
+const supUnread=x=>supMsgs(x).filter(m=>m.from==='client'&&m.t>(x.seenAdmin||0)).length;
+const waNum=v=>{let d=String(v||'').replace(/[^\d]/g,'');if(/^0\d{9}$/.test(d))d='33'+d.slice(1);return d};
+let SUPT=null,supPoll=null;
+async function openSup(tid){SUPT=tid;await refreshSup(true);clearInterval(supPoll);supPoll=setInterval(()=>{if(!$('mdl').classList.contains('on')||!$('supTh'))return clearInterval(supPoll);if(!$('supRep').value)refreshSup(false)},10000)}
+async function refreshSup(first){try{const t=await fbTok(),r=await fetch(`${FB()}/support/${SUPT}.json?auth=${t}&t=${Date.now()}`),x=await r.json();if(!x)return;x.tid=SUPT;
+  const i=SUP.findIndex(k=>k.tid===SUPT);if(i>=0)SUP[i]=x;
+  const m=supMsgs(x),wa=waNum(x.tel),l=LIC.find(k=>k.email===x.email&&k.produit===x.produit);
+  const html=`<div class="md-h"><div class="pi" style="--pc:${pm(x.produit)[1]}">${pm(x.produit)[0]}</div><div><h2>${esc(x.sujet||'Demande SAV')}</h2><span>${esc(x.email||'—')}${x.tel?' · 📞 '+esc(x.tel):''} · ${esc(x.produit)}${x.module?' · '+esc(x.module):''}</span></div><button class="x" onclick="closeModal()">✕</button></div>
+    <div class="md-b chatB" id="supTh">${m.map(k=>{const me=k.from==='sav';return `<div class="bub ${me?'me':''}"><div>${esc(k.text)}</div><small>${me?'🛟 Toi':'👤 Client'}${k.via&&k.via!=='app'?' · via '+({whatsapp:'WhatsApp','e-mail':'e-mail'}[k.via]||esc(k.via)):''} · ${fmtD(new Date(k.t))}</small></div>`}).join('')}
+      ${l&&!savActive(l)?'<p class="hint" style="color:#fbbf24;text-align:center">⚠️ Le SAV de ce client n\'est plus actif</p>':''}</div>
+    <div class="chatF"><textarea id="supRep" rows="3" placeholder="Ta réponse au client…"></textarea>
+      <div class="chatA"><button class="btn" onclick="sendSup('app')">📨 Envoyer dans l'app</button>${wa?`<button class="ghost" onclick="sendSup('whatsapp')">💬 + WhatsApp</button>`:''}${x.email?`<button class="ghost" onclick="sendSup('e-mail')">✉️ + E-mail</button>`:''}
+        <span style="flex:1"></span>${wa?`<a class="ghost sm" style="text-decoration:none" target="_blank" href="https://wa.me/${wa}">Ouvrir WhatsApp</a>`:''}${x.tel?`<a class="ghost sm" style="text-decoration:none" href="tel:${esc(x.tel.replace(/\s/g,''))}">📞 Appeler</a>`:''}
+        <button class="ghost sm" onclick="${x.statut==='traite'?`setSupSt('nouveau')">↺ Rouvrir`:`setSupSt('traite')">✓ Marquer résolue`}</button></div></div>`;
+  if(first||!$('supTh'))openModal(html);else{$('md').innerHTML=html}
+  const th=$('supTh');th.scrollTop=th.scrollHeight;
+  if(supUnread(x))fbPut(`support/${SUPT}/seenAdmin`,Date.now()).then(()=>{x.seenAdmin=Date.now();renderSup()}).catch(()=>{})}catch(e){toast(e.message,'ko')}}
+async function sendSup(via){const v=$('supRep').value.trim();if(!v)return toast('Écris ta réponse','ko');const x=SUP.find(k=>k.tid===SUPT)||{};
+  const mid='m'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),sign=localStorage.getItem('licSign')||'ALIANDpro';
+  try{await fbPut(`support/${SUPT}/msgs/${mid}`,{from:'sav',text:v.slice(0,2000),t:Date.now(),via});await fbPut(`support/${SUPT}/statut`,'repondu');await fbPut(`support/${SUPT}/seenAdmin`,Date.now());
+    const full=`Bonjour,\n\n${v}\n\nCordialement,\n${sign}\n\n(Réponse à votre demande SAV « ${x.sujet||''} » — ${x.produit||''}. Vous pouvez aussi répondre depuis le bouton 🛟 SAV de votre logiciel.)`;
+    if(via==='whatsapp')window.open('https://wa.me/'+waNum(x.tel)+'?text='+encodeURIComponent(full),'_blank');
+    if(via==='e-mail')mailTo(x.email,'Re : '+(x.sujet||'Votre demande SAV')+' — '+(x.produit||''),full);
+    $('supRep').value='';toast(via==='app'?'📨 Réponse envoyée — le client la voit dans son logiciel':'📨 Envoyé dans l\'app + '+(via==='whatsapp'?'WhatsApp':'e-mail'));await refreshSup(false);loadSup()}catch(e){toast(e.message.includes('401')?'Règles Firebase à republier (conversation SAV)':e.message,'ko')}}
+async function setSupSt(st){try{await fbPut(`support/${SUPT}/statut`,st);toast(st==='traite'?'✓ Demande résolue':'↺ Demande rouverte');await refreshSup(false);loadSup()}catch(e){toast(e.message,'ko')}}
 
 /* ── chargement ── */
 async function load(manual){if(!C().tok){renderAll();if(manual)go('set');return}

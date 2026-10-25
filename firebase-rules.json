@@ -42,7 +42,17 @@
       ".read": "auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63'",
       "$tid": {
         ".write": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (!data.exists() && newData.exists())",
-        ".validate": "$tid.length >= 20 && $tid.length <= 40 && newData.hasChildren(['email','produit','t','message']) && newData.child('email').isString() && newData.child('email').val().length <= 120 && newData.child('message').isString() && newData.child('message').val().length <= 2000 && newData.child('produit').isString() && newData.child('produit').val().length <= 60"
+        ".validate": "$tid.length >= 20 && $tid.length <= 40 && newData.hasChildren(['email','produit','t','message']) && newData.child('email').isString() && newData.child('email').val().length <= 120 && newData.child('message').isString() && newData.child('message').val().length <= 2000 && newData.child('produit').isString() && newData.child('produit').val().length <= 60",
+        ".read": true,
+        "msgs": {
+          "$mid": {
+            ".write": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (!data.exists() && newData.exists() && newData.child('from').val() === 'client')",
+            ".validate": "$mid.length <= 40 && newData.hasChildren(['from','text','t']) && newData.child('text').isString() && newData.child('text').val().length <= 2000"
+          }
+        },
+        "statut": {
+          ".write": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || newData.val() === 'nouveau'"
+        }
       }
     }
   }
