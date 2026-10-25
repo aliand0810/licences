@@ -40,7 +40,8 @@
       "modules": null,
       "maxDevices": null,
       "sav": {
-        "on": false
+        "on": true,
+        "until": null
       },
       "onglets": null,
       "google": null
