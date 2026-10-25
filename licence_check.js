@@ -70,7 +70,7 @@
 
   // ── Réglages injectés par Licence Pro ──
   function extra(l,d){const g=l.google||{},dg=(d.google||{})[PRODUIT]||'';
-    return{onglets:Array.isArray(l.onglets)?l.onglets:null,modules:Array.isArray(l.modules)?l.modules:null,
+    return{onglets:Array.isArray(l.onglets)?l.onglets:null,ongletsOff:Array.isArray(l.ongletsOff)?l.ongletsOff:null,ongletsNoms:l.ongletsNoms||null,modules:Array.isArray(l.modules)?l.modules:null,
       google:{clientId:String(g.clientId||dg||'').trim(),email:String(g.email||'').trim().toLowerCase()},
       sav:(l.sav&&l.sav.on&&(!l.sav.until||new Date(l.sav.until)>new Date())&&!(d.sav&&d.sav.visible===false))?{until:l.sav.until||l.expire||null,contact:d.sav||{}}:null}}
   function applyData(x){if(!x)return;
@@ -80,8 +80,8 @@
       if(g.clientId&&localStorage.getItem('gdrive_client_id')!==g.clientId)localStorage.setItem('gdrive_client_id',g.clientId);
       if(g.email&&localStorage.getItem('gdrive_hint_email')!==g.email)localStorage.setItem('gdrive_hint_email',g.email);
     }catch(e){}
-    window.LICENCE_DATA=x;try{dispatchEvent(new CustomEvent('licence:data',{detail:x}))}catch(e){}savUI(x)}
-  try{const c=JSON.parse(localStorage.getItem('licData_'+PRODUIT)||'null');if(c)window.LICENCE_DATA=c}catch(e){}
+    window.LICENCE_DATA=x;try{dispatchEvent(new CustomEvent('licence:data',{detail:x}))}catch(e){}savUI(x);tabLock(x)}
+  try{const c=JSON.parse(localStorage.getItem('licData_'+PRODUIT)||'null');if(c){window.LICENCE_DATA=c;setTimeout(()=>tabLock(c),0)}}catch(e){}
 
   function save(mail,key,expire){localStorage.setItem(KEY,JSON.stringify({mail:mail.trim().toLowerCase(),key:key.trim().toUpperCase(),expire,t:Date.now()}))}
 
@@ -218,6 +218,45 @@
   window.licenceLink=withLic;
   document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[href]');if(a&&!overlay){const o=a.href,n=withLic(o);if(n!==o){a.href=n;setTimeout(()=>a.href=o,500)}}},true);
   const _open=window.open;window.open=function(u,...r){return _open.call(window,u?withLic(String(u)):u,...r)};
+
+  // ── Onglets non inclus dans la licence : grisés + 🔒 + « Demander l'accès » ──
+  let TOFF=[],TNOMS={},tTimer=null;
+  const tSel=id=>['Tab','Mobile','View','Page','Section','Screen'].flatMap(f=>[`[onclick*="${f}('${id}'"]`,`[onclick*='${f}("${id}"']`]).concat([`[data-tab="${id}"]`,`[data-view="${id}"]`,`#tab-btn-${id}`]).join(',');
+  const tName=id=>TNOMS[id]||id.replace(/^tab-/,'').replace(/[-_]/g,' ').replace(/^./,c=>c.toUpperCase());
+  function tabLock(x){TOFF=(x&&Array.isArray(x.ongletsOff))?x.ongletsOff.filter(i=>/^[\w-]{1,60}$/.test(i)):[];TNOMS=(x&&x.ongletsNoms)||{};tabPaint()}
+  function tabPaint(){if(!document.head)return setTimeout(tabPaint,200);
+    let st=document.getElementById('licTabCss');if(!st){st=document.createElement('style');st.id='licTabCss';document.head.appendChild(st)}
+    st.textContent=(TOFF.length?TOFF.map(id=>tSel(id)+'{filter:grayscale(1)!important;opacity:.5!important;position:relative!important;cursor:not-allowed!important}').join('\n'):'')+
+      '.lic-lockb{position:absolute;top:-5px;right:-5px;font-size:10px;line-height:1;background:#111827;border:1px solid #475569;border-radius:99px;padding:2px 3px;pointer-events:none;z-index:3;filter:none}'+
+      '.lic-tab-locked{position:relative!important;min-height:240px}.lic-tab-locked>*:not(.lic-tab-ov){filter:blur(4px) grayscale(1);pointer-events:none!important;user-select:none}'+
+      '.lic-tab-ov{position:absolute;inset:0;z-index:60;display:flex;justify-content:center;align-items:flex-start;padding:60px 16px;font-family:system-ui,sans-serif}';
+    document.querySelectorAll('.lic-lockb').forEach(b=>{if(!TOFF.some(id=>b.parentElement&&b.parentElement.matches(tSel(id))))b.remove()});
+    document.querySelectorAll('.lic-tab-locked').forEach(c=>{if(!TOFF.includes(c.dataset.licTab)){c.classList.remove('lic-tab-locked');const o=c.querySelector(':scope>.lic-tab-ov');if(o)o.remove()}});
+    TOFF.forEach(id=>{document.querySelectorAll(tSel(id)).forEach(b=>{if(!b.querySelector(':scope>.lic-lockb')){const s=document.createElement('span');s.className='lic-lockb';s.textContent='🔒';b.appendChild(s)}});
+      const c=[document.getElementById(id),document.getElementById('tab-'+id)].find(e=>e&&!e.matches(tSel(id))&&!/^(BUTTON|A|LI)$/.test(e.tagName));
+      if(c&&!c.querySelector(':scope>.lic-tab-ov')){c.classList.add('lic-tab-locked');c.dataset.licTab=id;const o=document.createElement('div');o.className='lic-tab-ov';
+        o.innerHTML=`<div style="max-width:340px;text-align:center;background:#111827;color:#eef2ff;border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:22px;box-shadow:0 20px 50px rgba(0,0,0,.35)"><div style="font-size:30px">🔒</div><b style="display:block;margin:6px 0">« ${esc(tName(id))} » n'est pas inclus</b><div style="font-size:13px;color:#94a3b8;margin-bottom:14px">Cet onglet n'est pas compris dans votre licence ${esc(PRODUIT)}.</div><button type="button" style="padding:11px 16px;border:0;border-radius:12px;background:linear-gradient(135deg,#7c3aed,#06b6d4);color:#fff;font:700 14px system-ui,sans-serif;cursor:pointer">Demander l'accès</button></div>`;
+        o.querySelector('button').onclick=()=>askTab(id);c.appendChild(o)}})}
+  document.addEventListener('click',e=>{if(!TOFF.length||!e.target.closest)return;const t=e.target.closest('[onclick],[data-tab],[data-view],[id^="tab-btn-"]');if(!t)return;
+    const id=TOFF.find(i=>t.matches(tSel(i)));if(!id)return;e.preventDefault();e.stopImmediatePropagation();askTab(id)},true);
+  try{new MutationObserver(()=>{if(!TOFF.length)return;clearTimeout(tTimer);tTimer=setTimeout(tabPaint,250)}).observe(document.documentElement,{childList:true,subtree:true})}catch(e){}
+  function askTab(id){const s=get(),k='licTabReq_'+PRODUIT+'_'+id,sent=+(localStorage.getItem(k)||0),nm=tName(id);
+    const ov=document.createElement('div');ov.style.cssText='position:fixed;inset:0;z-index:2147483646;background:rgba(7,11,22,.7);backdrop-filter:blur(4px);display:flex;align-items:flex-end;justify-content:center;font-family:system-ui,sans-serif';
+    const inp='width:100%;box-sizing:border-box;padding:12px;border-radius:12px;border:1px solid #334155;background:#0b1220;color:#fff;font:16px system-ui,sans-serif;margin-top:8px';
+    ov.innerHTML=`<div style="width:min(440px,100%);background:#111827;color:#eef2ff;border:1px solid rgba(255,255,255,.1);border-radius:22px 22px 0 0;padding:22px 20px calc(20px + env(safe-area-inset-bottom))">
+      <div style="display:flex;gap:10px;align-items:center"><div style="font-size:28px">🔒</div><div style="flex:1"><b style="font-size:16px">« ${esc(nm)} » n'est pas inclus</b><div style="font-size:12px;color:#8b93b0">${esc(PRODUIT)} · votre licence ne comprend pas cet onglet</div></div><button data-x style="background:rgba(255,255,255,.08);border:0;color:#fff;width:34px;height:34px;border-radius:10px;cursor:pointer">✕</button></div>
+      ${sent&&Date.now()-sent<864e5?'<p style="margin:16px 0 0;font-size:14px;color:#6ee7b7">✔ Votre demande a déjà été envoyée. L\'onglet se débloquera automatiquement dès que l\'accès sera accordé.</p>':`
+      <p style="font-size:13px;color:#cbd5e1;margin:14px 0 4px">Demandez l'accès : l'onglet se débloquera automatiquement dès qu'il sera ajouté à votre licence.</p>
+      <input data-n placeholder="Nom et prénom" maxlength="80" style="${inp}"><input data-t type="tel" placeholder="Téléphone (facultatif)" maxlength="30" style="${inp}">
+      <textarea data-m rows="3" maxlength="1000" style="${inp};resize:vertical">Bonjour, je souhaite accéder à l'onglet « ${esc(nm)} » de ${esc(PRODUIT)}.</textarea>
+      <button data-go style="width:100%;margin-top:12px;padding:13px;border:0;border-radius:12px;background:linear-gradient(135deg,#7c3aed,#06b6d4);color:#fff;font:700 15px system-ui,sans-serif;cursor:pointer">Demander l'accès</button><div data-r style="margin-top:10px;font-size:13px;text-align:center"></div>`}</div>`;
+    document.body.appendChild(ov);const q=x=>ov.querySelector(x);ov.onclick=e=>{if(e.target===ov)ov.remove()};q('[data-x]').onclick=()=>ov.remove();
+    if(q('[data-go]'))q('[data-go]').onclick=async()=>{q('[data-go]').disabled=true;q('[data-go]').textContent='Envoi…';
+      const rid=[...crypto.getRandomValues(new Uint8Array(12))].map(b=>b.toString(16).padStart(2,'0')).join('');
+      try{const r=await fetch(`${await fbUrl()}/requests/${rid}.json`,{method:'PUT',body:JSON.stringify({email:s.mail||'',nom:q('[data-n]').value.trim().slice(0,80)||undefined,tel:q('[data-t]').value.trim().slice(0,30),produit:PRODUIT,module:MODULE||'',t:Date.now(),message:q('[data-m]').value.trim().slice(0,1000),onglet:id,ongletNom:nm,statut:'attente',ua:UA(),page:location.href.split('#')[0].slice(0,200)})});
+        if(!r.ok)throw 0;localStorage.setItem(k,Date.now());q('[data-r]').style.color='#6ee7b7';q('[data-r]').textContent='✔ Demande envoyée. L\'onglet se débloquera automatiquement dès que l\'accès sera accordé.';q('[data-go]').textContent='Envoyée'}
+      catch(e){q('[data-r]').style.color='#fda4af';q('[data-r]').textContent='Envoi impossible pour le moment. Réessayez plus tard.';q('[data-go]').disabled=false;q('[data-go]').textContent='Réessayer'}}}
+  window.licenceAskTab=askTab;
 
   // ── Service après-vente : bouton 🛟 visible uniquement si le SAV est inclus dans la licence ──
   // Conversation dans l'application (Firebase « support/<id>/msgs ») + WhatsApp / e-mail / téléphone

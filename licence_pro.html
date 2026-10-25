@@ -233,6 +233,7 @@ canvas{max-height:270px}
 .bub.me{align-self:flex-end}.bub.me>div{background:linear-gradient(135deg,#7c3aed,#4f46e5);border-radius:14px 14px 4px 14px}
 .bub small{display:block;font-size:.68rem;color:var(--mut);margin:3px 4px}.bub.me small{text-align:right}
 .chatF{padding:12px 16px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--bd)}.chatA{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;align-items:center}
+.tcList{display:grid;gap:6px;margin-top:10px}.tcRow{display:flex;gap:6px;align-items:center}.tcRow input{padding:9px 10px}.tcRow .tcIc{width:52px;flex-shrink:0;text-align:center}.tcRow .tcId{font-family:"JetBrains Mono",monospace;font-size:.8rem;max-width:200px}
 /* modale */
 .mdl{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none}
 .md-bg{position:absolute;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);opacity:0;transition:.2s}
@@ -381,7 +382,7 @@ textarea:focus{border-color:var(--a2);box-shadow:0 0 0 4px rgba(6,182,212,.14)}
         </div>
         <div id="tabBox" hidden>
           <label class="lrow">Onglets de la plateforme <b id="tabParent" style="text-transform:none;letter-spacing:0;color:var(--txt);margin-left:4px"></b> <span><a href="#" onclick="setTabs(1);return false">tout</a> · <a href="#" onclick="setTabs(0);return false">rien</a></span></label>
-          <p class="hint">Décoche un onglet pour le <b>désactiver chez ce client</b> : il disparaît du menu et ne peut plus s'ouvrir (même pour l'administrateur). « Produits » et la caisse restent toujours disponibles. Un onglet relié à un module satellite décoché ci-dessus est désactivé d'office.</p>
+          <p class="hint">Décoche un onglet pour le <b>désactiver chez ce client</b> : il reste visible <b>en gris avec 🔒</b>, ne s'ouvre plus et propose au client de <b>demander l'accès</b>. « Produits » et la caisse restent toujours disponibles. Un onglet relié à un module satellite décoché ci-dessus est désactivé d'office.</p>
           <div class="mods" id="tabs"></div>
         </div>
         <div class="gbx" id="gBox">
@@ -469,6 +470,12 @@ textarea:focus{border-color:var(--a2);box-shadow:0 0 0 4px rgba(6,182,212,.14)}
         <button class="btn full" onclick="saveCfg()">💾 Enregistrer et tester</button>
         <button class="ghost" id="instBtn" style="width:100%;margin-top:10px" hidden onclick="install()">📲 Installer l'application</button>
       </div>
+      <div class="card" style="grid-column:1/-1"><h3>🗂️ Onglets par application <span class="row" style="display:flex;gap:6px"><button class="ghost sm" onclick="saveTabCat()">💾 Enregistrer</button></span></h3>
+        <p class="hint">Liste des onglets que tu peux activer ou désactiver dans chaque licence. L'identifiant doit correspondre à l'onglet du logiciel (ex. <code>tab-paie</code> pour <code>switchTab('tab-paie')</code>, ou <code>map</code> pour <code>data-tab="map"</code>).</p>
+        <select id="tcProd" onchange="renderTabCat()"></select>
+        <div id="tcList" class="tcList"></div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"><button class="ghost sm" onclick="addTabRow()">＋ Ajouter un onglet</button><button class="ghost sm" onclick="resetTabCat()">↺ Liste par défaut</button></div>
+      </div>
       <div class="card" style="grid-column:1/-1"><h3>🛟 Service après-vente <span class="row" style="display:flex;gap:6px"><button class="ghost sm" onclick="saveSavCfg()">💾 Enregistrer</button></span></h3>
         <p class="hint">Coordonnées affichées dans le bouton 🛟 SAV des logiciels — uniquement pour les clients dont la licence inclut le SAV.</p>
         <label class="sw" style="margin-bottom:6px"><input type="checkbox" id="svVis" checked><span class="knob"></span><span><b>Bouton SAV visible dans les logiciels</b><small>Désactive-le pour masquer le SAV chez tous les clients</small></span></label>
@@ -526,8 +533,12 @@ const PMETA={'COVO Pro':['🛒','#7c3aed'],'Gestion Terrain Pro':['🗺️','#10
 const MICON={'Caisse':'💳','Gestion':'📦','Investissement':'📈','Finances':'💰','Historique':'🕘','Clôtures':'🔒','Fidélité':'🎁','Admin':'🛡️'};
 const DEF_MODS={'COVO Pro':['Caisse','Gestion','Investissement','Finances','Historique','Clôtures','Fidélité','Admin']};
 /* Onglets de la plateforme désactivables par licence : [clé, icône, nom, détail, module satellite lié] */
-const TABS_DEF={'COVO Pro':[['catalogue','🗂️','Catalogue','Rayons, prix, site web'],['stats','📊','Statistiques','Ventes et graphiques'],['predictions','☂️','Prédictions','Prévisions et ruptures'],['retours','📦','Gestion','Retours · Stocks · Achats'],
+const TABS_BASE={'Mon Planning Pro':[['tab-planning','📅','Planning','Agenda et rendez-vous'],['tab-paie','💰','Paie','Calcul de la paie'],['tab-dirt','🛡️','DIRT','Déclarations DIRT'],['tab-config-taux','🎚️','Taux','Configuration des taux']],
+  'LivraPro':[['list','📋','Liste','Liste des livraisons'],['map','🗺️','Carte','Carte des livraisons'],['route','🧭','Route','Itinéraire optimisé'],['settings','⚙️','Réglages','Paramètres de l\'application']],
+  'COVO Pro':[['catalogue','🗂️','Catalogue','Rayons, prix, site web'],['stats','📊','Statistiques','Ventes et graphiques'],['predictions','☂️','Prédictions','Prévisions et ruptures'],['retours','📦','Gestion','Retours · Stocks · Achats'],
   ['gestionhub','⚙️','Gestion Pro','Heures · Inventaire · Stock','Gestion'],['historique','🧾','Historique','Tickets de caisse','Historique'],['clotures','🗓️','Clôtures','Fins de journée','Clôtures'],['paiements','💸','Paiements','Paie et finances','Finances']]};
+let TABS_DEF=JSON.parse(JSON.stringify(TABS_BASE)),TABCAT={};
+function mergeTabs(cat){TABCAT=cat||{};TABS_DEF=JSON.parse(JSON.stringify(TABS_BASE));Object.entries(TABCAT).forEach(([p,l])=>{if(Array.isArray(l)&&l.length)TABS_DEF[p]=l;else if(Array.isArray(l))delete TABS_DEF[p]})}
 let GDEF={};
 const GCID_RE=/^[\w.-]+\.apps\.googleusercontent\.com$/i;
 const C=()=>{try{return JSON.parse(localStorage.getItem('licCfg')||'{}')}catch(e){return{}}};
@@ -759,7 +770,8 @@ async function saveLic({mail,prod,mods,maxDev,expire,tabs,google,sav}){
   if(old&&old.hash&&old.hash!==newHash&&!confirm(`⚠️ Le secret maître de cet appareil ne correspond pas à celui qui a créé la licence ${prod} de ${mail}.\n\nSi tu continues, la clé du client va CHANGER et son ancienne clé ne fonctionnera plus.\n\nAnnuler (recommandé) puis importer les bons réglages via Réglages → 📲 Transfert ?`))throw new Error('Enregistrement annulé — clé du client conservée');
   const lic={id,email:mail,produit:prod,hash:newHash,cree:new Date().toISOString().slice(0,10),expire:expire||null,actif:true,modules:mods||null,maxDevices:maxDev||null};
   if(sav!==undefined)lic.sav=sav;if(tabs!==undefined)lic.onglets=tabs||null;if(google!==undefined)lic.google=google||null;GDEF=data.google||{};
-  const i=data.licences.findIndex(l=>l.id===id);i>=0?data.licences[i]={...data.licences[i],...lic,cree:data.licences[i].cree,actif:data.licences[i].actif}:data.licences.push(lic);
+  mergeTabs(data.tabsCat);const i=data.licences.findIndex(l=>l.id===id);i>=0?data.licences[i]={...data.licences[i],...lic,cree:data.licences[i].cree,actif:data.licences[i].actif}:data.licences.push(lic);
+  {const L=data.licences.find(l=>l.id===id),T=TABS_DEF[prod];if(T){const off=tabsOff(L).map(t=>t[0]);L.ongletsOff=off.length?off:null;L.ongletsNoms=off.length?Object.fromEntries(T.filter(t=>off.includes(t[0])).map(t=>[t[0],t[2]])):null}else{L.ongletsOff=null;L.ongletsNoms=null}}
   if(maxDev||data.firebase){data.firebase=FB();await fbPut('limits/'+id,maxDev?String(maxDev).padStart(2,'0'):null);FBOK=true}
   await ghPut(data,s,(i>=0?'Mise à jour':'Nouvelle')+' licence '+prod+' — '+mail);
   LIC=data.licences;BAN=data.bannis||[];LASTID=id;await loadFB();return{key,updated:i>=0}}
@@ -850,7 +862,7 @@ function renderReq(){const n=REQ.filter(r=>r.statut==='attente').length;if($('nb
   $('reqList').innerHTML=REQ.length?REQ.map((r,i)=>{const[ic,col]=pm(r.produit),u=shortUA(r.ua||'');const lbl={attente:'En attente',accordee:'Accordée',refusee:'Refusée'}[r.statut]||r.statut;
     const deja=LIC.find(l=>l.email===norm(r.email)&&l.produit===r.produit);
     return `<div class="rq ${r.statut==='attente'?'wait':''}" style="animation-delay:${i*.03}s"><div class="pi" style="--pc:${col}">${ic}</div><div class="rqb">
-      <b>${esc(r.nom||'—')} · ${esc(r.produit)}${r.module?' · '+esc(r.module):''}<span class="rqst ${esc(r.statut)}">${esc(lbl)}</span></b>
+      <b>${r.onglet?'🔓 Accès à l\'onglet « '+esc(r.ongletNom||r.onglet)+' » · ':''}${esc(r.nom||'—')} · ${esc(r.produit)}${r.module?' · '+esc(r.module):''}<span class="rqst ${esc(r.statut)}">${esc(lbl)}</span></b>
       <small>✉️ ${esc(r.email)}${r.tel?' · 📞 '+esc(r.tel):''} · reçue le ${fmtD(new Date(r.t))}</small>
       <small>${u.ic} ${esc(u.txt)}${r.page?' · '+esc(r.page.replace(/^https?:\/\//,'')):''}</small>
       ${r.message?`<div class="rqm">${esc(r.message)}</div>`:''}
@@ -860,7 +872,11 @@ function renderReq(){const n=REQ.filter(r=>r.statut==='attente').length;if($('nb
       <div class="acts2">${r.statut==='attente'?`<button class="btn sm" onclick="grantReq('${r.rid}')">✅ Accorder</button><button class="ghost sm" onclick="refuseReq('${r.rid}')">❌ Refuser</button>`:''}
         <button class="ghost sm" onclick="noteReq('${r.rid}')">📝 Note</button><button class="ghost sm" onclick="delReq('${r.rid}')">🗑️ Supprimer</button></div>
     </div></div>`}).join(''):'<div class="empty">📭 Aucune demande pour le moment</div>'}
-function grantReq(rid){const r=REQ.find(x=>x.rid===rid);if(!r)return;newLic();REQP=rid;
+function grantReq(rid){const r=REQ.find(x=>x.rid===rid);if(!r)return;
+  const L=r.onglet&&LIC.find(l=>l.email===norm(r.email)&&l.produit===r.produit);
+  if(L){editLic(L.id);REQP=rid;setTimeout(()=>{const i=[...document.querySelectorAll('#tabs input')].find(x=>x.value===r.onglet);if(i&&!i.disabled){i.checked=true;updPrev()}},60);
+    $('reqBar').hidden=false;$('reqTxt').innerHTML=`🔓 <b>${esc(r.nom||r.email)}</b> demande l'onglet « <b>${esc(r.ongletNom||r.onglet)}</b> » — il est coché ci-dessous. Clique sur « Enregistrer » : l'accès s'ouvrira chez le client en ~20 s.`;return}
+  newLic();REQP=rid;
   $('mail').value=norm(r.email);if(prods().includes(r.produit))pickProd(r.produit);else{PROD=r.produit;renderTiles()}
   $('reqBar').hidden=false;$('reqTxt').innerHTML=`📨 Demande de <b>${esc(r.nom||r.email)}</b> — choisis la durée et le nombre d'appareils, puis « Générer » : la licence sera <b>injectée automatiquement</b> sur son appareil.`;
   updExp&&updExp();toast('Configure la licence puis génère-la')}
@@ -891,7 +907,7 @@ async function unlockSet(){const p=$('lkPass').value,a=ADM();
   if(!a){if(p.length<6)return failLock('6 caractères minimum');if(p!==$('lkConf').value)return failLock('Les deux mots de passe sont différents');
     const salt=hex(crypto.getRandomValues(new Uint8Array(16)));localStorage.setItem('licAdmin',JSON.stringify({salt,hash:await passHash(p,salt)}));toast('🔒 Mot de passe créé')}
   else if(await passHash(p,a.salt)!==a.hash)return failLock('Mot de passe incorrect');
-  UNLOCKED=true;$('setLock').hidden=true;$('setBody').hidden=false;fillCfg();fillSavCfg();renderSecret();loadRules();loadAppCfg();bump()}
+  UNLOCKED=true;$('setLock').hidden=true;$('setBody').hidden=false;fillCfg();initTabCat();fillSavCfg();renderSecret();loadRules();loadAppCfg();bump()}
 function failLock(m){toast(m,'ko');const c=$('setLock');c.classList.remove('shake');void c.offsetWidth;c.classList.add('shake');$('lkPass').select()}
 function lockSet(manual){UNLOCKED=false;clearTimeout(lockTimer);clearCfgFields();if($('v-set').classList.contains('on'))showLock();if(manual)toast('🔒 Réglages verrouillés')}
 async function changeSetPass(){const o=prompt('Mot de passe actuel :');if(o===null)return;const a=ADM();if(a&&await passHash(o,a.salt)!==a.hash)return toast('Mot de passe incorrect','ko');
@@ -1149,9 +1165,26 @@ async function sendSup(via){const v=$('supRep').value.trim();if(!v)return toast(
     $('supRep').value='';toast(via==='app'?'📨 Réponse envoyée — le client la voit dans son logiciel':'📨 Envoyé dans l\'app + '+(via==='whatsapp'?'WhatsApp':'e-mail'));await refreshSup(false);loadSup()}catch(e){toast(e.message.includes('401')?'Règles Firebase à republier (conversation SAV)':e.message,'ko')}}
 async function setSupSt(st){try{await fbPut(`support/${SUPT}/statut`,st);toast(st==='traite'?'✓ Demande résolue':'↺ Demande rouverte');await refreshSup(false);loadSup()}catch(e){toast(e.message,'ko')}}
 
+
+/* ── Catalogue des onglets par application (Réglages) ── */
+let TCEDIT={};
+function initTabCat(){TCEDIT=JSON.parse(JSON.stringify(TABS_DEF));const ps=[...new Set([...prods(),...Object.keys(TCEDIT)])];
+  $('tcProd').innerHTML=ps.map(p=>`<option>${esc(p)}</option>`).join('');renderTabCat()}
+function renderTabCat(){const p=$('tcProd').value,L=TCEDIT[p]||[];
+  $('tcList').innerHTML=L.length?L.map((t,i)=>`<div class="tcRow"><input value="${esc(t[1])}" class="tcIc" oninput="TCEDIT['${esc(p)}'][${i}][1]=this.value" title="Icône"><input value="${esc(t[2])}" placeholder="Nom affiché" oninput="TCEDIT['${esc(p)}'][${i}][2]=this.value"><input value="${esc(t[0])}" placeholder="identifiant" class="tcId" oninput="TCEDIT['${esc(p)}'][${i}][0]=this.value.trim()">${t[4]?`<span class="badge b-w" title="Relié au module satellite">${esc(t[4])}</span>`:''}<button class="ghost sm" onclick="TCEDIT['${esc(p)}'].splice(${i},1);renderTabCat()">✕</button></div>`).join('')
+    :'<div class="empty sm">Aucun onglet géré pour ce logiciel — ajoute-les ci-dessous</div>'}
+function addTabRow(){const p=$('tcProd').value;(TCEDIT[p]=TCEDIT[p]||[]).push(['','📄','','']);renderTabCat();const ins=$('tcList').querySelectorAll('.tcId');ins[ins.length-1]&&ins[ins.length-1].focus()}
+function resetTabCat(){const p=$('tcProd').value;TCEDIT[p]=TABS_BASE[p]?JSON.parse(JSON.stringify(TABS_BASE[p])):[];renderTabCat()}
+async function saveTabCat(){if(!UNLOCKED)return showLock();const cat={};
+  for(const[p,l]of Object.entries(TCEDIT)){const c=(l||[]).filter(t=>t[0]&&t[2]).map(t=>[t[0],t[1]||'📄',t[2],t[3]||'',...(t[4]?[t[4]]:[])]);
+    if(JSON.stringify(c)!==JSON.stringify(TABS_BASE[p]||[]))cat[p]=c}
+  try{const{data,sha:s}=await ghGet();data.tabsCat=cat;mergeTabs(cat);
+    data.licences.forEach(L=>{const T=TABS_DEF[L.produit];if(!T){L.ongletsOff=null;L.ongletsNoms=null;return}const off=tabsOff(L).map(t=>t[0]);L.ongletsOff=off.length?off:null;L.ongletsNoms=off.length?Object.fromEntries(T.filter(t=>off.includes(t[0])).map(t=>[t[0],t[2]])):null});
+    await ghPut(data,s,'Catalogue des onglets');LIC=data.licences;renderAll();if(PROD)pickProd(PROD);toast('✔ Onglets enregistrés')}catch(e){toast(e.message,'ko')}}
+
 /* ── chargement ── */
 async function load(manual){if(!C().tok){renderAll();if(manual)go('set');return}
-  try{const d=(await ghGet()).data;LIC=d.licences||[];BAN=d.bannis||[];SAVCFG=d.sav||{};GDEF=d.google||{};if($('gCid')&&PROD)$('gCid').placeholder=GDEF[PROD]?'Par défaut : '+GDEF[PROD]:'123456-abc.apps.googleusercontent.com';await loadFB();checkSecret();if(manual)toast('↻ Données actualisées')}catch(e){toast(e.message,'ko')}
+  try{const d=(await ghGet()).data;LIC=d.licences||[];BAN=d.bannis||[];SAVCFG=d.sav||{};mergeTabs(d.tabsCat);GDEF=d.google||{};if($('gCid')&&PROD)$('gCid').placeholder=GDEF[PROD]?'Par défaut : '+GDEF[PROD]:'123456-abc.apps.googleusercontent.com';await loadFB();checkSecret();if(manual)toast('↻ Données actualisées')}catch(e){toast(e.message,'ko')}
   if(C().fbMail&&C().fbPass){loadReq().then(()=>loadSup());loadNotes()}else renderNotes()}
 
 /* ── PWA ── */
