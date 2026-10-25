@@ -20,11 +20,11 @@
       const d=await (await fetch(SRC+'?t='+Date.now(),{cache:'no-store'})).json();
       if((d.bannis||[]).includes(mail))return{ok:false,msg:'Accès interdit pour cette adresse'};
       const h=await sha(mail+'|'+PRODUIT+'|'+key);
-      const l=d.licences.find(x=>x.email===mail&&x.produit===PRODUIT&&x.hash===h);
+      let l=d.licences.find(x=>x.email===mail&&x.produit===PRODUIT&&x.hash===h);
       if(!l)return{ok:false,msg:'Licence invalide'};
       if(!l.actif)return{ok:false,msg:'Licence révoquée'};
       if(!notExpired(l.expire))return{ok:false,msg:'Licence expirée'};
-      if(MODULE&&Array.isArray(l.modules)&&!l.modules.includes(MODULE))return{ok:false,msg:`Le module « ${MODULE} » n'est pas inclus dans votre licence`};
+      l=pvFix(l);if(MODULE&&Array.isArray(l.modules)&&!l.modules.includes(MODULE))return{ok:false,msg:`Le module « ${MODULE} » n'est pas inclus dans votre licence`};
       if(l.maxDevices&&d.firebase){const r=await device(d.firebase,l);if(!r.ok)return r}
       return{ok:true,expire:l.expire||null,data:extra(l,d)};
     }catch(e){ // hors ligne : dernière validation, 7 jours max, sans dépasser l'expiration
@@ -69,7 +69,9 @@
   }
 
   // ── Réglages injectés par Licence Pro ──
-  function extra(l,d){const g=l.google||{},dg=(d.google||{})[PRODUIT]||'';
+  // Projets Pro : inclus d'office dans les licences COVO Pro créées avant son arrivée (sans repère « pv »)
+  function pvFix(l){if(!l||l.produit!=='COVO Pro'||l.pv)return l;l={...l};if(Array.isArray(l.modules)&&!l.modules.includes('Projets'))l.modules=[...l.modules,'Projets'];if(Array.isArray(l.onglets)&&!l.onglets.includes('projets'))l.onglets=[...l.onglets,'projets'];return l}
+  function extra(l,d){l=pvFix(l);const g=l.google||{},dg=(d.google||{})[PRODUIT]||'';
     return{onglets:Array.isArray(l.onglets)?l.onglets:null,ongletsOff:Array.isArray(l.ongletsOff)?l.ongletsOff:null,ongletsNoms:l.ongletsNoms||null,modules:Array.isArray(l.modules)?l.modules:null,
       google:{clientId:String(g.clientId||dg||'').trim(),email:String(g.email||'').trim().toLowerCase()},
       sav:(l.sav&&l.sav.on&&(!l.sav.until||new Date(l.sav.until)>new Date())&&!(d.sav&&d.sav.visible===false))?{until:l.sav.until||l.expire||null,contact:d.sav||{}}:null}}

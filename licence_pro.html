@@ -551,19 +551,25 @@ textarea:focus{border-color:var(--a2);box-shadow:0 0 0 4px rgba(6,182,212,.14)}
 <script>
 const $=id=>document.getElementById(id);
 const FB_DEF={fbUrl:'https://covo-licences-default-rtdb.europe-west1.firebasedatabase.app',fbKey:'AIzaSyBf93ZHmBf6qi6GbtUX-dQh-DGMgR6nIts'};
-const DEF_P='COVO Pro,Gestion Terrain Pro,LivraPro,Mon Planning Pro,Onda Player,Bureau Virtuel Pro';
+const DEF_P='COVO Pro,Projets Pro,Gestion Terrain Pro,LivraPro,Mon Planning Pro,Onda Player,Bureau Virtuel Pro';
+/* logiciels ajoutés après coup : toujours proposés, même si la liste a été personnalisée dans les Réglages */
+const NEW_P=['Projets Pro'];
 const PAL=['#7c3aed','#06b6d4','#10b981','#f59e0b','#f43f5e','#3b82f6','#ec4899','#84cc16'];
-const PMETA={'COVO Pro':['🛒','#7c3aed'],'Gestion Terrain Pro':['🗺️','#10b981'],'LivraPro':['🚚','#f59e0b'],'Mon Planning Pro':['📅','#3b82f6'],'Onda Player':['📺','#ec4899'],'Bureau Virtuel Pro':['🖥️','#06b6d4']};
-const MICON={'Caisse':'💳','Gestion':'📦','Investissement':'📈','Finances':'💰','Historique':'🕘','Clôtures':'🔒','Fidélité':'🎁','Admin':'🛡️'};
-const DEF_MODS={'COVO Pro':['Caisse','Gestion','Investissement','Finances','Historique','Clôtures','Fidélité','Admin']};
+const PMETA={'COVO Pro':['🛒','#7c3aed'],'Gestion Terrain Pro':['🗺️','#10b981'],'LivraPro':['🚚','#f59e0b'],'Mon Planning Pro':['📅','#3b82f6'],'Onda Player':['📺','#ec4899'],'Bureau Virtuel Pro':['🖥️','#06b6d4'],'Projets Pro':['📁','#2a78d6']};
+const MICON={'Caisse':'💳','Gestion':'📦','Investissement':'📈','Finances':'💰','Historique':'🕘','Clôtures':'🔒','Fidélité':'🎁','Admin':'🛡️','Projets':'📁'};
+const DEF_MODS={'COVO Pro':['Caisse','Gestion','Investissement','Finances','Historique','Clôtures','Fidélité','Admin','Projets']};
+/* Projets Pro (satellite) : inclus d'office dans les licences COVO Pro créées avant son arrivée (sans le repère « pv ») */
+const modsOf=l=>l&&l.produit==='COVO Pro'&&Array.isArray(l.modules)&&!l.pv&&!l.modules.includes('Projets')?[...l.modules,'Projets']:l&&l.modules;
+const ongOf=l=>l&&l.produit==='COVO Pro'&&Array.isArray(l.onglets)&&!l.pv&&!l.onglets.includes('projets')?[...l.onglets,'projets']:l&&l.onglets;
 /* Onglets de la plateforme désactivables par licence : [clé, icône, nom, détail, module satellite lié] */
 const TABS_BASE={'Mon Planning Pro':[['tab-planning','📅','Planning','Agenda et rendez-vous'],['tab-paie','💰','Paie','Calcul de la paie'],['tab-dirt','🛡️','DIRT','Déclarations DIRT'],['tab-config-taux','🎚️','Taux','Configuration des taux']],
   'LivraPro':[['list','📋','Liste','Liste des livraisons'],['map','🗺️','Carte','Carte des livraisons'],['route','🧭','Route','Itinéraire optimisé'],['settings','⚙️','Réglages','Paramètres de l\'application']],
   'COVO Pro':[['catalogue','🗂️','Catalogue','Rayons, prix, site web'],['stats','📊','Statistiques','Ventes et graphiques'],['predictions','☂️','Prédictions','Prévisions et ruptures'],['retours','📦','Gestion','Retours · Stocks · Achats'],
-  ['gestionhub','⚙️','Gestion Pro','Heures · Inventaire · Stock','Gestion'],['historique','🧾','Historique','Tickets de caisse','Historique'],['clotures','🗓️','Clôtures','Fins de journée','Clôtures'],['paiements','💸','Paiements','Paie et finances','Finances']]};
+  ['gestionhub','⚙️','Gestion Pro','Heures · Inventaire · Stock','Gestion'],['historique','🧾','Historique','Tickets de caisse','Historique'],['clotures','🗓️','Clôtures','Fins de journée','Clôtures'],['paiements','💸','Paiements','Paie et finances','Finances'],['projets','📁','Projets Pro','Projets · budget · votes','Projets']]};
 let TABS_DEF=JSON.parse(JSON.stringify(TABS_BASE)),TABCAT={};
 const PRINT_TAB=['__print','🖨️','Imprimer','Boutons d\'impression et Ctrl+P'];
 function mergeTabs(cat){TABCAT=cat||{};TABS_DEF=JSON.parse(JSON.stringify(TABS_BASE));Object.entries(TABCAT).forEach(([p,l])=>{if(Array.isArray(l))TABS_DEF[p]=l.filter(t=>t[0]!=='__print')});
+  if(TABS_DEF['COVO Pro']&&!TABS_DEF['COVO Pro'].some(t=>t[0]==='projets'))TABS_DEF['COVO Pro'].push(TABS_BASE['COVO Pro'].find(t=>t[0]==='projets'));
   [...new Set([...prods(),...Object.keys(TABS_DEF)])].forEach(p=>{TABS_DEF[p]=[...(TABS_DEF[p]||[]),PRINT_TAB]})}
 let GDEF={};
 const GCID_RE=/^[\w.-]+\.apps\.googleusercontent\.com$/i;
@@ -571,8 +577,8 @@ const C=()=>{try{return JSON.parse(localStorage.getItem('licCfg')||'{}')}catch(e
 let LIC=[],BAN=[],DEV={},EXC={},EXCN=0,FILTER='all',PER=30,EDIT=null,KEEP=false,PROD='',DEVN=0,LASTID=null,charts={},FBT=null,FBOK=false;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function toast(t,c='ok'){const e=$('toast');e.textContent=t;e.className='toast show '+c;clearTimeout(e._t);e._t=setTimeout(()=>e.className='toast',3200)}
-const prods=()=>(C().prods||DEF_P).split(',').map(s=>s.trim()).filter(Boolean);
-function MODS(){try{return C().mods?JSON.parse(C().mods):DEF_MODS}catch(e){return DEF_MODS}}
+const prods=()=>{const l=(C().prods||DEF_P).split(',').map(s=>s.trim()).filter(Boolean);NEW_P.forEach(p=>{if(!l.includes(p)){const i=l.indexOf('COVO Pro');i>=0?l.splice(i+1,0,p):l.push(p)}});return l};
+function MODS(){let m;try{m=C().mods?JSON.parse(C().mods):DEF_MODS}catch(e){m=DEF_MODS}if(m&&Array.isArray(m['COVO Pro'])&&!m['COVO Pro'].includes('Projets'))m={...m,'COVO Pro':[...m['COVO Pro'],'Projets']};return m}
 const pm=p=>PMETA[p]||['📦',PAL[Math.max(0,prods().indexOf(p))%PAL.length]];
 
 /* ── navigation ── */
@@ -645,9 +651,9 @@ function shortUA(ua){ua=ua||'';const os=/Windows/.test(ua)?'Windows':/iPhone/.te
 /* ── rendu : comptes ── */
 function modRow(l){const all=MODS()[l.produit];if(!all)return'';
   const off=tabsOff(l),gc=(l.google&&l.google.clientId)||GDEF[l.produit];
-  return `<div class="mrow">${all.map(m=>{const ok=!l.modules||l.modules.includes(m);return `<span class="mi${ok?'':' no'}" title="${esc(m)} — ${ok?'autorisé':'non autorisé'}">${MICON[m]||'•'}</span>`}).join('')}${off.length?`<span class="mi" style="width:auto;padding:0 7px;background:rgba(244,63,94,.18);font-size:.7rem;font-weight:700" title="Onglets désactivés : ${esc(off.map(t=>t[2]).join(', '))}">🗂️ −${off.length}</span>`:''}${gc?`<span class="mi" style="background:rgba(6,182,212,.18)" title="Google Drive injecté${l.google&&l.google.email?' — '+esc(l.google.email):''}">☁️</span>`:''}</div>`}
+  return `<div class="mrow">${all.map(m=>{const lm=modsOf(l),ok=!lm||lm.includes(m);return `<span class="mi${ok?'':' no'}" title="${esc(m)} — ${ok?'autorisé':'non autorisé'}">${MICON[m]||'•'}</span>`}).join('')}${off.length?`<span class="mi" style="width:auto;padding:0 7px;background:rgba(244,63,94,.18);font-size:.7rem;font-weight:700" title="Onglets désactivés : ${esc(off.map(t=>t[2]).join(', '))}">🗂️ −${off.length}</span>`:''}${gc?`<span class="mi" style="background:rgba(6,182,212,.18)" title="Google Drive injecté${l.google&&l.google.email?' — '+esc(l.google.email):''}">☁️</span>`:''}</div>`}
 /* onglets désactivés pour une licence (choix direct + modules satellites retirés) */
-function tabsOff(l){const T=TABS_DEF[l.produit];if(!T)return[];return T.filter(t=>(Array.isArray(l.onglets)&&!l.onglets.includes(t[0]))||(t[4]&&Array.isArray(l.modules)&&!l.modules.includes(t[4])))}
+function tabsOff(l){const T=TABS_DEF[l.produit];if(!T)return[];const on=ongOf(l),md=modsOf(l);return T.filter(t=>(Array.isArray(on)&&!on.includes(t[0]))||(t[4]&&Array.isArray(md)&&!md.includes(t[4])))}
 function licRow(l){const[s,c]=status(l),[ic,col]=pm(l.produit),used=devUsed(l.id),max=l.maxDevices,ex=excList(l.id).length;
   const pct=max?Math.min(100,used/max*100):0,mc=ex?'var(--ko)':used>=max?'var(--warn)':'var(--ok)',dur=l.expire?fmtExp(l.expire):'∞ illimitée';
   return `<div class="lic" onclick="openLic('${l.id}')"><div class="pi" style="--pc:${col}">${ic}</div>
@@ -722,7 +728,7 @@ function openLic(id){const l=LIC.find(x=>x.id===id);if(!l)return;const[s,c]=stat
     ${ex.length?`<h4 class="red">⚠ Licence en trop — ${ex.length} appareil${ex.length>1?'s':''} refusé${ex.length>1?'s':''}</h4>`+ex.map(e=>{const u=shortUA(e.ua);return `<div class="dev bad"><span class="di">${u.ic}</span><div><b>${u.txt}</b><small>Tentative le ${fmtD(new Date(e.t))}</small><small class="ipl">${ipLine(e.ip,e.loc,e)}</small></div><button class="ghost sm" onclick="allowExtra('${id}','${e.dev}')">+1</button><button class="ghost sm" onclick="ignoreExc('${id}','${e.dev}')">Ignorer</button></div>`}).join(''):''}
     <h4>📱 Appareils activés${l.maxDevices?` (${devs.length}/${l.maxDevices})`:''}</h4>
     ${!l.maxDevices?'<div class="empty sm">Pas de limite d\'appareils sur cette licence</div>':devs.length?devs.map(([k,v])=>{const u=shortUA(v.ua);return `<div class="dev"><span class="di">${u.ic}</span><div><b>${u.txt}</b><small>Place ${+k+1} · activé le ${fmtD(new Date(v.t))}${v.seen?' · vu '+ago(v.seen):''}</small><small class="ipl">${ipLine(v.lastIp||v.ip,v.lastLoc||v.loc,v)}${v.ip&&v.lastIp&&v.ip!==v.lastIp?` <span class="red">(1ʳᵉ : ${esc(v.ip)})</span>`:''}</small>${histHTML(v)}</div><button class="ghost sm" onclick="devDel('${id}','${k}')">Retirer</button></div>`}).join(''):'<div class="empty sm">Aucun appareil activé pour l\'instant</div>'}
-    ${all?`<h4>🧩 Modules satellites</h4><p class="hint">Les satellites utilisent cette licence ${esc(l.produit)} : seuls les modules ✓ sont accessibles, avec la même limite d'appareils.</p><div class="mgrid">${all.map(m=>{const ok=!l.modules||l.modules.includes(m);return `<div class="mg${ok?'':' no'}"><span>${MICON[m]||'•'}</span>${esc(m)}<i>${ok?'✓':'✕'}</i></div>`}).join('')}</div>`:''}
+    ${all?`<h4>🧩 Modules satellites</h4><p class="hint">Les satellites utilisent cette licence ${esc(l.produit)} : seuls les modules ✓ sont accessibles, avec la même limite d'appareils.</p><div class="mgrid">${all.map(m=>{const lm=modsOf(l),ok=!lm||lm.includes(m);return `<div class="mg${ok?'':' no'}"><span>${MICON[m]||'•'}</span>${esc(m)}<i>${ok?'✓':'✕'}</i></div>`}).join('')}</div>`:''}
     ${TABS_DEF[l.produit]?(()=>{const off=tabsOff(l).map(t=>t[0]);return `<h4>🗂️ Onglets de la plateforme</h4><p class="hint">${off.length?off.length+' onglet'+(off.length>1?'s':'')+' désactivé'+(off.length>1?'s':'')+' chez ce client.':'Tous les onglets sont disponibles.'}</p><div class="mgrid">${TABS_DEF[l.produit].map(t=>{const ok=!off.includes(t[0]);return `<div class="mg${ok?'':' no'}"><span>${t[1]}</span>${esc(t[2])}<i>${ok?'✓':'✕'}</i></div>`}).join('')}</div>`})():''}
     ${(()=>{const g=l.google||{},cid=g.clientId||GDEF[l.produit]||'';return `<h4>☁️ Google Drive</h4><div class="kv"><div style="grid-column:1/-1"><span>Client ID Google${g.clientId?'':cid?' (par défaut)':''}</span><b style="font-family:'JetBrains Mono',monospace;font-size:.72rem;word-break:break-all">${cid?esc(cid):'— non injecté'}</b></div><div style="grid-column:1/-1"><span>Compte Google associé</span><b>${g.email?esc(g.email):'—'}</b></div></div>`})()}
     ${clientNotesHTML(l)}
@@ -785,7 +791,7 @@ function newLic(){setSav(null);EDIT=null;KEEP=false;REQP=null;if($('reqBar'))$('
   $('kb').classList.remove('show');pickProd(PROD||prods()[0]);setDev(0);updExp();$('gen').textContent='Générer la licence';closeDrawer();go('new')}
 function editLic(id){const l=LIC.find(x=>x.id===id);if(!l)return;EDIT=id;KEEP=true;closeDrawer();
   $('editBar').hidden=false;$('editTxt').textContent='Modification de '+l.produit+' — '+l.email;$('durKeep').hidden=false;
-  $('mail').value=l.email;$('mail').disabled=true;$('gCid').value=(l.google&&l.google.clientId)||'';$('gMail').value=(l.google&&l.google.email)||'';pickProd(l.produit,l.modules,l.onglets);setDev(l.maxDevices||0);updExp();
+  $('mail').value=l.email;$('mail').disabled=true;$('gCid').value=(l.google&&l.google.clientId)||'';$('gMail').value=(l.google&&l.google.email)||'';pickProd(l.produit,modsOf(l),ongOf(l));setDev(l.maxDevices||0);updExp();
   setSav(l.sav);$('kb').classList.remove('show');$('gen').textContent='💾 Enregistrer les modifications';go('new')}
 
 /* ── enregistrement ── */
@@ -795,6 +801,7 @@ async function saveLic({mail,prod,mods,maxDev,expire,tabs,google,sav}){
   const newHash=await sha(mail+'|'+prod+'|'+key),old=data.licences.find(l=>l.id===id);
   if(old&&old.hash&&old.hash!==newHash&&!confirm(`⚠️ Le secret maître de cet appareil ne correspond pas à celui qui a créé la licence ${prod} de ${mail}.\n\nSi tu continues, la clé du client va CHANGER et son ancienne clé ne fonctionnera plus.\n\nAnnuler (recommandé) puis importer les bons réglages via Réglages → 📲 Transfert ?`))throw new Error('Enregistrement annulé — clé du client conservée');
   const lic={id,email:mail,produit:prod,hash:newHash,cree:new Date().toISOString().slice(0,10),expire:expire||null,actif:true,modules:mods||null,maxDevices:maxDev||null};
+  if(prod==='COVO Pro'){lic.pv=1;if(old&&!old.pv&&tabs===undefined)lic.onglets=ongOf(old)||null}
   if(sav!==undefined)lic.sav=sav;if(tabs!==undefined)lic.onglets=tabs||null;if(google!==undefined)lic.google=google||null;GDEF=data.google||{};
   mergeTabs(data.tabsCat);const i=data.licences.findIndex(l=>l.id===id);i>=0?data.licences[i]={...data.licences[i],...lic,cree:data.licences[i].cree,actif:data.licences[i].actif}:data.licences.push(lic);
   {const L=data.licences.find(l=>l.id===id),T=TABS_DEF[prod];if(T){const off=tabsOff(L).map(t=>t[0]);L.ongletsOff=off.length?off:null;L.ongletsNoms=off.length?Object.fromEntries(T.filter(t=>off.includes(t[0])).map(t=>[t[0],t[2]])):null}else{L.ongletsOff=null;L.ongletsNoms=null}}
@@ -817,7 +824,7 @@ function reveal(key){const el=$('key');let f=0;const iv=setInterval(()=>{el.text
 
 /* ── actions ── */
 async function allowExtra(id,dev){const l=LIC.find(x=>x.id===id);if(!l)return;
-  try{await saveLic({mail:l.email,prod:l.produit,mods:l.modules,maxDev:(l.maxDevices||0)+1,expire:l.expire});await fbPut(`excess/${id}/${dev}`,null);
+  try{await saveLic({mail:l.email,prod:l.produit,mods:modsOf(l),maxDev:(l.maxDevices||0)+1,expire:l.expire});await fbPut(`excess/${id}/${dev}`,null);
     await loadFB();toast('✔ Limite portée à '+((l.maxDevices||0)+1)+' — le client peut cliquer à nouveau sur « Activer »');if($('drawer').classList.contains('on'))openLic(id)}catch(e){toast(e.message,'ko')}}
 async function ignoreExc(id,dev){try{await fbPut(`excess/${id}/${dev}`,null);await loadFB();toast('Alerte ignorée');if($('drawer').classList.contains('on'))openLic(id)}catch(e){toast(e.message,'ko')}}
 async function devDel(id,k){if(!confirm('Retirer cet appareil ? Il sera bloqué et libérera une place.'))return;
@@ -1142,7 +1149,7 @@ function savBlock(l){const a=savActive(l),e=savEnd(l),exp=l.sav&&l.sav.on&&!a;
   return `<div class="savCard ${a?'on':''}"><span class="si">🛟</span><div><b>${a?'SAV inclus':exp?'SAV expiré':'SAV non inclus'}</b><small>${a?(e?'jusqu\'au '+e.toLocaleDateString('fr-FR'):'pendant toute la licence')+' · bouton visible chez le client':exp?'depuis le '+new Date(l.sav.until).toLocaleDateString('fr-FR'):'Le client ne voit pas le bouton SAV'}</small></div>
     <button class="ghost sm" onclick="quickSav('${l.id}',${a?'false':'true'})">${a?'Retirer':'Activer'}</button></div>`}
 async function quickSav(id,on){const l=LIC.find(x=>x.id===id);if(!l)return;
-  try{await saveLic({mail:l.email,prod:l.produit,mods:l.modules,maxDev:l.maxDevices,expire:l.expire,sav:on?{on:true,until:null}:{on:false}});toast(on?'🛟 SAV activé — le bouton apparaît chez le client':'SAV retiré');openLic(id)}catch(e){toast(e.message,'ko')}}
+  try{await saveLic({mail:l.email,prod:l.produit,mods:modsOf(l),maxDev:l.maxDevices,expire:l.expire,sav:on?{on:true,until:null}:{on:false}});toast(on?'🛟 SAV activé — le bouton apparaît chez le client':'SAV retiré');openLic(id)}catch(e){toast(e.message,'ko')}}
 function fillSavCfg(){const c=SAVCFG||{};$('svVis').checked=c.visible!==false;$('svMail').value=c.email||'';$('svTel').value=c.tel||'';$('svWa').value=c.whatsapp||'';$('svH').value=c.horaires||'';$('svMsg').value=c.message||''}
 async function saveSavCfg(){if(!UNLOCKED)return showLock();const v={visible:$('svVis').checked,email:$('svMail').value.trim(),tel:$('svTel').value.trim(),whatsapp:$('svWa').value.replace(/[^\d]/g,''),horaires:$('svH').value.trim(),message:$('svMsg').value.trim().slice(0,500)};
   if(!v.email&&!v.tel&&!v.whatsapp)return toast('Indique au moins un e-mail, un téléphone ou un WhatsApp','ko');
