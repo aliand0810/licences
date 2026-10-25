@@ -55,7 +55,8 @@
       "modules": null,
       "maxDevices": 1,
       "sav": {
-        "on": false
+        "on": true,
+        "until": null
       },
       "onglets": null,
       "google": null
