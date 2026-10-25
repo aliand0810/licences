@@ -225,6 +225,9 @@ canvas{max-height:270px}
 .sw small{display:block;font-size:.74rem;color:var(--mut);font-weight:500;margin-top:2px}
 .savCard{display:flex;gap:12px;align-items:center;margin-top:14px;padding:12px 14px;border-radius:14px;border:1px solid var(--bd);background:var(--glass)}
 .savCard.on{border-color:rgba(16,185,129,.4);background:rgba(16,185,129,.07)}.savCard .si{font-size:1.4rem}.savCard>div{flex:1;min-width:0}.savCard b{display:block;font-size:.9rem}.savCard small{font-size:.75rem;color:var(--mut)}
+.secWarn{display:flex;gap:12px;align-items:center;padding:14px 16px;margin-bottom:16px;border-radius:16px;border:1px solid rgba(244,63,94,.5);background:rgba(244,63,94,.1);animation:up .35s both}
+.secWarn>div:not(.pi){flex:1;min-width:0}.secWarn b{display:block}.secWarn small{color:#fecdd3;font-size:.8rem}
+.secState{margin-bottom:6px}.kok{font-style:normal;margin-left:8px;font-size:.7rem;text-transform:none;letter-spacing:0;font-weight:700}.kok.ok{color:#6ee7b7}.kok.ko{color:#fda4af}
 /* modale */
 .mdl{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none}
 .md-bg{position:absolute;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);opacity:0;transition:.2s}
@@ -265,6 +268,7 @@ textarea:focus{border-color:var(--a2);box-shadow:0 0 0 4px rgba(6,182,212,.14)}
  .chips button{flex-shrink:0}
  .toolbar input{max-width:none}
  .lic{padding:14px 16px}
+ .secWarn{flex-wrap:wrap}.secWarn>div:not(.pi){min-width:calc(100% - 70px)}.secWarn button{width:100%}
  .mdl{place-items:end center}.md{width:100%;max-height:94vh;border-radius:22px 22px 0 0;transform:translateY(100%)}.mdl.on .md{transform:none}
  .g2{grid-template-columns:1fr;gap:0}.md-f .btn{flex:1 1 100%;order:-1}.md-f .ghost{flex:1}
  textarea,select{font-size:16px}
@@ -331,6 +335,7 @@ textarea:focus{border-color:var(--a2);box-shadow:0 0 0 4px rgba(6,182,212,.14)}
   </header>
 
   <!-- VUE D'ENSEMBLE -->
+  <div id="secWarn" class="secWarn" hidden></div>
   <section id="v-dash" class="view on">
     <div class="kpis">
       <div class="card kpi" style="--c:var(--a1)"><div class="l">Clients</div><div class="v" data-k="cli">0</div><div class="s" id="sCli">comptes</div></div>
@@ -484,6 +489,12 @@ textarea:focus{border-color:var(--a2);box-shadow:0 0 0 4px rgba(6,182,212,.14)}
           <div class="gst" id="agSt"></div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn" style="flex:2" onclick="saveGDef()">💾 Enregistrer le Client ID</button><button class="ghost" style="flex:1" onclick="delGDef()">🗑️ Retirer</button></div>
         </div>
+      </div>
+      <div class="card" style="grid-column:1/-1"><h3>📲 Transfert vers un autre appareil</h3>
+        <p class="hint">Pour avoir <b>exactement les mêmes clés</b> sur ton téléphone et ton ordinateur, transfère tes réglages (token, secret maître, Firebase) depuis l'appareil de référence au lieu de les retaper. Le code est chiffré avec un mot de passe de transfert.</p>
+        <div id="secState" class="secState"></div>
+        <div class="g2"><div><label>1. Sur l'appareil de référence</label><button class="btn" style="width:100%" onclick="exportCfg()">📤 Créer un code de transfert</button></div>
+          <div><label>2. Sur l'autre appareil</label><button class="ghost" style="width:100%" onclick="importCfg()">📥 Importer un code de transfert</button></div></div>
       </div>
       <div class="card" style="grid-column:1/-1"><h3>🔒 Sécurité</h3>
         <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="ghost" onclick="changeSetPass()">🔑 Changer le mot de passe</button><button class="ghost" onclick="lockSet(true)">🔒 Verrouiller maintenant</button></div>
@@ -665,7 +676,7 @@ function openLic(id){const l=LIC.find(x=>x.id===id);if(!l)return;const[s,c]=stat
     <div class="kv"><div><span>Statut</span><b class="badge ${c}">${s}</b></div><div><span>Expiration</span><b>${l.expire?fmtD(new Date(l.expire)):'Illimitée'}</b></div>
       <div><span>Appareils</span><b>${l.maxDevices?devs.length+' / '+l.maxDevices:'Illimités'}</b></div><div><span>Créée le</span><b>${l.cree?new Date(l.cree).toLocaleDateString('fr-FR'):'—'}</b></div></div>
     ${savBlock(l)}
-    <div class="keyb"><span>Clé de licence</span><code id="dwKey">${C().sec?'…':'Secret maître manquant'}</code><div class="row"><button class="ghost sm" onclick="copyTxt($('dwKey').textContent)">📋 Copier</button><button class="ghost sm" onclick="shareKey('${esc(l.email)}','${esc(l.produit)}',$('dwKey').textContent)">📤 Partager</button><button class="ghost sm" onclick="mailKey('${esc(l.email)}','${esc(l.produit)}',$('dwKey').textContent)">✉️ E-mail</button></div></div>
+    <div class="keyb"><span>Clé de licence <i id="dwKeyOk" class="kok"></i></span><code id="dwKey">${C().sec?'…':'Secret maître manquant'}</code><div class="row"><button class="ghost sm" onclick="copyTxt($('dwKey').textContent)">📋 Copier</button><button class="ghost sm" onclick="shareKey('${esc(l.email)}','${esc(l.produit)}',$('dwKey').textContent)">📤 Partager</button><button class="ghost sm" onclick="mailKey('${esc(l.email)}','${esc(l.produit)}',$('dwKey').textContent)">✉️ E-mail</button></div></div>
     ${ex.length?`<h4 class="red">⚠ Licence en trop — ${ex.length} appareil${ex.length>1?'s':''} refusé${ex.length>1?'s':''}</h4>`+ex.map(e=>{const u=shortUA(e.ua);return `<div class="dev bad"><span class="di">${u.ic}</span><div><b>${u.txt}</b><small>Tentative le ${fmtD(new Date(e.t))}</small><small class="ipl">${ipLine(e.ip,e.loc,e)}</small></div><button class="ghost sm" onclick="allowExtra('${id}','${e.dev}')">+1</button><button class="ghost sm" onclick="ignoreExc('${id}','${e.dev}')">Ignorer</button></div>`}).join(''):''}
     <h4>📱 Appareils activés${l.maxDevices?` (${devs.length}/${l.maxDevices})`:''}</h4>
     ${!l.maxDevices?'<div class="empty sm">Pas de limite d\'appareils sur cette licence</div>':devs.length?devs.map(([k,v])=>{const u=shortUA(v.ua);return `<div class="dev"><span class="di">${u.ic}</span><div><b>${u.txt}</b><small>Place ${+k+1} · activé le ${fmtD(new Date(v.t))}${v.seen?' · vu '+ago(v.seen):''}</small><small class="ipl">${ipLine(v.lastIp||v.ip,v.lastLoc||v.loc,v)}${v.ip&&v.lastIp&&v.ip!==v.lastIp?` <span class="red">(1ʳᵉ : ${esc(v.ip)})</span>`:''}</small>${histHTML(v)}</div><button class="ghost sm" onclick="devDel('${id}','${k}')">Retirer</button></div>`}).join(''):'<div class="empty sm">Aucun appareil activé pour l\'instant</div>'}
@@ -676,7 +687,9 @@ function openLic(id){const l=LIC.find(x=>x.id===id);if(!l)return;const[s,c]=stat
   </div>
   <div class="dw-f"><button class="btn" onclick="editLic('${id}')">✏️ Modifier</button><button class="ghost${l.actif?' danger':''}" onclick="revoke('${id}')">${l.actif?'⛔ Révoquer':'↺ Réactiver'}</button>${!l.actif?`<button class="ghost danger" title="Supprimer et bannir" onclick="delLic('${id}')">🗑</button>`:''}</div>`;
   $('drawer').classList.add('on');
-  if(C().sec)makeKey(l.email,l.produit).then(k=>{if($('dwKey'))$('dwKey').textContent=k})}
+  if(C().sec)makeKey(l.email,l.produit).then(async k=>{if(!$('dwKey'))return;$('dwKey').textContent=k;const ok=await sha(l.email+'|'+l.produit+'|'+k)===l.hash;
+    $('dwKeyOk').className='kok '+(ok?'ok':'ko');$('dwKeyOk').textContent=ok?'✓ vérifiée':'✗ ne correspond pas au secret de cet appareil';
+    if(!ok)$('dwKey').insertAdjacentHTML('afterend','<p class="hint red" style="margin:4px 0 10px">Cette licence a été créée avec un autre secret maître. La clé affichée ne fonctionnera pas chez le client. Importe les réglages de l\'appareil qui a créé la licence (Réglages → 📲 Transfert).</p>')})}
 
 /* ── formulaire ── */
 function renderTiles(){$('ptiles').innerHTML=prods().map(p=>{const[ic,col]=pm(p);return `<button type="button" class="pt${p===PROD?' act':''}" style="--pc:${col}" onclick="pickProd('${esc(p)}')"><span class="pi" style="--pc:${col}">${ic}</span>${esc(p)}</button>`}).join('')}
@@ -737,7 +750,9 @@ function editLic(id){const l=LIC.find(x=>x.id===id);if(!l)return;EDIT=id;KEEP=tr
 async function saveLic({mail,prod,mods,maxDev,expire,tabs,google,sav}){
   if(maxDev&&!(C().fbMail&&C().fbPass)){go('set');$('fbMail').focus();throw new Error('Ajoute ton compte admin Firebase pour limiter les appareils')}
   const key=await makeKey(mail,prod),{data,sha:s}=await ghGet(),id=await sha(mail+'|'+prod);
-  const lic={id,email:mail,produit:prod,hash:await sha(mail+'|'+prod+'|'+key),cree:new Date().toISOString().slice(0,10),expire:expire||null,actif:true,modules:mods||null,maxDevices:maxDev||null};
+  const newHash=await sha(mail+'|'+prod+'|'+key),old=data.licences.find(l=>l.id===id);
+  if(old&&old.hash&&old.hash!==newHash&&!confirm(`⚠️ Le secret maître de cet appareil ne correspond pas à celui qui a créé la licence ${prod} de ${mail}.\n\nSi tu continues, la clé du client va CHANGER et son ancienne clé ne fonctionnera plus.\n\nAnnuler (recommandé) puis importer les bons réglages via Réglages → 📲 Transfert ?`))throw new Error('Enregistrement annulé — clé du client conservée');
+  const lic={id,email:mail,produit:prod,hash:newHash,cree:new Date().toISOString().slice(0,10),expire:expire||null,actif:true,modules:mods||null,maxDevices:maxDev||null};
   if(sav!==undefined)lic.sav=sav;if(tabs!==undefined)lic.onglets=tabs||null;if(google!==undefined)lic.google=google||null;GDEF=data.google||{};
   const i=data.licences.findIndex(l=>l.id===id);i>=0?data.licences[i]={...data.licences[i],...lic,cree:data.licences[i].cree,actif:data.licences[i].actif}:data.licences.push(lic);
   if(maxDev||data.firebase){data.firebase=FB();await fbPut('limits/'+id,maxDev?String(maxDev).padStart(2,'0'):null);FBOK=true}
@@ -871,7 +886,7 @@ async function unlockSet(){const p=$('lkPass').value,a=ADM();
   if(!a){if(p.length<6)return failLock('6 caractères minimum');if(p!==$('lkConf').value)return failLock('Les deux mots de passe sont différents');
     const salt=hex(crypto.getRandomValues(new Uint8Array(16)));localStorage.setItem('licAdmin',JSON.stringify({salt,hash:await passHash(p,salt)}));toast('🔒 Mot de passe créé')}
   else if(await passHash(p,a.salt)!==a.hash)return failLock('Mot de passe incorrect');
-  UNLOCKED=true;$('setLock').hidden=true;$('setBody').hidden=false;fillCfg();fillSavCfg();loadRules();loadAppCfg();bump()}
+  UNLOCKED=true;$('setLock').hidden=true;$('setBody').hidden=false;fillCfg();fillSavCfg();renderSecret();loadRules();loadAppCfg();bump()}
 function failLock(m){toast(m,'ko');const c=$('setLock');c.classList.remove('shake');void c.offsetWidth;c.classList.add('shake');$('lkPass').select()}
 function lockSet(manual){UNLOCKED=false;clearTimeout(lockTimer);clearCfgFields();if($('v-set').classList.contains('on'))showLock();if(manual)toast('🔒 Réglages verrouillés')}
 async function changeSetPass(){const o=prompt('Mot de passe actuel :');if(o===null)return;const a=ADM();if(a&&await passHash(o,a.salt)!==a.hash)return toast('Mot de passe incorrect','ko');
@@ -1065,9 +1080,43 @@ async function doneSup(tid){const x=SUP.find(k=>k.tid===tid);if(!x)return;const{
 async function delSup(tid){if(!confirm('Supprimer cette demande SAV ?'))return;try{await fbPut('support/'+tid,null);await loadSup();toast('Demande supprimée')}catch(e){toast(e.message,'ko')}}
 function noteSup(tid){const x=SUP.find(k=>k.tid===tid);if(x)openNote(null,{type:'Incident',email:x.email,prod:x.produit,title:'SAV — '+(x.sujet||'Demande'),body:`Demande reçue le ${fmtD(new Date(x.t))}${x.tel?' · Tél. '+x.tel:''}\n\nMessage du client :\n${x.message||''}\n\nDiagnostic :\n\nAction menée / résolution :\n`})}
 
+
+/* ── Contrôle du secret maître + transfert entre appareils ── */
+let SECBAD=[];
+async function checkSecret(){SECBAD=[];if(!C().sec||!LIC.length){renderSecret();return}
+  for(const l of LIC){if(!l.hash)continue;const k=await makeKey(l.email,l.produit);if(await sha(l.email+'|'+l.produit+'|'+k)!==l.hash)SECBAD.push(l)}
+  renderSecret()}
+function renderSecret(){const n=SECBAD.length,t=LIC.filter(l=>l.hash).length,w=$('secWarn');
+  if(w){w.hidden=!n;if(n)w.innerHTML=`<div class="pi" style="--pc:#f43f5e">🔑</div><div><b>${n===t?'Le secret maître de cet appareil ne correspond à aucune licence':n+' licence'+(n>1?'s':'')+' sur '+t+' créée'+(n>1?'s':'')+' avec un autre secret maître'}</b>
+    <small>${n===t?'Les clés affichées ici ne fonctionneront pas chez tes clients. N\'enregistre aucune licence depuis cet appareil avant d\'avoir importé les réglages de ton appareil de référence.':'Concernées : '+SECBAD.map(l=>esc(l.email)+' ('+esc(l.produit)+')').join(', ')+'. Leurs clés affichées ici ne fonctionneront pas.'}</small></div>
+    <button class="ghost sm" onclick="go('set')">📲 Corriger</button>`}
+  const st=$('secState');if(st)st.innerHTML=!C().sec?'<span class="badge b-w">Secret maître non renseigné</span>':!t?'<span class="badge b-w">Aucune licence pour vérifier</span>':n?`<span class="badge b-ko">✗ ${t-n}/${t} licences correspondent au secret de cet appareil</span>`:`<span class="badge b-ok">✓ Le secret de cet appareil correspond à tes ${t} licence${t>1?'s':''}</span>`}
+async function pbk(pass,salt){const k=await crypto.subtle.importKey('raw',enc.encode(pass),'PBKDF2',false,['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:150000,hash:'SHA-256'},k,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
+const b64=u=>btoa(String.fromCharCode(...u)),ub64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+async function exportCfg(){if(!UNLOCKED)return showLock();if(SECBAD.length&&!confirm('Attention : le secret de CET appareil ne correspond pas à toutes tes licences. Es-tu sûr que c\'est l\'appareil de référence ?'))return;
+  const p=prompt('Choisis un mot de passe de transfert (6 caractères min.) — tu le saisiras sur l\'autre appareil :');if(!p)return;if(p.length<6)return toast('6 caractères minimum','ko');
+  const c=C(),payload=JSON.stringify({v:1,cfg:{tok:c.tok,own:c.own,rep:c.rep,pth:c.pth,sec:c.sec,prods:c.prods,fbUrl:c.fbUrl,fbKey:c.fbKey,fbMail:c.fbMail,fbPass:c.fbPass},sign:localStorage.getItem('licSign')||''});
+  const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12)),ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},await pbk(p,salt),enc.encode(payload)));
+  const code='LP1.'+b64(salt)+'.'+b64(iv)+'.'+b64(ct);
+  openModal(`<div class="md-h"><div class="pi" style="--pc:#06b6d4">📤</div><div><h2>Code de transfert</h2><span>Chiffré avec ton mot de passe de transfert</span></div><button class="x" onclick="closeModal()">✕</button></div>
+    <div class="md-b"><p class="hint">Envoie-toi ce code (WhatsApp à toi-même, e-mail, AirDrop…), puis sur l'autre appareil : Réglages → 📥 Importer un code de transfert.</p><textarea id="xCode" rows="6" readonly style="font-family:'JetBrains Mono',monospace;font-size:.72rem;word-break:break-all">${code}</textarea></div>
+    <div class="md-f"><button class="ghost" onclick="copyTxt($('xCode').value)">📋 Copier</button><button class="btn" onclick="shareTxt('Code de transfert Licence Pro',$('xCode').value)">📤 Partager</button></div>`)}
+async function importCfg(){if(!UNLOCKED)return showLock();
+  openModal(`<div class="md-h"><div class="pi" style="--pc:#10b981">📥</div><div><h2>Importer un code de transfert</h2><span>Remplace les réglages de cet appareil</span></div><button class="x" onclick="closeModal()">✕</button></div>
+    <div class="md-b"><label style="margin-top:0">Code de transfert</label><textarea id="iCode" rows="5" placeholder="LP1.…" style="font-family:'JetBrains Mono',monospace;font-size:.75rem"></textarea>
+      <label>Mot de passe de transfert</label><div class="pw"><input id="iPass" type="password"><button type="button" class="eye" onclick="eye(this)">👁</button></div></div>
+    <div class="md-f"><button class="ghost" onclick="closeModal()">Annuler</button><button class="btn" onclick="doImport()">📥 Importer</button></div>`)}
+async function doImport(){const parts=$('iCode').value.trim().replace(/\s+/g,'').split('.');if(parts.length!==4||parts[0]!=='LP1')return toast('Code de transfert invalide','ko');
+  try{const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:ub64(parts[2])},await pbk($('iPass').value,ub64(parts[1])),ub64(parts[3]));
+    const o=JSON.parse(new TextDecoder().decode(pt));localStorage.setItem('licCfg',JSON.stringify({...C(),...o.cfg}));if(o.sign)localStorage.setItem('licSign',o.sign);
+    FBT=null;FBOK=false;closeModal();fillCfg();renderConn();renderTiles();toast('✔ Réglages importés — vérification des clés…');await load(true);
+    if(C().fbMail&&C().fbPass)fbTok().then(()=>{FBOK=true;renderConn()}).catch(()=>{})}
+  catch(e){toast('Mot de passe de transfert incorrect ou code abîmé','ko')}}
+
 /* ── chargement ── */
 async function load(manual){if(!C().tok){renderAll();if(manual)go('set');return}
-  try{const d=(await ghGet()).data;LIC=d.licences||[];BAN=d.bannis||[];SAVCFG=d.sav||{};GDEF=d.google||{};if($('gCid')&&PROD)$('gCid').placeholder=GDEF[PROD]?'Par défaut : '+GDEF[PROD]:'123456-abc.apps.googleusercontent.com';await loadFB();if(manual)toast('↻ Données actualisées')}catch(e){toast(e.message,'ko')}
+  try{const d=(await ghGet()).data;LIC=d.licences||[];BAN=d.bannis||[];SAVCFG=d.sav||{};GDEF=d.google||{};if($('gCid')&&PROD)$('gCid').placeholder=GDEF[PROD]?'Par défaut : '+GDEF[PROD]:'123456-abc.apps.googleusercontent.com';await loadFB();checkSecret();if(manual)toast('↻ Données actualisées')}catch(e){toast(e.message,'ko')}
   if(C().fbMail&&C().fbPass){loadReq().then(()=>loadSup());loadNotes()}else renderNotes()}
 
 /* ── PWA ── */
