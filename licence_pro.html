@@ -1045,7 +1045,8 @@ function setSav(sv){$('savOn').checked=!!(sv&&sv.on);$('savKeep').hidden=!(sv&&s
 function updSav(){const on=$('savOn').checked;$('savOpts').hidden=!on;
   document.querySelectorAll('#savDur button').forEach(b=>b.classList.toggle('act',b.dataset.s===SAVDUR));
   const g=getSav();$('savTxt').textContent=on?'SAV inclus':'SAV non inclus';
-  $('savSub').textContent=on?(g.until?'Jusqu\'au '+new Date(g.until).toLocaleDateString('fr-FR')+' — bouton 🛟 SAV visible chez le client':'Pendant toute la durée de la licence — bouton 🛟 SAV visible chez le client'):'Le bouton 🛟 SAV ne s\'affichera pas chez le client';
+  const noCfg=on&&!(SAVCFG&&(SAVCFG.email||SAVCFG.tel||SAVCFG.whatsapp));
+  $('savSub').textContent=noCfg?'⚠️ Renseigne d\'abord tes coordonnées SAV dans Réglages → 🛟 Service après-vente':on?(g.until?'Jusqu\'au '+new Date(g.until).toLocaleDateString('fr-FR')+' — bouton 🛟 SAV visible chez le client':'Pendant toute la durée de la licence — bouton 🛟 SAV visible chez le client'):'Le bouton 🛟 SAV ne s\'affichera pas chez le client';
   if(typeof updPrev==='function')try{updPrev()}catch(e){}}
 document.querySelectorAll('#savDur button').forEach(b=>b.onclick=()=>{SAVDUR=b.dataset.s;updSav()});
 function getSav(){if(!$('savOn').checked)return{on:false};if(SAVDUR==='keep'){const l=LIC.find(x=>x.id===EDIT);return{on:true,until:l&&l.sav?l.sav.until||null:null}}
