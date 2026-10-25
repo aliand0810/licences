@@ -173,7 +173,7 @@
       `<div class="lic-ft">🔒 Connexion sécurisée · vos données restent sur cet appareil</div>`;
     c.querySelectorAll('.lic-tabs button').forEach(b=>b.onclick=()=>{const t=b.dataset.tab;if(t==='key')showKey();else if(t==='req')showRequestForm();else{inscrDepuisApp=false;showInscription()}});
     c.querySelectorAll('.lic-eye').forEach(b=>b.onclick=()=>{const i=b.previousElementSibling;i.type=i.type==='password'?'text':'password';b.textContent=i.type==='password'?'👁':'🙈'});
-    const k=c.querySelector('.lic-key');if(k)k.addEventListener('input',()=>{const p=k.selectionStart===k.value.length;const v=k.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,20);k.value=v.match(/.{1,4}/g)?.join('-')||'';if(p)k.selectionStart=k.selectionEnd=k.value.length});
+    const k=c.querySelector('.lic-key');if(k)k.maxLength=24;k.addEventListener('input',e=>{const p=k.selectionStart===k.value.length;const v=k.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,20);let o=v.match(/.{1,4}/g)?.join('-')||'';if(p&&!/^delete/.test(e.inputType||'')&&v.length%4===0&&v.length&&v.length<20)o+='-';k.value=o;if(p)k.selectionStart=k.selectionEnd=k.value.length});
     c.scrollTop=0}
   const F=(lbl,input)=>`<label class="lic-f"><span>${lbl}</span>${input}</label>`;
   const PW=(id,ph,ac)=>`<div class="lic-w"><input id="${id}" class="lic-in" type="password" placeholder="${ph}" autocomplete="${ac}" style="padding-right:52px"><button type="button" class="lic-eye" aria-label="Afficher">👁</button></div>`;
