@@ -62,16 +62,15 @@
       },
       "onglets": [
         "tab-planning",
-        "tab-dirt"
+        "tab-dirt",
+        "tab-config-taux"
       ],
       "google": null,
       "ongletsOff": [
-        "tab-paie",
-        "tab-config-taux"
+        "tab-paie"
       ],
       "ongletsNoms": {
-        "tab-paie": "Paie",
-        "tab-config-taux": "Taux"
+        "tab-paie": "Paie"
       }
     }
   ],
