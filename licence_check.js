@@ -133,26 +133,65 @@
         localStorage.setItem(RKEY,JSON.stringify({rid,mail,t:body.t}));showWaiting()}
       catch(x){b.textContent='Envoyer la demande';b.disabled=false;e.textContent='Envoi impossible ('+(x.message||'réseau')+'). Réessayez plus tard.'}};
   }
+  // ── Inscription d'un nouveau client : compte créé par la page + demande envoyée à Licence Pro ──
+  const canInscr=()=>typeof window.licInscription==='function';
+  let inscrDepuisApp=false;
+  function shell(){if(overlay)return;overlay=document.createElement('div');overlay.id='lic-overlay';
+    overlay.style.cssText='position:fixed;inset:0;z-index:2147483647;background:rgba(7,11,22,.97);display:flex;align-items:center;justify-content:center;font-family:system-ui,sans-serif;overflow-y:auto;padding:16px 0';
+    overlay.innerHTML='<div style="background:#111827;border:1px solid rgba(255,255,255,.1);padding:28px;border-radius:20px;width:min(380px,90vw);color:#eef2ff;box-shadow:0 20px 60px rgba(0,0,0,.5);margin:auto"></div>';
+    (document.body||document.documentElement).appendChild(overlay)}
+  function showInscription(err,v){clearInterval(pollT);v=v||{};const s=get();
+    box(`<p style="color:#8b93b0;margin:0 0 14px;font-size:.9rem">Créez votre compte. Votre demande est envoyée à l'administrateur : dès qu'elle est acceptée, votre accès s'active tout seul sur cet appareil.</p>
+      <input id="in" placeholder="Nom et prénom" maxlength="60" style="${inp}" value="${esc(v.nom||'')}">
+      <input id="im" type="email" placeholder="E-mail" maxlength="120" style="${inp}" value="${esc(v.email||s.mail||'')}">
+      <input id="it" type="tel" placeholder="Téléphone (facultatif)" maxlength="30" style="${inp}" value="${esc(v.tel||'')}">
+      <div style="font-size:.75rem;color:#8b93b0;margin:6px 0 4px">Vos identifiants de connexion</div>
+      <input id="ii" placeholder="Identifiant (ex. jean.dupont)" maxlength="30" autocapitalize="none" autocomplete="username" spellcheck="false" style="${inp}" value="${esc(v.ident||'')}">
+      <input id="ip" type="password" placeholder="Mot de passe (6 caractères min.)" autocomplete="new-password" style="${inp}">
+      <input id="ip2" type="password" placeholder="Confirmer le mot de passe" autocomplete="new-password" style="${inp}">
+      <textarea id="ix" rows="2" maxlength="1000" placeholder="Message (entreprise, service…) — facultatif" style="${inp};resize:vertical">${esc(v.message||'')}</textarea>
+      <button id="is" style="${btn}">Envoyer mon inscription</button>
+      <div id="ie" style="color:#fda4af;margin-top:10px;font-size:.88rem">${esc(err||'')}</div>
+      <button id="ib" style="${lnk}">${inscrDepuisApp?'Annuler':'J\'ai déjà une clé de licence'}</button>`);
+    const g=id=>overlay.querySelector('#'+id);
+    g('ib').onclick=()=>{overlay.remove();overlay=null;if(!inscrDepuisApp)lock(null,true);else{inscrDepuisApp=false;recheck(true)}};
+    g('is').onclick=async()=>{const d={nom:g('in').value.trim(),email:g('im').value.trim().toLowerCase(),tel:g('it').value.trim(),ident:g('ii').value.trim().toLowerCase(),pwd:g('ip').value,message:g('ix').value.trim()},e=g('ie'),b=g('is');
+      if(!d.nom)return e.textContent='Indiquez votre nom';if(!/^\S+@\S+\.\S+$/.test(d.email))return e.textContent='E-mail invalide';
+      if(!/^[a-z0-9._-]{3,30}$/.test(d.ident))return e.textContent='Identifiant : 3 à 30 caractères (lettres minuscules, chiffres, . _ -)';
+      if(d.pwd.length<6)return e.textContent='Mot de passe trop court (6 caractères minimum)';if(d.pwd!==g('ip2').value)return e.textContent='Les deux mots de passe sont différents';
+      b.textContent='Création du compte…';b.disabled=true;e.textContent='';
+      const rid=[...crypto.getRandomValues(new Uint8Array(16))].map(x=>x.toString(16).padStart(2,'0')).join('');
+      let acc;try{acc=await window.licInscription({...d,rid})}catch(x){const keep={...d};delete keep.pwd;return showInscription(x.message||'Inscription impossible',keep)}
+      b.textContent='Envoi de la demande…';
+      const body={type:'inscription',nom:d.nom,email:d.email,produit:PRODUIT,t:Date.now(),statut:'attente',ident:acc.ident,uid:acc.uid,cid:acc.cid,ua:UA(),page:location.origin+location.pathname};
+      if(d.tel)body.tel=d.tel;if(d.message)body.message=d.message;if(MODULE)body.module=MODULE;
+      try{const r=await fetch(`${await fbUrl()}/requests/${rid}.json`,{method:'PUT',body:JSON.stringify(body)});if(!r.ok)throw new Error(r.status);
+        localStorage.setItem(RKEY,JSON.stringify({rid,mail:d.email,t:body.t,type:'inscription',ident:acc.ident}));showWaiting()}
+      catch(x){b.textContent='Envoyer mon inscription';b.disabled=false;e.textContent='Votre compte est créé mais la demande n\'a pas pu être envoyée ('+(x.message||'réseau')+'). Prévenez l\'administrateur : il verra votre inscription dans ses clients.'}};
+  }
+  window.licOuvrirInscription=function(){if(!canInscr())return;inscrDepuisApp=!overlay;shell();showInscription()};
   function showWaiting(info){const q=getReq();if(!q)return showRequestForm();
     box(`<div style="margin:6px 0 14px;padding:14px;border-radius:12px;background:rgba(124,58,237,.12);border:1px solid rgba(124,58,237,.35)">
-        <div style="font-weight:700">⏳ Demande envoyée</div>
-        <div style="color:#8b93b0;font-size:.86rem;margin-top:4px">le ${new Date(q.t).toLocaleString('fr-FR')} pour <b style="color:#eef2ff">${esc(q.mail)}</b>.<br>Dès qu'elle sera accordée, votre licence s'installera automatiquement : laissez cette page ouverte ou revenez plus tard.</div></div>
+        <div style="font-weight:700">⏳ ${q.type==='inscription'?'Inscription envoyée':'Demande envoyée'}</div>
+        <div style="color:#8b93b0;font-size:.86rem;margin-top:4px">le ${new Date(q.t).toLocaleString('fr-FR')} pour <b style="color:#eef2ff">${esc(q.mail)}</b>${q.ident?` — identifiant <b style="color:#eef2ff">${esc(q.ident)}</b>`:''}.<br>${q.type==='inscription'?'Dès qu\'elle sera acceptée, votre accès s\'activera automatiquement':'Dès qu\'elle sera accordée, votre licence s\'installera automatiquement'} : laissez cette page ouverte ou revenez plus tard.</div></div>
       <div id="rw" style="color:#8b93b0;font-size:.82rem">${esc(info||'Vérification en cours…')}</div>
       <button id="rk" style="${lnk}">J'ai déjà une clé de licence</button>
       <button id="rc" style="${lnk};color:#fda4af">Annuler la demande</button>`);
     overlay.querySelector('#rk').onclick=()=>{clearInterval(pollT);overlay.remove();overlay=null;lock(null,true)};
-    overlay.querySelector('#rc').onclick=()=>{if(!confirm('Annuler cette demande ?'))return;localStorage.removeItem(RKEY);showRequestForm()};
+    overlay.querySelector('#rc').onclick=()=>{if(!confirm('Annuler cette demande ?'))return;localStorage.removeItem(RKEY);q.type==='inscription'&&canInscr()?showInscription():showRequestForm()};
     clearInterval(pollT);pollReq();pollT=setInterval(pollReq,10000);
   }
   let pollBusy=false;
   async function pollReq(){const q=getReq();if(!q||!overlay)return clearInterval(pollT);if(pollBusy)return;pollBusy=true;const w=overlay.querySelector('#rw');
     try{const r=await (await fetch(`${await fbUrl()}/requests/${q.rid}.json?t=${Date.now()}`,{cache:'no-store'})).json();
       if(!r){localStorage.removeItem(RKEY);clearInterval(pollT);return showRequestForm('Votre demande a été clôturée. Vous pouvez en envoyer une nouvelle.')}
-      if(r.statut==='refusee'){localStorage.removeItem(RKEY);clearInterval(pollT);return showRequestForm('Votre demande a été refusée'+(r.motif?' : '+r.motif:'.')+' Vous pouvez contacter le vendeur.')}
+      if(r.statut==='refusee'){localStorage.removeItem(RKEY);clearInterval(pollT);const m='Votre demande a été refusée'+(r.motif?' : '+r.motif:'.')+' Vous pouvez contacter le vendeur.';return q.type==='inscription'&&canInscr()?showInscription(m):showRequestForm(m)}
+      if(q.type==='inscription'&&r.statut==='accordee'&&!r.cle){clearInterval(pollT);localStorage.removeItem(RKEY);overlay.remove();overlay=null;inscrDepuisApp=false;try{window.licInscriptionOk&&window.licInscriptionOk(q.ident)}catch(e){}return}
       if(r.statut==='accordee'&&r.cle){clearInterval(pollT);if(w)w.textContent='✅ Licence accordée — installation…';
         Object.keys(localStorage).filter(x=>x.startsWith('licSlot_')).forEach(x=>localStorage.removeItem(x));
         const v=await verif(r.email||q.mail,r.cle);
-        if(v.ok){save(r.email||q.mail,r.cle,v.expire);applyData(v.data);localStorage.removeItem(RKEY);overlay.remove();overlay=null;watch(v.expire);
+        if(v.ok){save(r.email||q.mail,r.cle,v.expire);applyData(v.data);localStorage.removeItem(RKEY);overlay.remove();overlay=null;inscrDepuisApp=false;watch(v.expire);
+          if(q.type==='inscription'){try{window.licInscriptionOk&&window.licInscriptionOk(q.ident)}catch(e){}return}
           const t=document.createElement('div');t.textContent='✅ Licence '+PRODUIT+' activée';t.style.cssText='position:fixed;left:50%;top:18px;transform:translateX(-50%);z-index:2147483647;background:#10b981;color:#fff;padding:12px 18px;border-radius:12px;font:600 14px system-ui;box-shadow:0 8px 24px rgba(0,0,0,.3)';document.body.appendChild(t);setTimeout(()=>t.remove(),4000);return}
         return showRefusInstall(r,q,v.msg)}
       if(w)w.textContent='Toujours en attente — dernière vérification à '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
@@ -179,7 +218,7 @@
   }
   function lock(msg,skipReq){
     clearInterval(timer);if(overlay)return;
-    overlay=document.createElement('div');
+    overlay=document.createElement('div');overlay.id='lic-overlay';
     overlay.style.cssText='position:fixed;inset:0;z-index:2147483647;background:rgba(7,11,22,.97);display:flex;align-items:center;justify-content:center;font-family:system-ui,sans-serif';
     overlay.innerHTML=`<div style="background:#111827;border:1px solid rgba(255,255,255,.1);padding:28px;border-radius:20px;width:min(380px,90vw);color:#eef2ff;box-shadow:0 20px 60px rgba(0,0,0,.5)">
       <div style="font-size:2rem">🔑</div><h2 style="margin:8px 0 4px">${PRODUIT}${MODULE?' · '+MODULE:''}</h2>
@@ -188,10 +227,13 @@
       <input id="lk" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX" style="width:100%;padding:12px;box-sizing:border-box;border-radius:10px;border:1px solid #334155;background:#0b1220;color:#fff;font-family:monospace">
       <button id="lb" style="width:100%;margin-top:14px;padding:13px;background:linear-gradient(135deg,#7c3aed,#06b6d4);color:#fff;border:0;border-radius:10px;font-weight:700;cursor:pointer">Activer</button>
       <div id="le" style="color:#fda4af;margin-top:10px;font-size:.88rem">${msg||''}</div>
+      <button id="li" style="display:${canInscr()?'block':'none'};width:100%;margin-top:16px;padding:12px;background:transparent;color:#c4b5fd;border:1px dashed #7c3aed;border-radius:10px;font-weight:700;cursor:pointer">🆕 Nouveau client ? Créer mon compte</button>
       <button id="lr" style="display:block;margin:14px auto 0;background:none;border:0;color:#93c5fd;cursor:pointer;font-size:.86rem;text-decoration:underline">Pas encore de licence ? Faire une demande en ligne</button></div>`;
     (document.body||document.documentElement).appendChild(overlay);
     const s=get();if(s.mail)overlay.querySelector('#lm').value=s.mail;
     overlay.querySelector('#lr').onclick=()=>showRequestForm();
+    overlay.querySelector('#li').onclick=()=>{inscrDepuisApp=false;showInscription()};
+    if(!canInscr())addEventListener('load',()=>{const x=overlay&&overlay.querySelector('#li');if(x&&canInscr())x.style.display='block'},{once:true});
     if(!skipReq&&getReq())return showWaiting();
     overlay.querySelector('#lb').onclick=async()=>{
       const m=overlay.querySelector('#lm').value,k=overlay.querySelector('#lk').value,b=overlay.querySelector('#lb');
