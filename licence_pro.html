@@ -381,7 +381,7 @@ textarea:focus{border-color:var(--a2);box-shadow:0 0 0 4px rgba(6,182,212,.14)}
           <div class="mods" id="mods"></div>
         </div>
         <div id="tabBox" hidden>
-          <label class="lrow">Onglets de la plateforme <b id="tabParent" style="text-transform:none;letter-spacing:0;color:var(--txt);margin-left:4px"></b> <span><a href="#" onclick="setTabs(1);return false">tout</a> · <a href="#" onclick="setTabs(0);return false">rien</a></span></label>
+          <label class="lrow">Onglets et fonctions <b id="tabParent" style="text-transform:none;letter-spacing:0;color:var(--txt);margin-left:4px"></b> <span><a href="#" onclick="setTabs(1);return false">tout</a> · <a href="#" onclick="setTabs(0);return false">rien</a></span></label>
           <p class="hint">Décoche un onglet pour le <b>désactiver chez ce client</b> : il reste visible <b>en gris avec 🔒</b>, ne s'ouvre plus et propose au client de <b>demander l'accès</b>. Pour COVO Pro, « Produits » et la caisse restent toujours disponibles. Un onglet relié à un module satellite décoché ci-dessus est désactivé d'office.</p>
           <div class="mods" id="tabs"></div>
         </div>
@@ -538,7 +538,9 @@ const TABS_BASE={'Mon Planning Pro':[['tab-planning','📅','Planning','Agenda e
   'COVO Pro':[['catalogue','🗂️','Catalogue','Rayons, prix, site web'],['stats','📊','Statistiques','Ventes et graphiques'],['predictions','☂️','Prédictions','Prévisions et ruptures'],['retours','📦','Gestion','Retours · Stocks · Achats'],
   ['gestionhub','⚙️','Gestion Pro','Heures · Inventaire · Stock','Gestion'],['historique','🧾','Historique','Tickets de caisse','Historique'],['clotures','🗓️','Clôtures','Fins de journée','Clôtures'],['paiements','💸','Paiements','Paie et finances','Finances']]};
 let TABS_DEF=JSON.parse(JSON.stringify(TABS_BASE)),TABCAT={};
-function mergeTabs(cat){TABCAT=cat||{};TABS_DEF=JSON.parse(JSON.stringify(TABS_BASE));Object.entries(TABCAT).forEach(([p,l])=>{if(Array.isArray(l)&&l.length)TABS_DEF[p]=l;else if(Array.isArray(l))delete TABS_DEF[p]})}
+const PRINT_TAB=['__print','🖨️','Imprimer','Boutons d\'impression et Ctrl+P'];
+function mergeTabs(cat){TABCAT=cat||{};TABS_DEF=JSON.parse(JSON.stringify(TABS_BASE));Object.entries(TABCAT).forEach(([p,l])=>{if(Array.isArray(l))TABS_DEF[p]=l.filter(t=>t[0]!=='__print')});
+  [...new Set([...prods(),...Object.keys(TABS_DEF)])].forEach(p=>{TABS_DEF[p]=[...(TABS_DEF[p]||[]),PRINT_TAB]})}
 let GDEF={};
 const GCID_RE=/^[\w.-]+\.apps\.googleusercontent\.com$/i;
 const C=()=>{try{return JSON.parse(localStorage.getItem('licCfg')||'{}')}catch(e){return{}}};
@@ -1168,7 +1170,7 @@ async function setSupSt(st){try{await fbPut(`support/${SUPT}/statut`,st);toast(s
 
 /* ── Catalogue des onglets par application (Réglages) ── */
 let TCEDIT={};
-function initTabCat(){TCEDIT=JSON.parse(JSON.stringify(TABS_DEF));const ps=[...new Set([...prods(),...Object.keys(TCEDIT)])];
+function initTabCat(){TCEDIT=JSON.parse(JSON.stringify(TABS_DEF));Object.keys(TCEDIT).forEach(p=>TCEDIT[p]=TCEDIT[p].filter(t=>t[0]!=='__print'));const ps=[...new Set([...prods(),...Object.keys(TCEDIT)])];
   $('tcProd').innerHTML=ps.map(p=>`<option>${esc(p)}</option>`).join('');renderTabCat()}
 function renderTabCat(){const p=$('tcProd').value,L=TCEDIT[p]||[];
   $('tcList').innerHTML=L.length?L.map((t,i)=>`<div class="tcRow"><input value="${esc(t[1])}" class="tcIc" oninput="TCEDIT['${esc(p)}'][${i}][1]=this.value" title="Icône"><input value="${esc(t[2])}" placeholder="Nom affiché" oninput="TCEDIT['${esc(p)}'][${i}][2]=this.value"><input value="${esc(t[0])}" placeholder="identifiant" class="tcId" oninput="TCEDIT['${esc(p)}'][${i}][0]=this.value.trim()">${t[4]?`<span class="badge b-w" title="Relié au module satellite">${esc(t[4])}</span>`:''}<button class="ghost sm" onclick="TCEDIT['${esc(p)}'].splice(${i},1);renderTabCat()">✕</button></div>`).join('')
@@ -1192,7 +1194,7 @@ let instEvt=null;addEventListener('beforeinstallprompt',e=>{e.preventDefault();i
 function install(){if(instEvt){instEvt.prompt();instEvt=null;$('instBtn').hidden=true}}
 if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
 
-initCfg();newLic();go('dash');setDev(0);
+mergeTabs({});initCfg();newLic();go('dash');setDev(0);
 if(C().fbMail&&C().fbPass)fbTok().then(()=>{FBOK=true;renderConn()}).catch(()=>{});
 load();setInterval(load,60000);setInterval(()=>LIC.length&&renderAll(),30000);
 if(!C().tok)go('set');
