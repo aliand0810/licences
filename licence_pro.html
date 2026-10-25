@@ -235,6 +235,10 @@ canvas{max-height:270px}
 .bub small{display:block;font-size:.68rem;color:var(--mut);margin:3px 4px}.bub.me small{text-align:right}
 .chatF{padding:12px 16px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--bd)}.chatA{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;align-items:center}
 .tcList{display:grid;gap:6px;margin-top:10px}.tcRow{display:flex;gap:6px;align-items:center}.tcRow input{padding:9px 10px}.tcRow .tcIc{width:52px;flex-shrink:0;text-align:center}.tcRow .tcId{font-family:"JetBrains Mono",monospace;font-size:.8rem;max-width:200px}
+.vc{border:1px solid var(--bd);border-left:4px solid #06b6d4;border-radius:14px;background:var(--glass);padding:12px 14px;animation:up .35s both}
+.vh{display:flex;gap:10px;align-items:flex-start}.vv{display:block;margin-top:8px;padding:9px 12px;border-radius:10px;background:rgba(0,0,0,.25);font:600 .76rem/1.5 "JetBrains Mono",monospace;color:#c4b5fd;white-space:pre-wrap;word-break:break-all;max-height:220px;overflow:auto;font-variant-ligatures:none}
+.ipv{margin-top:14px;padding:12px;border-radius:12px;border:1px dashed rgba(124,58,237,.5);background:rgba(124,58,237,.07)}.ipv code{display:block;font:600 .78rem "JetBrains Mono",monospace;color:#c4b5fd;word-break:break-all;white-space:pre-wrap;max-height:120px;overflow:auto}.ipv small{display:block;margin-top:6px;color:var(--mut);font-size:.78rem}
+.injected{border-color:#7c3aed!important;box-shadow:0 0 0 4px rgba(124,58,237,.3)!important;transition:.3s}
 /* modale */
 .mdl{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none}
 .md-bg{position:absolute;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);opacity:0;transition:.2s}
@@ -280,7 +284,8 @@ textarea:focus{border-color:var(--a2);box-shadow:0 0 0 4px rgba(6,182,212,.14)}
  .g2{grid-template-columns:1fr;gap:0}.md-f .btn{flex:1 1 100%;order:-1}.md-f .ghost{flex:1}
  textarea,select{font-size:16px}
  .nact{margin-left:0;width:100%;justify-content:flex-end}
- nav button span:not(.ni){font-size:.56rem}
+ nav button span:not(.ni){font-size:.58rem}
+ nav{overflow-x:auto;justify-content:flex-start;scrollbar-width:none}nav::-webkit-scrollbar{display:none}nav button{flex:0 0 auto;min-width:58px}nav button[data-v="new"]{display:none}
  .fab{display:grid;place-items:center;position:fixed;right:18px;bottom:calc(84px + env(safe-area-inset-bottom));width:58px;height:58px;border-radius:18px;background:var(--grad);font-size:1.8rem;box-shadow:0 12px 30px rgba(124,58,237,.5);z-index:35}
  body.onNew .fab,body.onSet .fab{display:none}
  /* panneau détail en feuille du bas */
@@ -329,6 +334,7 @@ textarea:focus{border-color:var(--a2);box-shadow:0 0 0 4px rgba(6,182,212,.14)}
     <button data-v="new"><span class="ni">➕</span><span>Nouvelle licence</span></button>
     <button data-v="req"><span class="ni">📨</span><span>Demandes</span><i class="nb" id="nbReq"></i></button>
     <button data-v="notes"><span class="ni">📝</span><span>Notes</span><i class="nb" id="nbNotes"></i></button>
+    <button data-v="vault"><span class="ni">🧰</span><span>Coffre</span></button>
     <button data-v="alerts"><span class="ni">⚠️</span><span>Alertes</span><i class="nb" id="nbAl"></i></button>
     <button data-v="set"><span class="ni">⚙️</span><span>Réglages</span></button>
   </nav>
@@ -338,7 +344,7 @@ textarea:focus{border-color:var(--a2);box-shadow:0 0 0 4px rgba(6,182,212,.14)}
 <main>
   <header class="top">
     <div><h1 id="vTitle">Vue d'ensemble</h1><p id="vSub">Tes licences et tes clients en un coup d'œil</p></div>
-    <div class="topR"><button class="ghost" title="Actualiser" onclick="load(true)">↻</button><button class="btn hideM" onclick="newLic()">+ Licence</button></div>
+    <div class="topR"><button class="ghost" title="Injecter un code du coffre" onclick="VAULT.length?openInject():loadVault().then(()=>openInject())">💉</button><button class="ghost" title="Actualiser" onclick="load(true)">↻</button><button class="btn hideM" onclick="newLic()">+ Licence</button></div>
   </header>
 
   <!-- VUE D'ENSEMBLE -->
@@ -413,7 +419,7 @@ textarea:focus{border-color:var(--a2);box-shadow:0 0 0 4px rgba(6,182,212,.14)}
         <div class="seg" id="devSeg" style="margin-top:8px"><button data-dev="0">∞</button><button data-dev="1">1</button><button data-dev="2">2</button><button data-dev="3">3</button><button data-dev="5">5</button><button data-dev="10">10</button></div>
         <div class="genBar"><div class="mSum" id="mSum"></div><button class="btn full" id="gen" onclick="generate()">Générer la licence</button></div>
         <div class="keybox" id="kb"><div class="key" id="key"></div>
-          <div class="acts"><button class="ghost sm" onclick="copyTxt($('key').textContent)">📋 Copier</button><button class="ghost sm" onclick="shareKey($('mail').value,PROD,$('key').textContent)">📤 Partager</button><button class="ghost sm" onclick="mailKey($('mail').value,PROD,$('key').textContent)">✉️ E-mail</button><button class="ghost sm" onclick="LASTID&&openLic(LASTID)">👁 Voir le compte</button></div></div>
+          <div class="acts"><button class="ghost sm" onclick="keyToVault()">🧰 Au coffre</button><button class="ghost sm" onclick="copyTxt($('key').textContent)">📋 Copier</button><button class="ghost sm" onclick="shareKey($('mail').value,PROD,$('key').textContent)">📤 Partager</button><button class="ghost sm" onclick="mailKey($('mail').value,PROD,$('key').textContent)">✉️ E-mail</button><button class="ghost sm" onclick="LASTID&&openLic(LASTID)">👁 Voir le compte</button></div></div>
       </div>
       <aside class="card preview" id="preview"></aside>
     </div>
@@ -435,6 +441,14 @@ textarea:focus{border-color:var(--a2);box-shadow:0 0 0 4px rgba(6,182,212,.14)}
       <div class="chips" id="nflt"><button data-f="open" class="act">À traiter</button><button data-f="due">📌 Rappels</button><button data-f="ref">🚫 Refus</button><button data-f="done">✓ Traitées</button><button data-f="all">Toutes</button></div></div>
     <div class="nbar"><button class="btn" onclick="openNote()">＋ Nouvelle note</button><button class="ghost danger" onclick="openRefuse()">🚫 Refuser une demande</button></div>
     <div id="notesList" class="notes"></div>
+  </section>
+
+  <!-- COFFRE -->
+  <section id="v-vault" class="view">
+    <div class="toolbar"><input id="vq" placeholder="🔎 Rechercher un code…" oninput="renderVault()">
+      <div class="chips" id="vflt"><button data-f="all" class="act">Tous</button><button data-f="Clé de licence">🔑 Clés</button><button data-f="Liste de clés">🗝️ Listes</button><button data-f="Config Firebase">🔥 Firebase</button><button data-f="Client ID Google">☁️ Google</button><button data-f="Clé API">🧩 API</button><button data-f="Script / HTML">🧾 Scripts</button><button data-f="Identifiants">👤 Identifiants</button><button data-f="Texte">📝 Texte</button></div></div>
+    <div class="nbar"><button class="btn" onclick="openVault()">＋ Ajouter un code</button><button class="ghost" onclick="openVault(null,{type:'Liste de clés'})">📥 Importer une liste</button><button class="ghost" onclick="openBatch()">🗝️ Générer une liste de clés</button><button class="ghost" onclick="openInject()">💉 Injecter</button></div>
+    <div id="vList" class="notes"></div>
   </section>
 
   <!-- ALERTES -->
@@ -561,7 +575,7 @@ function MODS(){try{return C().mods?JSON.parse(C().mods):DEF_MODS}catch(e){retur
 const pm=p=>PMETA[p]||['📦',PAL[Math.max(0,prods().indexOf(p))%PAL.length]];
 
 /* ── navigation ── */
-const TITLES={dash:["Vue d'ensemble","Tes licences et tes clients en un coup d'œil"],acc:['Comptes clients','Chaque client, ses licences, ses appareils et ses modules'],new:['Nouvelle licence','Crée ou modifie une licence en quelques secondes'],alerts:['Licences en trop','Appareils refusés car la limite est atteinte'],req:['Demandes','Demandes de licence et inscriptions envoyées par tes clients'],notes:['Notes','Journal professionnel : appels, échanges, suivis et refus'],set:['Réglages','Connexions GitHub et Firebase']};
+const TITLES={dash:["Vue d'ensemble","Tes licences et tes clients en un coup d'œil"],acc:['Comptes clients','Chaque client, ses licences, ses appareils et ses modules'],new:['Nouvelle licence','Crée ou modifie une licence en quelques secondes'],alerts:['Licences en trop','Appareils refusés car la limite est atteinte'],req:['Demandes','Demandes de licence et inscriptions envoyées par tes clients'],vault:['Coffre à codes','Tes clés, configurations et informations — prêtes à injecter'],notes:['Notes','Journal professionnel : appels, échanges, suivis et refus'],set:['Réglages','Connexions GitHub et Firebase']};
 function go(v){if(v!=='set'&&UNLOCKED)lockSet();if(v==='set'&&!UNLOCKED)showLock();document.querySelectorAll('.view').forEach(x=>x.classList.toggle('on',x.id==='v-'+v));
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('act',b.dataset.v===v));
   $('vTitle').textContent=TITLES[v][0];$('vSub').textContent=TITLES[v][1];
@@ -1233,10 +1247,103 @@ async function saveTabCat(){if(!UNLOCKED)return showLock();const cat={};
     data.licences.forEach(L=>{const T=TABS_DEF[L.produit];if(!T){L.ongletsOff=null;L.ongletsNoms=null;return}const off=tabsOff(L).map(t=>t[0]);L.ongletsOff=off.length?off:null;L.ongletsNoms=off.length?Object.fromEntries(T.filter(t=>off.includes(t[0])).map(t=>[t[0],t[2]])):null});
     await ghPut(data,s,'Catalogue des onglets');LIC=data.licences;renderAll();if(PROD)pickProd(PROD);toast('✔ Onglets enregistrés')}catch(e){toast(e.message,'ko')}}
 
+
+/* ── 🧰 Coffre à codes (Firebase « crm/vault », privé) + 💉 injection ── */
+const VTYPES={'Clé de licence':'🔑','Liste de clés':'🗝️','Config Firebase':'🔥','Client ID Google':'☁️','Clé API':'🧩','Script / HTML':'🧾','Identifiants':'👤','Texte':'📝'};
+let VAULT=[],VAULT_ERR='',VFILTER='all',VE=null;
+async function loadVault(){VAULT_ERR='';if(!(C().fbMail&&C().fbPass)){VAULT_ERR='Ajoute ton compte admin Firebase dans Réglages pour activer le coffre';renderVault();return}
+  try{const t=await fbTok(),r=await fetch(`${FB()}/crm/vault.json?auth=${t}&t=${Date.now()}`);if(r.status===401)throw new Error('Règles Firebase à republier (nœud « crm »)');if(!r.ok)throw new Error('Firebase '+r.status);
+    VAULT=Object.values(await r.json()||{}).filter(Boolean).sort((a,b)=>(b.u||b.t)-(a.u||a.t))}catch(e){VAULT_ERR=e.message}renderVault()}
+const vLines=v=>String(v.value||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+const mask=s=>s.length<=8?'••••••':s.slice(0,4)+'••••••'+s.slice(-3);
+function renderVault(){if(!$('vList'))return;const q=($('vq').value||'').toLowerCase();
+  const L=VAULT.filter(v=>VFILTER==='all'||v.type===VFILTER).filter(v=>[v.name,v.type,v.prod,v.note,v.email].join(' ').toLowerCase().includes(q));
+  $('vList').innerHTML=(VAULT_ERR?`<div class="al" style="border-color:rgba(245,158,11,.45);background:rgba(245,158,11,.08)"><div class="pi" style="--pc:#f59e0b">🔥</div><div><b>Coffre indisponible</b><small>${esc(VAULT_ERR)}</small></div></div>`:'')+
+   (L.length?L.map((v,i)=>{const n=vLines(v).length,list=v.type==='Liste de clés';
+    return `<article class="vc" style="animation-delay:${Math.min(i,10)*.03}s"><div class="vh"><span class="nic">${VTYPES[v.type]||'📝'}</span><div class="nm"><b>${esc(v.name)}</b><small>${esc(v.type)}${v.prod?' · '+pm(v.prod)[0]+' '+esc(v.prod):''}${v.email?' · 👤 '+esc(v.email):''}${list?' · '+n+' code'+(n>1?'s':'')+(v.used&&v.used.length?' ('+v.used.length+' utilisé'+(v.used.length>1?'s':'')+')':''):''}</small></div></div>
+      <code class="vv" data-id="${v.id}">${esc(list?vLines(v).slice(0,3).map(mask).join('  ')+(n>3?'  …':''):mask(String(v.value).replace(/\s+/g,' ').slice(0,80)))}</code>
+      ${v.note?`<small class="hint" style="display:block;margin:6px 0 0">${esc(v.note)}</small>`:''}
+      <div class="nf"><span class="nact"><button class="btn sm" onclick="openInject('${v.id}')">💉 Injecter</button><button class="ghost sm" title="Afficher" onclick="revealV('${v.id}',this)">👁</button><button class="ghost sm" title="Copier" onclick="copyTxt(VAULT.find(x=>x.id==='${v.id}').value)">📋</button><button class="ghost sm" onclick="openVault('${v.id}')">✏️</button><button class="ghost sm" onclick="delVault('${v.id}')">🗑</button></span></div></article>`}).join('')
+   :`<div class="empty">${VAULT.length?'Aucun code dans cette vue':'🧰 Coffre vide — ajoute un code, importe une liste ou enregistre une clé générée'}</div>`)}
+document.querySelectorAll('#vflt button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#vflt button').forEach(x=>x.classList.remove('act'));b.classList.add('act');VFILTER=b.dataset.f;renderVault()});
+function revealV(id,b){const v=VAULT.find(x=>x.id===id),c=document.querySelector(`.vv[data-id="${id}"]`);if(!v||!c)return;const on=b.textContent==='👁';c.textContent=on?v.value:'';b.textContent=on?'🙈':'👁';if(!on)renderVault()}
+function openVault(id,preset={}){const v=id?VAULT.find(x=>x.id===id):{type:'Clé de licence',...preset};if(!v)return;VE={...v};
+  openModal(`<div class="md-h"><div class="pi" style="--pc:#06b6d4">🧰</div><div><h2>${id?'Modifier le code':'Ajouter au coffre'}</h2><span>Stocké de façon privée — visible uniquement par toi</span></div><button class="x" onclick="closeModal()">✕</button></div>
+  <div class="md-b"><label style="margin-top:0">Type</label><div class="tchips" id="vType">${Object.keys(VTYPES).map(t=>`<button type="button" data-t="${t}" class="${t===v.type?'act':''}">${VTYPES[t]} ${t}</button>`).join('')}</div>
+    <label>Nom</label><input id="vName" value="${esc(v.name||'')}" placeholder="Ex. : Firebase Agendpro, Clé COVO — Boutique Martin">
+    <div class="g2"><div><label>Logiciel</label><select id="vProd"><option value="">— Tous —</option>${prods().map(p=>`<option ${p===v.prod?'selected':''}>${esc(p)}</option>`).join('')}</select></div>
+      <div><label>Client (e-mail) <span class="opt">facultatif</span></label><input id="vMail" list="mailList" type="email" autocapitalize="off" value="${esc(v.email||'')}"></div></div>
+    <label><span id="vValLbl">Code</span> <span class="opt" id="vValHint"></span></label><textarea id="vVal" rows="6" spellcheck="false" style="font-family:'JetBrains Mono',monospace;font-size:.8rem">${esc(v.value||'')}</textarea>
+    <label>Note <span class="opt">facultatif</span></label><input id="vNote" value="${esc(v.note||'')}" placeholder="À quoi sert ce code ?"></div>
+  <div class="md-f"><button class="ghost" onclick="closeModal()">Annuler</button><button class="btn" onclick="saveVault()">💾 Enregistrer</button></div>`);
+  const hint=()=>{const t=VE.type;$('vValHint').textContent=t==='Liste de clés'?'une clé par ligne (ou « e-mail ; clé »)':t==='Config Firebase'?'objet firebaseConfig complet':''};
+  chips('vType',b=>{VE.type=b.dataset.t;hint()});hint()}
+async function saveVault(){const name=$('vName').value.trim(),value=$('vVal').value.trim();if(!name||!value)return toast('Nom et code obligatoires','ko');
+  const now=Date.now(),v={...VE,id:VE.id||uid(),t:VE.t||now,u:now,name,value,prod:$('vProd').value,email:norm($('vMail').value),note:$('vNote').value.trim()};
+  try{await fbPut('crm/vault/'+v.id,v);closeModal();toast('🧰 Enregistré dans le coffre');await loadVault()}catch(e){toast(e.message.includes('401')?'Règles Firebase à republier (nœud « crm »)':e.message,'ko')}}
+async function delVault(id){if(!confirm('Supprimer ce code du coffre ?'))return;try{await fbPut('crm/vault/'+id,null);await loadVault();toast('Supprimé')}catch(e){toast(e.message,'ko')}}
+function keyToVault(){const k=$('key').textContent.trim();if(!k)return;openVault(null,{type:'Clé de licence',name:'Clé '+PROD+' — '+norm($('mail').value),prod:PROD,email:norm($('mail').value)});setTimeout(()=>$('vVal').value=k,50)}
+/* Génération en lot : une licence par e-mail, rangée dans le coffre sous forme de liste « e-mail ; clé » */
+function openBatch(){openModal(`<div class="md-h"><div class="pi" style="--pc:#7c3aed">🗝️</div><div><h2>Générer une liste de clés</h2><span>Une licence par adresse e-mail, avec les réglages par défaut du logiciel</span></div><button class="x" onclick="closeModal()">✕</button></div>
+  <div class="md-b"><label style="margin-top:0">Logiciel</label><select id="bProd">${prods().map(p=>`<option>${esc(p)}</option>`).join('')}</select>
+    <label>Adresses e-mail <span class="opt">une par ligne</span></label><textarea id="bMails" rows="7" placeholder="client1@exemple.fr&#10;client2@exemple.fr"></textarea>
+    <div class="g2"><div><label>Durée</label><select id="bDur"><option value="0">Illimitée</option><option value="1">1 mois</option><option value="3">3 mois</option><option value="6">6 mois</option><option value="12">1 an</option></select></div><div><label>Appareils max</label><input id="bDev" type="number" min="0" max="99" value="0"></div></div>
+    <label>Nom de la liste dans le coffre</label><input id="bName" placeholder="Ex. : Lot salon novembre"></div>
+  <div class="md-f"><button class="ghost" onclick="closeModal()">Annuler</button><button class="btn" id="bGo" onclick="doBatch()">⚡ Générer et ranger dans le coffre</button></div>`)}
+async function doBatch(){const prod=$('bProd').value,mails=[...new Set($('bMails').value.split(/[\s,;]+/).map(norm).filter(m=>/^\S+@\S+\.\S+$/.test(m)))],months=+$('bDur').value,dev=Math.min(99,Math.max(0,+$('bDev').value||0));
+  if(!mails.length)return toast('Ajoute au moins une adresse e-mail valide','ko');if(!C().sec||!C().tok)return toast('Configure GitHub et le secret maître','ko');if(SECBAD.length)return toast('Secret maître différent sur cet appareil — corrige-le d\'abord','ko');
+  if(dev&&!(C().fbMail&&C().fbPass))return toast('Compte Firebase requis pour limiter les appareils','ko');
+  const b=$('bGo');b.classList.add('load');b.textContent='Génération…';
+  try{const{data,sha:s}=await ghGet();mergeTabs(data.tabsCat);let exp=null;if(months){const d=new Date();d.setMonth(d.getMonth()+months);exp=d.toISOString()}
+    const out=[];for(const m of mails){const key=await makeKey(m,prod),id=await sha(m+'|'+prod),h=await sha(m+'|'+prod+'|'+key),old=data.licences.find(l=>l.id===id);
+      if(old&&old.hash!==h)continue;const lic={id,email:m,produit:prod,hash:h,cree:new Date().toISOString().slice(0,10),expire:exp,actif:true,modules:null,maxDevices:dev||null};
+      if(old)Object.assign(old,lic,{cree:old.cree});else data.licences.push(lic);out.push(m+' ; '+key);if(dev){data.firebase=FB();await fbPut('limits/'+id,String(dev).padStart(2,'0'))}}
+    await ghPut(data,s,'Génération en lot — '+out.length+' licence(s) '+prod);LIC=data.licences;
+    const v={id:uid(),t:Date.now(),u:Date.now(),type:'Liste de clés',name:$('bName').value.trim()||('Lot '+prod+' — '+new Date().toLocaleDateString('fr-FR')),prod,value:out.join('\n'),note:out.length+' licence(s) '+(months?months+' mois':'illimitée')+(dev?', '+dev+' appareil(s)':'')};
+    await fbPut('crm/vault/'+v.id,v);closeModal();toast('🗝️ '+out.length+' clé(s) générée(s) et rangée(s) dans le coffre');await loadVault();renderAll()}
+  catch(e){toast(e.message,'ko');b.classList.remove('load');b.textContent='⚡ Générer et ranger dans le coffre'}}
+
+/* 💉 Injection : quel code → dans quelle partie */
+function injTargets(){const T=[];const vis=e=>e&&e.offsetParent!==null&&!e.disabled&&!e.readOnly;
+  const scope=document.querySelector('.mdl.on')?null:document.querySelector('.view.on');
+  if(scope)scope.querySelectorAll('input:not([type=checkbox]):not([type=radio]):not([type=hidden]):not([type=number]):not([type=date]),textarea').forEach(e=>{if(!vis(e)||!e.id||['q','vq','nq'].includes(e.id))return;
+    let lb='';const l=e.closest('div,section')&&[...e.closest('div').parentElement.querySelectorAll('label')].reverse().find(x=>x.compareDocumentPosition(e)&Node.DOCUMENT_POSITION_FOLLOWING);
+    lb=(l&&l.textContent.replace(/\s+/g,' ').trim())||e.placeholder||e.id;T.push({k:'f:'+e.id,ic:'✏️',lb:'Champ « '+lb.slice(0,60)+' »'})});
+  REQ.filter(r=>r.statut==='attente').forEach(r=>T.push({k:'r:'+r.rid,ic:'📨',lb:`Demande de ${r.nom||r.email} — ${r.produit}${r.type==='inscription'?' (inscription)':r.onglet?' (onglet)':''}`}));
+  T.push({k:'clip',ic:'📋',lb:'Presse-papiers'},{k:'share',ic:'📤',lb:'Partager (WhatsApp, SMS, e-mail…)'});return T}
+let INJV=null;
+function openInject(vid){INJV=vid||null;const T=injTargets(),codes=VAULT;
+  if(!codes.length)return toast(VAULT_ERR||'Coffre vide — ajoute d\'abord un code','ko');
+  openModal(`<div class="md-h"><div class="pi" style="--pc:#7c3aed">💉</div><div><h2>Injecter un code</h2><span>Choisis le code puis l'endroit où l'injecter</span></div><button class="x" onclick="closeModal()">✕</button></div>
+  <div class="md-b"><label style="margin-top:0">1. Code du coffre</label><select id="iV" onchange="injPrev()">${Object.keys(VTYPES).filter(t=>codes.some(c=>c.type===t)).map(t=>`<optgroup label="${VTYPES[t]} ${t}">${codes.filter(c=>c.type===t).map(c=>`<option value="${c.id}" ${c.id===vid?'selected':''}>${esc(c.name)}${c.prod?' · '+esc(c.prod):''}</option>`).join('')}</optgroup>`).join('')}</select>
+    <div id="iLine" hidden><label>Code à prendre dans la liste</label><select id="iL" onchange="injPrev()"></select></div>
+    <label>2. Injecter dans</label><select id="iT" onchange="injPrev()">${T.map(t=>`<option value="${t.k}">${t.ic} ${esc(t.lb)}</option>`).join('')}</select>
+    <div class="ipv" id="iPv"></div></div>
+  <div class="md-f"><button class="ghost" onclick="closeModal()">Annuler</button><button class="btn" onclick="doInject()">💉 Injecter</button></div>`);injPrev()}
+function injValue(){const v=VAULT.find(x=>x.id===$('iV').value);if(!v)return{};if(v.type!=='Liste de clés')return{v,val:v.value};
+  const raw=vLines(v)[+$('iL').value]||'',m=raw.split(/\s*[;|,\t]\s*/);return{v,val:m.length>1?m[m.length-1]:raw,mail:m.length>1?norm(m[0]):'',raw}}
+function injPrev(){const v=VAULT.find(x=>x.id===$('iV').value);if(!v)return;const list=v.type==='Liste de clés';$('iLine').hidden=!list;
+  if(list&&$('iL').dataset.for!==v.id){const used=v.used||[];$('iL').innerHTML=vLines(v).map((l,i)=>`<option value="${i}">${used.includes(i)?'✓ ':''}${esc(l)}</option>`).join('');$('iL').dataset.for=v.id;const f=vLines(v).findIndex((_,i)=>!used.includes(i));if(f>=0)$('iL').value=f}
+  const{val,mail}=injValue(),t=$('iT').value;let info='';
+  if(t.startsWith('r:')){const r=REQ.find(x=>x.rid===t.slice(2));info=r?`La clé sera <b>installée automatiquement</b> sur l'appareil de ${esc(r.nom||r.email)} (${esc(r.produit)}). Elle doit correspondre à une licence de ${esc(norm(r.email))} — vérifiée avant l'envoi.`:''}
+  else if(t.startsWith('f:'))info='Le champ sera rempli avec ce code (tu pourras encore le modifier avant d\'enregistrer).';
+  $('iPv').innerHTML=`<code>${esc(String(val||'').slice(0,300))}</code>${mail?`<small>Client de la liste : ${esc(mail)}</small>`:''}<small>${info}</small>`}
+async function doInject(){const{v,val,mail}=injValue(),t=$('iT').value;if(!val)return toast('Code vide','ko');
+  const markUsed=async()=>{if(v.type!=='Liste de clés')return;const i=+$('iL').value,used=[...new Set([...(v.used||[]),i])];try{await fbPut('crm/vault/'+v.id+'/used',used);v.used=used}catch(e){}};
+  if(t==='clip'){copyTxt(val);await markUsed();return closeModal()}
+  if(t==='share'){shareTxt(v.name,val);await markUsed();return closeModal()}
+  if(t.startsWith('f:')){const f=$(t.slice(2));if(!f)return;closeModal();f.value=val;f.dispatchEvent(new Event('input',{bubbles:true}));f.dispatchEvent(new Event('change',{bubbles:true}));f.classList.add('injected');setTimeout(()=>f.classList.remove('injected'),1500);f.focus();await markUsed();return toast('💉 Code injecté')}
+  if(t.startsWith('r:')){const r=REQ.find(x=>x.rid===t.slice(2));if(!r)return;const em=norm(r.email),key=String(val).trim().toUpperCase(),l=LIC.find(x=>x.email===em&&x.produit===r.produit);
+    if(!/^[A-Z0-9]{4}(-[A-Z0-9]{4}){4}$/.test(key))return toast('Ce code n\'est pas une clé de licence (format XXXX-XXXX-XXXX-XXXX-XXXX)','ko');
+    if(!l)return toast(`Aucune licence ${r.produit} pour ${em} — crée-la d'abord (Accorder) ou génère une liste avec ces e-mails`,'ko');
+    if(await sha(em+'|'+r.produit+'|'+key)!==l.hash)return toast('Cette clé ne correspond pas à la licence de '+em,'ko');
+    try{const{rid:_,...x}=r;const nv={...x,email:em,statut:'accordee',cle:key,traite:Date.now()};if(r.type==='inscription'){try{await appActiver(nv);nv.compte='actif'}catch(e){}}
+      await fbPut('requests/'+r.rid,nv);await markUsed();closeModal();toast('📲 Clé injectée — elle s\'installe toute seule chez le client');await loadReq()}catch(e){toast(e.message,'ko')}}}
+
 /* ── chargement ── */
 async function load(manual){if(!C().tok){renderAll();if(manual)go('set');return}
   try{const d=(await ghGet()).data;LIC=d.licences||[];BAN=d.bannis||[];SAVCFG=d.sav||{};mergeTabs(d.tabsCat);GDEF=d.google||{};if($('gCid')&&PROD)$('gCid').placeholder=GDEF[PROD]?'Par défaut : '+GDEF[PROD]:'123456-abc.apps.googleusercontent.com';await loadFB();checkSecret();if(manual)toast('↻ Données actualisées')}catch(e){toast(e.message,'ko')}
-  if(C().fbMail&&C().fbPass){loadReq().then(()=>loadSup());loadNotes()}else renderNotes()}
+  if(C().fbMail&&C().fbPass){loadReq().then(()=>loadSup());loadNotes();loadVault()}else{renderNotes();renderVault()}}
 
 /* ── PWA ── */
 let instEvt=null;addEventListener('beforeinstallprompt',e=>{e.preventDefault();instEvt=e;$('instBtn').hidden=false});
