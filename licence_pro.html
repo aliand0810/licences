@@ -193,6 +193,7 @@ canvas{max-height:270px}
 .rq .rqb{flex:1;min-width:0}.rq .rqb b{display:block}.rq .rqb small{display:block;color:var(--mut);font-size:.78rem;margin-top:2px;word-break:break-word}
 .rq .rqm{margin-top:6px;font-size:.84rem;white-space:pre-wrap;word-break:break-word;padding:8px 10px;border-radius:10px;background:rgba(0,0,0,.18)}
 .rq .acts2{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.rqins{display:inline-block;font-size:.68rem;font-weight:800;padding:2px 8px;border-radius:999px;background:rgba(6,182,212,.22);color:#67e8f9;margin-right:4px;vertical-align:middle}
 .rqst{display:inline-block;font-size:.68rem;font-weight:800;padding:2px 8px;border-radius:999px;margin-left:6px;vertical-align:middle}
 .rqst.attente{background:rgba(124,58,237,.25);color:#c4b5fd}.rqst.accordee{background:rgba(16,185,129,.2);color:#6ee7b7}.rqst.refusee{background:rgba(244,63,94,.2);color:#fda4af}
 .reqbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 12px;border-radius:12px;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.4);margin-bottom:12px;font-size:.88rem}
@@ -500,6 +501,14 @@ textarea:focus{border-color:var(--a2);box-shadow:0 0 0 4px rgba(6,182,212,.14)}
           <input id="agCid" autocomplete="off" spellcheck="false" placeholder="123456-abc.apps.googleusercontent.com">
           <div class="gst" id="agSt"></div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn" style="flex:2" onclick="saveGDef()">💾 Enregistrer le Client ID</button><button class="ghost" style="flex:1" onclick="delGDef()">🗑️ Retirer</button></div>
+        <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--bd)">
+          <b>🆕 Inscriptions en ligne — compte administrateur de l'application</b>
+          <p class="hint">Ton identifiant et ton mot de passe <b>administrateur dans le logiciel</b> (ex. Mon Planning Pro). Ils permettent d'activer le compte d'un nouveau client dès que tu acceptes son inscription. Enregistrés seulement sur cet appareil, jamais sur GitHub.</p>
+          <div id="aaStatus" class="hint" style="margin:6px 0"></div>
+          <label>Identifiant administrateur</label><input id="aaId" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="ex. aliand">
+          <label>Mot de passe administrateur</label><div class="pw"><input id="aaPwd" type="password" autocomplete="off"><button type="button" class="eye" onclick="eye(this)">👁</button></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn" style="flex:2" onclick="saveAppAdm()">💾 Enregistrer et tester</button><button class="ghost" style="flex:1" onclick="delAppAdm()">🗑️ Effacer</button></div>
+        </div>
         </div>
       </div>
       <div class="card" style="grid-column:1/-1"><h3>📲 Transfert vers un autre appareil</h3>
@@ -552,7 +561,7 @@ function MODS(){try{return C().mods?JSON.parse(C().mods):DEF_MODS}catch(e){retur
 const pm=p=>PMETA[p]||['📦',PAL[Math.max(0,prods().indexOf(p))%PAL.length]];
 
 /* ── navigation ── */
-const TITLES={dash:["Vue d'ensemble","Tes licences et tes clients en un coup d'œil"],acc:['Comptes clients','Chaque client, ses licences, ses appareils et ses modules'],new:['Nouvelle licence','Crée ou modifie une licence en quelques secondes'],alerts:['Licences en trop','Appareils refusés car la limite est atteinte'],req:['Demandes','Demandes de licence envoyées par tes clients'],notes:['Notes','Journal professionnel : appels, échanges, suivis et refus'],set:['Réglages','Connexions GitHub et Firebase']};
+const TITLES={dash:["Vue d'ensemble","Tes licences et tes clients en un coup d'œil"],acc:['Comptes clients','Chaque client, ses licences, ses appareils et ses modules'],new:['Nouvelle licence','Crée ou modifie une licence en quelques secondes'],alerts:['Licences en trop','Appareils refusés car la limite est atteinte'],req:['Demandes','Demandes de licence et inscriptions envoyées par tes clients'],notes:['Notes','Journal professionnel : appels, échanges, suivis et refus'],set:['Réglages','Connexions GitHub et Firebase']};
 function go(v){if(v!=='set'&&UNLOCKED)lockSet();if(v==='set'&&!UNLOCKED)showLock();document.querySelectorAll('.view').forEach(x=>x.classList.toggle('on',x.id==='v-'+v));
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('act',b.dataset.v===v));
   $('vTitle').textContent=TITLES[v][0];$('vSub').textContent=TITLES[v][1];
@@ -835,7 +844,7 @@ function parseFbCfg(txt){const m=String(txt||'').match(/\{[\s\S]*\}/);if(!m)thro
 async function loadAppCfg(){try{const{data}=await ghGet();APPCFG=data.configs||{};GDEF=data.google||{}}catch(e){APPCFG={}}
   const sel=$('acProd');if(sel){const v=sel.value;sel.innerHTML=prods().map(p=>`<option value="${esc(p)}">${pm(p)[0]} ${esc(p)}</option>`).join('');if(v)sel.value=v;else if(prods().includes('Mon Planning Pro'))sel.value='Mon Planning Pro'}
   renderAppCfg()}
-function renderAppCfg(){const p=$('acProd')&&$('acProd').value,c=APPCFG[p];if(!$('acStatus'))return;
+function renderAppCfg(){const p=$('acProd')&&$('acProd').value,c=APPCFG[p];if(!$('acStatus'))return;renderAppAdm();
   $('acStatus').innerHTML=c?`✅ Configurée — projet <b>${esc(c.projectId)}</b>`:'⚪ Aucune configuration pour ce logiciel';
   $('acTxt').value=c?'const firebaseConfig = '+JSON.stringify(c,null,2)+';':'';
   if($('agCid')){$('agFor').textContent='pour '+p;$('agCid').value=GDEF[p]||'';$('agSt').textContent=GDEF[p]?'✅ Client ID par défaut actif pour '+p:'⚪ Aucun Client ID par défaut pour '+p;$('agSt').className='gst'+(GDEF[p]?' ok':'')}}
@@ -850,6 +859,37 @@ async function saveAppCfg(){if(!UNLOCKED)return showLock();const p=$('acProd').v
 async function delAppCfg(){if(!UNLOCKED)return showLock();const p=$('acProd').value;if(!APPCFG[p]||!confirm('Retirer la configuration Firebase de '+p+' ?\n\nLes appareils déjà reliés restent reliés.'))return;
   try{const{data,sha:s}=await ghGet();data.configs={...(data.configs||{})};delete data.configs[p];await ghPut(data,s,'Retrait configuration Firebase '+p);APPCFG=data.configs;renderAppCfg();toast('Configuration retirée')}catch(e){toast(e.message,'ko')}}
 
+/* ── Compte administrateur des applications (activation des inscriptions) ── */
+const APP_PERMS=['paie','impr','dirt','taux','config','legende','roulements','google','notes','reunion','compteur','cse'];
+const APP_DOMAINE={'Mon Planning Pro':'agendpro.app'};
+const appAdm=p=>(C().appAdm||{})[p]||null;
+const APPT={};
+function renderAppAdm(){const p=$('acProd')&&$('acProd').value;if(!$('aaStatus'))return;const a=appAdm(p);
+  $('aaId').value=a?a.id:'';$('aaPwd').value=a?a.pwd:'';
+  $('aaStatus').innerHTML=a?`✅ Compte <b>${esc(a.id)}</b> enregistré pour ${esc(p)} : les inscriptions acceptées sont activées immédiatement`:`⚪ Non renseigné : les inscriptions acceptées seront activées à la prochaine ouverture de ${esc(p)} par l'administrateur`}
+async function appCfgDe(p){if(!APPCFG[p]){try{const{data}=await ghGet();APPCFG=data.configs||{}}catch(e){}}const c=APPCFG[p];if(!c)throw new Error('Configuration Firebase de '+p+' absente (Réglages › Connexion des applications)');return c}
+async function appTok(p){const a=appAdm(p);if(!a)throw new Error('Compte administrateur de '+p+' non renseigné');if(APPT[p]&&APPT[p].exp>Date.now())return APPT[p];
+  const c=await appCfgDe(p);let email=a.id;
+  if(!email.includes('@')){const r=await fetch(`https://firestore.googleapis.com/v1/projects/${c.projectId}/databases/(default)/documents/logins/${encodeURIComponent(a.id.toLowerCase())}?key=${c.apiKey}`);
+    if(!r.ok)throw new Error('Identifiant administrateur inconnu dans '+p);const j=await r.json();email=j.fields&&j.fields.email&&j.fields.email.stringValue;if(!email)throw new Error('Identifiant administrateur inconnu dans '+p)}
+  const r=await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key='+c.apiKey,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:a.pwd,returnSecureToken:true})});
+  const j=await r.json();if(!r.ok)throw new Error(p+' : connexion administrateur refusée ('+(j.error&&j.error.message||r.status)+')');
+  APPT[p]={t:j.idToken,pid:c.projectId,exp:Date.now()+50*6e4};return APPT[p]}
+const fsVal=v=>typeof v==='boolean'?{booleanValue:v}:typeof v==='number'?{integerValue:String(Math.round(v))}:typeof v==='object'?{mapValue:{fields:Object.fromEntries(Object.entries(v).map(([k,x])=>[k,fsVal(x)]))}}:{stringValue:String(v)};
+async function appMajCompte(p,cid,champs){const k=await appTok(p);
+  const q=Object.keys(champs).map(f=>'updateMask.fieldPaths='+encodeURIComponent(f)).join('&');
+  const r=await fetch(`https://firestore.googleapis.com/v1/projects/${k.pid}/databases/(default)/documents/comptes/${encodeURIComponent(cid)}?${q}&currentDocument.exists=true`,{method:'PATCH',headers:{'Content-Type':'application/json',Authorization:'Bearer '+k.t},body:JSON.stringify({fields:Object.fromEntries(Object.entries(champs).map(([f,v])=>[f,fsVal(v)]))})});
+  if(r.status===404)throw new Error('Compte introuvable dans '+p+' (supprimé ?)');
+  if(r.status===403)throw new Error('Refusé par '+p+' : ce compte n\'est pas l\'administrateur de l\'application');
+  if(!r.ok)throw new Error(p+' : erreur '+r.status)}
+async function appActiver(r){const perms={};APP_PERMS.forEach(k=>perms[k]=k!=='config');
+  await appMajCompte(r.produit,r.cid,{actif:true,attente:false,perms,valideLe:Date.now()})}
+async function saveAppAdm(){if(!UNLOCKED)return showLock();const p=$('acProd').value,id=$('aaId').value.trim(),pwd=$('aaPwd').value;
+  if(!id||!pwd)return toast('Identifiant et mot de passe requis','ko');
+  const c={...C()};c.appAdm={...(c.appAdm||{}),[p]:{id,pwd}};localStorage.setItem('licCfg',JSON.stringify(c));delete APPT[p];
+  try{await appTok(p);toast('✔ Connexion administrateur à '+p+' réussie')}catch(e){toast(e.message,'ko')}renderAppAdm()}
+function delAppAdm(){if(!UNLOCKED)return showLock();const p=$('acProd').value;const c={...C()};if(c.appAdm)delete c.appAdm[p];localStorage.setItem('licCfg',JSON.stringify(c));delete APPT[p];renderAppAdm();toast('Compte administrateur effacé')}
+
 /* ── Demandes de licence en ligne (Firebase « requests ») ── */
 let REQ=[],REQP=null,REQ_ERR='';
 async function loadReq(){REQ_ERR='';
@@ -861,17 +901,18 @@ async function loadReq(){REQ_ERR='';
 function renderReq(){const n=REQ.filter(r=>r.statut==='attente').length;if($('nbReq'))$('nbReq').textContent=n||'';
   if(!$('reqList'))return;
   if(REQ_ERR){$('reqList').innerHTML=`<div class="al" style="border-color:rgba(245,158,11,.45);background:rgba(245,158,11,.08)"><div class="pi" style="--pc:#f59e0b">🔥</div><div><b>Demandes indisponibles</b><small>${esc(REQ_ERR)}. Vérifie ton compte admin Firebase dans Réglages et publie le contenu de firebase-rules.json dans Firebase → Realtime Database → Règles.</small></div></div>`;return}
-  $('reqList').innerHTML=REQ.length?REQ.map((r,i)=>{const[ic,col]=pm(r.produit),u=shortUA(r.ua||'');const lbl={attente:'En attente',accordee:'Accordée',refusee:'Refusée'}[r.statut]||r.statut;
+  $('reqList').innerHTML=REQ.length?REQ.map((r,i)=>{const[ic,col]=pm(r.produit),u=shortUA(r.ua||''),ins=r.type==='inscription';const lbl={attente:'En attente',accordee:ins?'Acceptée':'Accordée',refusee:'Refusée'}[r.statut]||r.statut;
     const deja=LIC.find(l=>l.email===norm(r.email)&&l.produit===r.produit);
     return `<div class="rq ${r.statut==='attente'?'wait':''}" style="animation-delay:${i*.03}s"><div class="pi" style="--pc:${col}">${ic}</div><div class="rqb">
-      <b>${r.onglet?'🔓 Accès à l\'onglet « '+esc(r.ongletNom||r.onglet)+' » · ':''}${esc(r.nom||'—')} · ${esc(r.produit)}${r.module?' · '+esc(r.module):''}<span class="rqst ${esc(r.statut)}">${esc(lbl)}</span></b>
+      <b>${r.onglet?'🔓 Accès à l\'onglet « '+esc(r.ongletNom||r.onglet)+' » · ':''}${ins?'<span class="rqins">🆕 Inscription</span> ':''}${esc(r.nom||'—')} · ${esc(r.produit)}${r.module?' · '+esc(r.module):''}<span class="rqst ${esc(r.statut)}">${esc(lbl)}</span></b>
+      ${ins?`<small>👤 Identifiant : <b style="display:inline">${esc(r.ident||'—')}</b></small>`:''}
       <small>✉️ ${esc(r.email)}${r.tel?' · 📞 '+esc(r.tel):''} · reçue le ${fmtD(new Date(r.t))}</small>
       <small>${u.ic} ${esc(u.txt)}${r.page?' · '+esc(r.page.replace(/^https?:\/\//,'')):''}</small>
       ${r.message?`<div class="rqm">${esc(r.message)}</div>`:''}
       ${deja&&r.statut==='attente'?`<small style="color:#fbbf24">⚠️ Ce client a déjà une licence ${esc(r.produit)} — l'accorder la mettra à jour (même clé).</small>`:''}
-      ${r.statut==='accordee'?`<small>✅ Licence injectée le ${fmtD(new Date(r.traite||r.t))}</small>`:''}
+      ${r.statut==='accordee'?`<small>✅ ${r.cle?'Licence injectée':'Accès accordé'} le ${fmtD(new Date(r.traite||r.t))}${ins?(r.compte==='actif'?' · compte activé':` · <span style="color:#fbbf24">compte activé à la prochaine ouverture du logiciel par l'admin</span> <a href="#" onclick="retryAct('${r.rid}');return false">Réessayer</a>`):''}</small>`:''}
       ${r.statut==='refusee'&&r.motif?`<small>Motif : ${esc(r.motif)}</small>`:''}
-      <div class="acts2">${r.statut==='attente'?`<button class="btn sm" onclick="grantReq('${r.rid}')">✅ Accorder</button><button class="ghost sm" onclick="refuseReq('${r.rid}')">❌ Refuser</button>`:''}
+      <div class="acts2">${r.statut==='attente'?(ins?`<button class="btn sm" onclick="grantReq('${r.rid}')">✅ Accepter + licence</button><button class="ghost sm" onclick="acceptSansLic('${r.rid}')" title="Le client a déjà une licence sur son appareil">👤 Compte seul</button>`:`<button class="btn sm" onclick="grantReq('${r.rid}')">✅ Accorder</button>`)+`<button class="ghost sm" onclick="refuseReq('${r.rid}')">❌ Refuser</button>`:''}
         <button class="ghost sm" onclick="noteReq('${r.rid}')">📝 Note</button><button class="ghost sm" onclick="delReq('${r.rid}')">🗑️ Supprimer</button></div>
     </div></div>`}).join(''):'<div class="empty">📭 Aucune demande pour le moment</div>'}
 function grantReq(rid){const r=REQ.find(x=>x.rid===rid);if(!r)return;
@@ -880,15 +921,22 @@ function grantReq(rid){const r=REQ.find(x=>x.rid===rid);if(!r)return;
     $('reqBar').hidden=false;$('reqTxt').innerHTML=`🔓 <b>${esc(r.nom||r.email)}</b> demande l'onglet « <b>${esc(r.ongletNom||r.onglet)}</b> » — il est coché ci-dessous. Clique sur « Enregistrer » : l'accès s'ouvrira chez le client en ~20 s.`;return}
   newLic();REQP=rid;
   $('mail').value=norm(r.email);if(prods().includes(r.produit))pickProd(r.produit);else{PROD=r.produit;renderTiles()}
-  $('reqBar').hidden=false;$('reqTxt').innerHTML=`📨 Demande de <b>${esc(r.nom||r.email)}</b> — choisis la durée et le nombre d'appareils, puis « Générer » : la licence sera <b>injectée automatiquement</b> sur son appareil.`;
+  $('reqBar').hidden=false;$('reqTxt').innerHTML=r.type==='inscription'?`🆕 Inscription de <b>${esc(r.nom||r.email)}</b> (identifiant <b>${esc(r.ident||'')}</b>) — choisis la durée et le nombre d'appareils, puis « Générer » : la licence sera <b>injectée</b> et son <b>compte activé</b> automatiquement.`:`📨 Demande de <b>${esc(r.nom||r.email)}</b> — choisis la durée et le nombre d'appareils, puis « Générer » : la licence sera <b>injectée automatiquement</b> sur son appareil.`;
   updExp&&updExp();toast('Configure la licence puis génère-la')}
 function cancelReqGrant(){REQP=null;$('reqBar').hidden=true}
 async function injectReq(key){const rid=REQP;REQP=null;$('reqBar').hidden=true;const r=REQ.find(x=>x.rid===rid);if(!r)return;
-  try{const{rid:_,...v}=r;await fbPut('requests/'+rid,{...v,email:norm($('mail').value)||v.email,produit:PROD,statut:'accordee',cle:key,traite:Date.now()});toast('📲 Licence injectée — elle s\'active toute seule chez le client');await loadReq()}
+  try{const{rid:_,...v}=r;const nv={...v,email:norm($('mail').value)||v.email,produit:PROD,statut:'accordee',cle:key,traite:Date.now()};
+    if(r.type==='inscription'){try{await appActiver(nv);nv.compte='actif'}catch(e){toast('Licence injectée. Compte : '+e.message+' — il sera activé à la prochaine ouverture du logiciel par l\'admin','ko')}}
+    await fbPut('requests/'+rid,nv);if(r.type!=='inscription'||nv.compte)toast(r.type==='inscription'?'🎉 Licence injectée et compte activé':'📲 Licence injectée — elle s\'active toute seule chez le client');await loadReq()}
   catch(e){toast('Licence créée mais injection impossible : '+e.message,'ko')}}
 function refuseReq(rid){openRefuse(rid)}
 async function refuseReqOld(rid){const r=REQ.find(x=>x.rid===rid);if(!r)return;const motif=prompt('Refuser la demande de '+(r.nom||r.email)+' ?\n\nMotif (facultatif, affiché au client) :','');if(motif===null)return;
   try{const{rid:_,...v}=r;await fbPut('requests/'+rid,{...v,statut:'refusee',motif:motif.slice(0,200),traite:Date.now()});toast('Demande refusée');await loadReq()}catch(e){toast(e.message,'ko')}}
+async function acceptSansLic(rid){const r=REQ.find(x=>x.rid===rid);if(!r)return;if(!confirm(`Activer le compte de ${r.nom||r.email} (${r.ident}) sans générer de licence ?\n\nÀ utiliser si son appareil a déjà une licence ${r.produit}.`))return;
+  const{rid:_,...v}=r;const nv={...v,statut:'accordee',traite:Date.now()};
+  try{await appActiver(nv);nv.compte='actif'}catch(e){toast('Compte : '+e.message+' — il sera activé à la prochaine ouverture du logiciel par l\'admin','ko')}
+  try{await fbPut('requests/'+rid,nv);if(nv.compte)toast('🎉 Compte activé');await loadReq()}catch(e){toast(e.message,'ko')}}
+async function retryAct(rid){const r=REQ.find(x=>x.rid===rid);if(!r)return;try{await appActiver(r);const{rid:_,...v}=r;await fbPut('requests/'+rid,{...v,compte:'actif'});toast('🎉 Compte activé');await loadReq()}catch(e){toast(e.message,'ko')}}
 async function delReq(rid){if(!confirm('Supprimer cette demande ?'))return;try{await fbPut('requests/'+rid,null);await loadReq();toast('Demande supprimée')}catch(e){toast(e.message,'ko')}}
 let UNLOCKED=false,lockTimer=null;
 const ADM=()=>{try{return JSON.parse(localStorage.getItem('licAdmin')||'null')}catch(e){return null}};
@@ -902,7 +950,7 @@ function bump(){clearTimeout(lockTimer);if(UNLOCKED)lockTimer=setTimeout(()=>loc
 ['click','keydown','touchstart'].forEach(ev=>addEventListener(ev,bump,{passive:true}));
 function fillCfg(){const c=C();CFG_KEYS.forEach(k=>$(k).value=c[k]||'');$('fbUrl').value=c.fbUrl||FB_DEF.fbUrl;$('fbKey').value=c.fbKey||FB_DEF.fbKey;$('prods').value=c.prods||DEF_P;$('pth').value=c.pth||'licences.json';
   document.querySelectorAll('#setBody .pw input').forEach(i=>{i.type='password';const b=i.nextElementSibling;b.classList.remove('on');b.textContent='👁'})}
-function clearCfgFields(){CFG_KEYS.forEach(k=>$(k).value='')}
+function clearCfgFields(){CFG_KEYS.forEach(k=>$(k).value='');if($('aaPwd')){$('aaPwd').value='';$('aaId').value=''}}
 async function loadRules(){let t='';for(const u of ['firebase-rules.json','https://raw.githubusercontent.com/aliand0810/licences/main/firebase-rules.json']){try{const r=await fetch(u+'?t='+Date.now());if(r.ok){t=await r.text();break}}catch(e){}}
   $('rulesTxt').textContent=t||'Impossible de charger les règles — ouvre github.com/aliand0810/licences/blob/main/firebase-rules.json'}
 async function unlockSet(){const p=$('lkPass').value,a=ADM();
@@ -916,7 +964,7 @@ async function changeSetPass(){const o=prompt('Mot de passe actuel :');if(o===nu
   const n=prompt('Nouveau mot de passe (6 caractères minimum) :');if(!n)return;if(n.length<6)return toast('6 caractères minimum','ko');if(prompt('Confirme le nouveau mot de passe :')!==n)return toast('Les mots de passe sont différents','ko');
   const salt=hex(crypto.getRandomValues(new Uint8Array(16)));localStorage.setItem('licAdmin',JSON.stringify({salt,hash:await passHash(n,salt)}));toast('✔ Mot de passe modifié')}
 function forgotSet(){if(!confirm("Réinitialiser le mot de passe ?\n\nPar sécurité, ton token GitHub, ton secret maître et ton mot de passe Firebase seront effacés de cet appareil. Tu devras les ressaisir (le secret maître doit être EXACTEMENT le même, sinon les clés changeront).\n\nTes licences sur GitHub ne sont pas touchées."))return;
-  const c=C();delete c.tok;delete c.sec;delete c.fbPass;localStorage.setItem('licCfg',JSON.stringify(c));localStorage.removeItem('licAdmin');FBT=null;FBOK=false;renderConn();showLock();toast('Mot de passe réinitialisé — crée-en un nouveau')}
+  const c=C();delete c.tok;delete c.sec;delete c.fbPass;delete c.appAdm;localStorage.setItem('licCfg',JSON.stringify(c));localStorage.removeItem('licAdmin');FBT=null;FBOK=false;renderConn();showLock();toast('Mot de passe réinitialisé — crée-en un nouveau')}
 
 /* ── Fenêtre modale ── */
 function openModal(html){$('md').innerHTML=html;$('mdl').classList.add('on');setTimeout(()=>{const f=$('md').querySelector('input:not([type=checkbox]),textarea');if(f&&innerWidth>860)f.focus()},150)}
@@ -1049,7 +1097,8 @@ async function doRefuse(send){const mail=norm($('rMail').value),prod=$('rProd').
   try{localStorage.setItem('licSign',$('rSign').value.trim())}catch(e){}
   const motifTxt=(RF.motif==='Autre motif'?prec:MOTIFS[RF.motif][0]+(prec?' — '+prec:'')).slice(0,200),b=$('rSave');b.classList.add('load');
   try{
-    if(RF.rid){const r=REQ.find(x=>x.rid===RF.rid);if(r){const{rid:_,...v}=r;await fbPut('requests/'+RF.rid,{...v,statut:'refusee',motif:motifTxt,traite:Date.now()})}}
+    if(RF.rid){const r=REQ.find(x=>x.rid===RF.rid);if(r){const{rid:_,...v}=r;await fbPut('requests/'+RF.rid,{...v,statut:'refusee',motif:motifTxt,traite:Date.now()});
+      if(r.type==='inscription'&&r.cid&&appAdm(r.produit))appMajCompte(r.produit,r.cid,{attente:false,refuse:true,motif:motifTxt}).catch(()=>{})}}
     const id=uid(),inote=$('rNote').value.trim();let noteOk=true;
     await fbPut('crm/notes/'+id,{id,t:Date.now(),u:Date.now(),type:'Demande refusée',email:mail,client:$('rNom').value.trim(),prod,title:'Refus de licence — '+prod,motif:RF.motif,body:'Message envoyé au client :\n\n'+msg+(inote?'\n\n— Note interne —\n'+inote:''),prio:'Normale',due:'',status:'done'}).catch(()=>noteOk=false);
     if($('rBan').checked){const{data,sha:s}=await ghGet();data.bannis=[...new Set([...(data.bannis||[]),mail])];await ghPut(data,s,'Bannissement '+mail);BAN=data.bannis;renderAll()}
