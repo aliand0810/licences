@@ -60,8 +60,19 @@
         "on": true,
         "until": null
       },
-      "onglets": null,
-      "google": null
+      "onglets": [
+        "tab-planning",
+        "tab-dirt"
+      ],
+      "google": null,
+      "ongletsOff": [
+        "tab-paie",
+        "tab-config-taux"
+      ],
+      "ongletsNoms": {
+        "tab-paie": "Paie",
+        "tab-config-taux": "Taux"
+      }
     }
   ],
   "bannis": [],
