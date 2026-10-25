@@ -230,6 +230,24 @@
   const msgsOf=t=>[{from:'client',text:t.message,t:t.t},...Object.values(t.msgs||{})].filter(m=>m&&m.text).sort((a,b)=>a.t-b.t);
   async function unread(){let n=0;for(const tid of myT()){const t=await getT(tid);if(t)n+=msgsOf(t).filter(m=>m.from==='sav'&&m.t>seen(tid)).length}return n}
   function setBadge(n){if(!savBtn)return;savBtn.textContent=n?`🛟 SAV · ${n} nouveau${n>1?'x':''} message${n>1?'s':''}`:'🛟 SAV';savBtn.style.animation=n?'licPulse 1.6s infinite':''}
+  // Bouton déplaçable (doigt ou souris), aimanté au bord le plus proche, position mémorisée par logiciel
+  const PKEY='licSavPos_'+PRODUIT;
+  function placeSav(b,p){const w=innerWidth,h=innerHeight,bw=b.offsetWidth||90,bh=b.offsetHeight||38,m=8;
+    const y=Math.min(Math.max(p.y*h,m),h-bh-m);b.style.bottom='auto';b.style.top=y+'px';
+    if(p.side==='r'){b.style.left='auto';b.style.right=m+'px'}else{b.style.right='auto';b.style.left=m+'px'}}
+  function dragSav(b){let pos=null;try{pos=JSON.parse(localStorage.getItem(PKEY)||'null')}catch(e){}
+    if(pos)placeSav(b,pos);addEventListener('resize',()=>{if(pos)placeSav(b,pos)});
+    b.style.touchAction='none';b.title='Service après-vente — maintenez et glissez pour déplacer';
+    let sx,sy,ox,oy,moved=false,down=false;
+    b.addEventListener('pointerdown',e=>{down=true;moved=false;b._drag=false;sx=e.clientX;sy=e.clientY;const r=b.getBoundingClientRect();ox=sx-r.left;oy=sy-r.top;try{b.setPointerCapture(e.pointerId)}catch(_){}});
+    b.addEventListener('pointermove',e=>{if(!down)return;if(!moved&&Math.hypot(e.clientX-sx,e.clientY-sy)<6)return;
+      moved=true;b._drag=true;b.style.transition='none';b.style.opacity='.75';b.style.right='auto';b.style.bottom='auto';
+      b.style.left=Math.min(Math.max(e.clientX-ox,0),innerWidth-b.offsetWidth)+'px';b.style.top=Math.min(Math.max(e.clientY-oy,0),innerHeight-b.offsetHeight)+'px'});
+    const up=e=>{if(!down)return;down=false;b.style.opacity='.95';if(!moved)return;
+      const r=b.getBoundingClientRect();pos={side:r.left+r.width/2>innerWidth/2?'r':'l',y:r.top/innerHeight};
+      b.style.transition='left .25s,right .25s,top .25s';placeSav(b,pos);try{localStorage.setItem(PKEY,JSON.stringify(pos))}catch(_){}
+      setTimeout(()=>{b._drag=false},50)};
+    b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up)}
   function savUI(x){const on=x&&x.sav;
     if(!on){clearInterval(savBg);if(savBtn){savBtn.remove();savBtn=null}if(savPanel){savPanel.remove();savPanel=null}return}
     if(savBtn){savBtn._x=x;return}
@@ -237,7 +255,7 @@
       if(!document.getElementById('licSavCss')){const st=document.createElement('style');st.id='licSavCss';st.textContent='@keyframes licPulse{50%{box-shadow:0 0 0 8px rgba(124,58,237,.25)}}';document.head.appendChild(st)}
       savBtn=document.createElement('button');savBtn._x=x;savBtn.type='button';savBtn.textContent='🛟 SAV';savBtn.title='Service après-vente';
       savBtn.style.cssText='position:fixed;left:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:2147483600;padding:9px 14px;border:0;border-radius:999px;background:linear-gradient(135deg,#7c3aed,#06b6d4);color:#fff;font:700 13px system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.35);cursor:pointer;opacity:.95';
-      savBtn.onclick=()=>openSav(savBtn._x);document.body.appendChild(savBtn);
+      savBtn.onclick=e=>{if(savBtn._drag){e.preventDefault();return}openSav(savBtn._x)};document.body.appendChild(savBtn);dragSav(savBtn);
       const bg=async()=>setBadge(await unread());bg();clearInterval(savBg);savBg=setInterval(bg,60000)};mount()}
   const IN='width:100%;box-sizing:border-box;padding:12px;border-radius:12px;border:1px solid #334155;background:#0b1220;color:#fff;font:16px system-ui,sans-serif;margin-top:6px';
   const BTN='padding:12px;border:0;border-radius:12px;font:700 14px system-ui,sans-serif;cursor:pointer;color:#fff';
