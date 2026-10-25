@@ -4,7 +4,7 @@
       "id": "ae59582370d43554e62e331c330624571830ea91c40bcb88059ef311b1e529a3",
       "email": "covo.trv@gmail.com",
       "produit": "COVO Pro",
-      "hash": "e6b368836f8bd6883e2a940b599578d10c619fc5a8f7e92bcebba08553c27980",
+      "hash": "795ef7729834171672e8f81ef1d7435ab68357966830fcaa5672ee81cbc7fc46",
       "cree": "2026-10-18",
       "expire": null,
       "actif": true,
@@ -20,7 +20,10 @@
       ],
       "maxDevices": null,
       "onglets": null,
-      "google": null,
+      "google": {
+        "clientId": "531822941380-u6o0c9lsk4jsppau5mmrt1enst973r9d.apps.googleusercontent.com",
+        "email": "covo.trv@gmail.com"
+      },
       "sav": {
         "on": false
       }
