@@ -31,6 +31,7 @@ a{color:var(--a2)}
 .red{color:#fda4af}
 
 [hidden]{display:none!important}
+.ds{display:none}
 /* layout */
 .app{display:grid;grid-template-columns:248px 1fr;min-height:100vh}
 .side{position:sticky;top:0;height:100vh;padding:22px 14px;border-right:1px solid var(--bd);background:rgba(7,11,22,.55);backdrop-filter:blur(22px);display:flex;flex-direction:column;gap:22px;z-index:30}
@@ -285,7 +286,7 @@ textarea:focus{border-color:var(--a2);box-shadow:0 0 0 4px rgba(6,182,212,.14)}
  textarea,select{font-size:16px}
  .nact{margin-left:0;width:100%;justify-content:flex-end}
  nav button span:not(.ni){font-size:.58rem}
- nav{overflow-x:auto;justify-content:flex-start;scrollbar-width:none}nav::-webkit-scrollbar{display:none}nav button{flex:0 0 auto;min-width:58px}nav button[data-v="new"]{display:none}
+ nav{overflow-x:auto;justify-content:flex-start;scrollbar-width:none}nav::-webkit-scrollbar{display:none}nav button{flex:0 0 auto;min-width:58px}nav button[data-v="new"]{display:none}.dl{display:none}.ds{display:inline!important}
  .fab{display:grid;place-items:center;position:fixed;right:18px;bottom:calc(84px + env(safe-area-inset-bottom));width:58px;height:58px;border-radius:18px;background:var(--grad);font-size:1.8rem;box-shadow:0 12px 30px rgba(124,58,237,.5);z-index:35}
  body.onNew .fab,body.onSet .fab{display:none}
  /* panneau détail en feuille du bas */
@@ -329,7 +330,7 @@ textarea:focus{border-color:var(--a2);box-shadow:0 0 0 4px rgba(6,182,212,.14)}
 <aside class="side">
   <div class="brand"><img src="icon.svg" alt=""><div>Licence Pro<small>Gestion des comptes</small></div></div>
   <nav>
-    <button data-v="dash" class="act"><span class="ni">📊</span><span>Vue d'ensemble</span></button>
+    <button data-v="dash" class="act"><span class="ni">📊</span><span class="dl">Vue d'ensemble</span><span class="ds">Accueil</span></button>
     <button data-v="acc"><span class="ni">👥</span><span>Comptes</span></button>
     <button data-v="new"><span class="ni">➕</span><span>Nouvelle licence</span></button>
     <button data-v="req"><span class="ni">📨</span><span>Demandes</span><i class="nb" id="nbReq"></i></button>
@@ -579,7 +580,7 @@ const TITLES={dash:["Vue d'ensemble","Tes licences et tes clients en un coup d'�
 function go(v){if(v!=='set'&&UNLOCKED)lockSet();if(v==='set'&&!UNLOCKED)showLock();document.querySelectorAll('.view').forEach(x=>x.classList.toggle('on',x.id==='v-'+v));
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('act',b.dataset.v===v));
   $('vTitle').textContent=TITLES[v][0];$('vSub').textContent=TITLES[v][1];
-  document.body.className='on'+v[0].toUpperCase()+v.slice(1);if(v==='dash')drawCharts();window.scrollTo({top:0})}
+  document.body.className='on'+v[0].toUpperCase()+v.slice(1);{const nb=document.querySelector(`nav button[data-v="${v}"]`);if(nb&&innerWidth<=860)nb.scrollIntoView({inline:'center',block:'nearest'})}if(v==='dash')drawCharts();window.scrollTo({top:0})}
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>b.dataset.v==='new'?newLic():go(b.dataset.v));
 
 /* ── crypto ── */
