@@ -39,12 +39,18 @@
     document.addEventListener('visibilitychange',()=>document.visibilityState==='visible'&&(navLast='',navRec()));
     navRec()}
   // Renvoie {ok, expire, msg}
+  // 🛡️ Verrou de domaine : le logiciel ne tourne que sur les adresses autorisées dans licences.json (« domaines »)
+  const DEVHOST=!location.hostname||location.protocol==='file:'||/^(localhost|127\.|192\.168\.|10\.|\[?::1)/.test(location.hostname);
+  function hostOK(list){if(DEVHOST)return true;if(!Array.isArray(list)||!list.length)return true;const h=location.hostname.toLowerCase();
+    return list.some(p=>{p=String(p||'').trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/.*$/,'');if(!p)return false;
+      return p.startsWith('*.')?(h===p.slice(2)||h.endsWith(p.slice(1))):(h===p||h.endsWith('.'+p))})}
   async function verif(mail,key){
     mail=String(mail||'').trim().toLowerCase();key=String(key||'').trim().toUpperCase();
     if(!mail||!key)return{ok:false,msg:''};
     try{
       const d=await (await fetch(SRC+'?t='+Date.now(),{cache:'no-store'})).json();
       if((d.bannis||[]).includes(mail))return{ok:false,msg:'Accès interdit pour cette adresse'};
+      if(!hostOK(d.domaines))return{ok:false,msg:'DOMAINE',dom:1};
       const h=await sha(mail+'|'+PRODUIT+'|'+key);
       let l=d.licences.find(x=>x.email===mail&&x.produit===PRODUIT&&x.hash===h);
       if(!l)return{ok:false,msg:'Licence invalide'};
@@ -315,6 +321,15 @@
       else g('le').textContent=r.msg};
     g('lb').onclick=go;g('lk').addEventListener('keydown',e=>{if(e.key==='Enter')go()});
   }
+  // Écran affiché si le logiciel est ouvert sur un domaine non autorisé (copie / piratage)
+  function pirate(){clearInterval(timer);licCss();if(overlay){overlay.remove();overlay=null}
+    const o=document.createElement('div');o.id='lic-overlay';o.innerHTML=`<div class="lic-card" style="text-align:center">
+      <div class="lic-logo" style="margin:0 auto 14px;background:linear-gradient(135deg,#e11d48,#f97316)">🛡️</div>
+      <h2 style="margin:0 0 6px">Copie non autorisée</h2>
+      <p class="lic-lead" style="text-align:center">Cette copie de <b>${esc(PRODUIT)}</b> s'exécute sur un domaine non autorisé (<b>${esc(location.hostname||'inconnu')}</b>).<br>Le logiciel est protégé et ne peut fonctionner qu'à partir du site officiel de l'éditeur.</p>
+      <div class="lic-ft" style="border:0">© ALIANDpro — tous droits réservés</div></div>`;
+    (document.body||document.documentElement).appendChild(o);overlay=o;
+    try{document.body.style.overflow='hidden'}catch(e){}}
   function lock(msg,skipReq){
     clearInterval(timer);if(overlay)return;shell();
     if(!skipReq&&getReq())return showWaiting();
@@ -471,7 +486,9 @@
 
   (async()=>{
     const s=get();
-    if(s.mail){const r=await verif(s.mail,s.key);if(r.ok){save(s.mail,s.key,r.expire);applyData(r.data);return watch(r.expire)}lock(r.msg)}
+    const chk=await (await fetch(SRC+'?t='+Date.now(),{cache:'no-store'}).catch(()=>({json:async()=>({})}))).json().catch(()=>({}));
+    if(!hostOK(chk.domaines))return pirate();
+    if(s.mail){const r=await verif(s.mail,s.key);if(r.ok){save(s.mail,s.key,r.expire);applyData(r.data);return watch(r.expire)}if(r.dom)return pirate();lock(r.msg)}
     else lock();
   })();
 })();

@@ -580,6 +580,11 @@ html[data-light] .tag{color:color-mix(in srgb,var(--sc) 75%,#000)}
         <div class="g2"><div><label>WhatsApp (numéro international)</label><input id="svWa" placeholder="33612345678"></div><div><label>Horaires</label><input id="svH" placeholder="Lun–ven, 9 h–18 h"></div></div>
         <label>Message d'accueil</label><textarea id="svMsg" rows="3" placeholder="Notre équipe vous répond sous 24 h ouvrées."></textarea>
       </div>
+      <div class="card" style="grid-column:1/-1"><h3>🛡️ Protection anti-copie <button class="ghost sm" id="domSave" onclick="saveDomaines()">💾 Enregistrer</button></h3>
+        <p class="hint">Les logiciels ne fonctionnent que sur les domaines listés ici. Une copie déposée sur un autre site affiche « Copie non autorisée » et reste bloquée. Un domaine par ligne (ex. <b>aliand0810.github.io</b> ou <b>*.covo-trv.fr</b>). Vide = aucune restriction.</p>
+        <textarea id="domBox" rows="4" placeholder="aliand0810.github.io&#10;*.covo-trv.fr" style="font-family:'JetBrains Mono',monospace;font-size:.82rem"></textarea>
+        <div id="domMsg" class="hint" style="margin-top:6px"></div>
+      </div>
       <div class="card" style="grid-column:1/-1"><h3>📜 Règles Firebase <span class="row" style="display:flex;gap:6px"><button class="ghost sm" onclick="copyTxt($('rulesTxt').textContent)">📋 Copier</button><a class="ghost sm" style="text-decoration:none" target="_blank" href="https://console.firebase.google.com/project/covo-licences/database/covo-licences-default-rtdb/rules">Ouvrir Firebase ↗</a></span></h3>
         <p class="hint">Règles à coller dans Firebase → Realtime Database → Règles, puis « Publier ».</p>
         <pre class="rules" id="rulesTxt">Chargement…</pre>
@@ -1072,7 +1077,7 @@ function bump(){clearTimeout(lockTimer);if(UNLOCKED)lockTimer=setTimeout(()=>loc
 function fillCfg(){const c=C();CFG_KEYS.forEach(k=>$(k).value=c[k]||'');$('fbUrl').value=c.fbUrl||FB_DEF.fbUrl;$('fbKey').value=c.fbKey||FB_DEF.fbKey;$('prods').value=c.prods||DEF_P;$('pth').value=c.pth||'licences.json';
   document.querySelectorAll('#setBody .pw input').forEach(i=>{i.type='password';const b=i.nextElementSibling;b.classList.remove('on');b.textContent='👁'})}
 function clearCfgFields(){CFG_KEYS.forEach(k=>$(k).value='');if($('aaPwd')){$('aaPwd').value='';$('aaId').value=''}}
-async function loadRules(){let t='';for(const u of ['firebase-rules.json','https://raw.githubusercontent.com/aliand0810/licences/main/firebase-rules.json']){try{const r=await fetch(u+'?t='+Date.now());if(r.ok){t=await r.text();break}}catch(e){}}
+async function loadRules(){loadDomaines();let t='';for(const u of ['firebase-rules.json','https://raw.githubusercontent.com/aliand0810/licences/main/firebase-rules.json']){try{const r=await fetch(u+'?t='+Date.now());if(r.ok){t=await r.text();break}}catch(e){}}
   $('rulesTxt').textContent=t||'Impossible de charger les règles — ouvre github.com/aliand0810/licences/blob/main/firebase-rules.json'}
 async function unlockSet(){const p=$('lkPass').value,a=ADM();
   if(!a){if(p.length<6)return failLock('6 caractères minimum');if(p!==$('lkConf').value)return failLock('Les deux mots de passe sont différents');
@@ -1598,5 +1603,14 @@ const _openLic2=openLic;
 openLic=function(id){_openLic2(id);const l=LIC.find(x=>x.id===id);const b=document.querySelector('#dw .dw-b');if(!l||!b)return;
   const cc=b.querySelector('.cc');const html=`<h4>👣 Parcours de navigation</h4><div class="savBox" style="margin-bottom:10px"><label class="sw" style="margin:0;text-transform:none;letter-spacing:0;font-size:.9rem;color:var(--txt)"><input type="checkbox" ${l.suivi?'checked':''} onchange="navToggle('${id}',this.checked)"><span class="knob"></span><span><b>${l.suivi?'Suivi activé':'Suivi désactivé'}</b><small style="display:block;color:var(--mut);font-size:.76rem">Enregistre les pages et onglets ouverts par le client, avec l'heure et l'appareil. Le client en est informé une fois.</small></span></label></div><div id="nvBox"></div>`;
   (cc?cc:b.firstElementChild).insertAdjacentHTML('afterend',html);navLoad(id)};
+
+/* ═══════════ PROTECTION ANTI-COPIE (domaines autorisés) ═══════════ */
+async function loadDomaines(){try{const d=await ghGet();if($('domBox'))$('domBox').value=(d.data.domaines||[]).join('\n')}catch(e){}}
+async function saveDomaines(){const b=$('domSave');b.disabled=true;b.textContent='Enregistrement…';
+  try{const {data,sha:s}=await ghGet();const list=[...new Set($('domBox').value.split(/[\n,; ]+/).map(x=>x.trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/.*$/,'')).filter(Boolean))];
+    data.domaines=list.length?list:null;if(!data.domaines)delete data.domaines;
+    await ghPut(data,s,'Domaines autorisés ('+list.length+')');
+    $('domMsg').innerHTML=list.length?'🛡️ Protection active sur : <b>'+list.map(esc).join('</b>, <b>')+'</b>':'Aucune restriction de domaine.';toast('🛡️ Protection anti-copie enregistrée')}
+  catch(e){toast(e.message,'ko')}finally{b.disabled=false;b.textContent='💾 Enregistrer'}}
 </script>
 </body></html>
