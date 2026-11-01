@@ -50,37 +50,11 @@
       "google": null,
       "ongletsOff": null,
       "ongletsNoms": null
-    },
-    {
-      "id": "1ade234be86afe017413f9aa46e151e2edcd3e6a50ecf6e87d3c65631312c8c7",
-      "email": "r.souffou@outlook.com",
-      "produit": "Mon Planning Pro",
-      "hash": "36331787f233204a1e52e4b0ab30675eb2c03932a823cbace510c122e769f0f3",
-      "cree": "2026-10-25",
-      "expire": "2026-11-01T18:44:35.727Z",
-      "actif": false,
-      "modules": null,
-      "maxDevices": 1,
-      "sav": {
-        "on": false
-      },
-      "onglets": [
-        "tab-planning",
-        "tab-dirt",
-        "tab-config-taux"
-      ],
-      "google": null,
-      "ongletsOff": [
-        "tab-paie",
-        "__print"
-      ],
-      "ongletsNoms": {
-        "tab-paie": "Paie",
-        "__print": "Imprimer"
-      }
     }
   ],
-  "bannis": [],
+  "bannis": [
+    "r.souffou@outlook.com"
+  ],
   "firebase": "https://covo-licences-default-rtdb.europe-west1.firebasedatabase.app",
   "configs": {
     "Mon Planning Pro": {
