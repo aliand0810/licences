@@ -30,7 +30,8 @@
       const h=await sha(mail+'|'+PRODUIT+'|'+key);
       let l=d.licences.find(x=>x.email===mail&&x.produit===PRODUIT&&x.hash===h);
       if(!l)return{ok:false,msg:'Licence invalide'};
-      if(l.wipe){const wk='licWiped_'+PRODUIT,done=+localStorage.getItem(wk)||0;
+      const wt=Math.max(+l.wipe||0,l.wipeDev?(+l.wipeDev[await devId()]||0):0);
+      if(wt){const wk='licWiped_'+PRODUIT,done=+localStorage.getItem(wk)||0;l={...l,wipe:wt};
         if(l.wipe>done){if(get().mail){await wipeAll();try{localStorage.setItem(wk,String(l.wipe))}catch(e){}location.reload();return{ok:false,msg:'Données effacées par l\'administrateur'}}localStorage.setItem(wk,String(l.wipe))}}
       if(!l.actif)return{ok:false,msg:'Licence révoquée'};
       if(!notExpired(l.expire))return{ok:false,msg:'Licence expirée'};
