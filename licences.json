@@ -58,7 +58,7 @@
       "hash": "36331787f233204a1e52e4b0ab30675eb2c03932a823cbace510c122e769f0f3",
       "cree": "2026-10-25",
       "expire": "2026-11-01T18:44:35.727Z",
-      "actif": true,
+      "actif": false,
       "modules": null,
       "maxDevices": 1,
       "sav": {
