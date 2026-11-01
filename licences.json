@@ -26,8 +26,7 @@
         "email": "covo.trv@gmail.com"
       },
       "sav": {
-        "on": true,
-        "until": null
+        "on": false
       },
       "pv": 1,
       "ongletsOff": null,
