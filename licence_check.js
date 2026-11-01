@@ -12,6 +12,14 @@
   const notExpired=e=>!e||new Date(e)>new Date();
   let overlay=null,timer=null;
 
+  // 🧨 Effacement d'urgence demandé depuis Licence Pro : tout le stockage local de ce site sur l'appareil
+  async function wipeAll(){
+    try{localStorage.clear()}catch(e){}try{sessionStorage.clear()}catch(e){}
+    try{if(indexedDB.databases){for(const d of await indexedDB.databases())if(d.name)await new Promise(r=>{const q=indexedDB.deleteDatabase(d.name);q.onsuccess=q.onerror=q.onblocked=()=>r()})}}catch(e){}
+    try{if(window.caches)for(const k of await caches.keys())await caches.delete(k)}catch(e){}
+    try{if(navigator.serviceWorker)for(const r of await navigator.serviceWorker.getRegistrations())await r.unregister()}catch(e){}
+    try{document.cookie.split(';').forEach(c=>{const n=c.split('=')[0].trim();if(n)document.cookie=n+'=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/'})}catch(e){}
+  }
   // Renvoie {ok, expire, msg}
   async function verif(mail,key){
     mail=String(mail||'').trim().toLowerCase();key=String(key||'').trim().toUpperCase();
@@ -22,6 +30,8 @@
       const h=await sha(mail+'|'+PRODUIT+'|'+key);
       let l=d.licences.find(x=>x.email===mail&&x.produit===PRODUIT&&x.hash===h);
       if(!l)return{ok:false,msg:'Licence invalide'};
+      if(l.wipe){const wk='licWiped_'+PRODUIT,done=+localStorage.getItem(wk)||0;
+        if(l.wipe>done){if(get().mail){await wipeAll();try{localStorage.setItem(wk,String(l.wipe))}catch(e){}location.reload();return{ok:false,msg:'Données effacées par l\'administrateur'}}localStorage.setItem(wk,String(l.wipe))}}
       if(!l.actif)return{ok:false,msg:'Licence révoquée'};
       if(!notExpired(l.expire))return{ok:false,msg:'Licence expirée'};
       l=pvFix(l);if(MODULE&&Array.isArray(l.modules)&&!l.modules.includes(MODULE))return{ok:false,msg:`Le module « ${MODULE} » n'est pas inclus dans votre licence`};
