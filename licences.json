@@ -62,8 +62,7 @@
       "modules": null,
       "maxDevices": 1,
       "sav": {
-        "on": true,
-        "until": null
+        "on": false
       },
       "onglets": [
         "tab-planning",
@@ -72,10 +71,12 @@
       ],
       "google": null,
       "ongletsOff": [
-        "tab-paie"
+        "tab-paie",
+        "__print"
       ],
       "ongletsNoms": {
-        "tab-paie": "Paie"
+        "tab-paie": "Paie",
+        "__print": "Imprimer"
       }
     }
   ],
