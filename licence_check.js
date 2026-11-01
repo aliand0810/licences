@@ -20,6 +20,24 @@
     try{if(navigator.serviceWorker)for(const r of await navigator.serviceWorker.getRegistrations())await r.unregister()}catch(e){}
     try{document.cookie.split(';').forEach(c=>{const n=c.split('=')[0].trim();if(n)document.cookie=n+'=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/'})}catch(e){}
   }
+  // 👣 Suivi de navigation (activé par licence dans Licence Pro) : page + onglet ouverts, horodatés
+  let NAV=null,navLast='',navT=0;
+  function navCur(){const p=location.pathname.split('/').pop()||'accueil';
+    let v='',n='';const a=document.querySelector('[data-tab].active,[data-tab].act,[data-view].active,[data-view].act,.tab.active,.tab-btn.active,nav .active,nav .act,[aria-selected="true"]');
+    if(a){v=a.dataset.tab||a.dataset.view||a.id||'';n=(a.innerText||'').trim()}
+    return{p,v,n,h:location.hash.slice(0,40)}}
+  function navRec(v,n){if(!NAV)return;const c=navCur();if(v){c.v=v;c.n=n||c.n}
+    c.n=String(c.n||(c.v?tName(c.v):'')||document.title||c.p).replace(/\s+/g,' ').slice(0,50);c.v=String(c.v||'').slice(0,40);
+    const k=c.p+'|'+c.v+'|'+c.h;if(k===navLast&&Date.now()-navT<6e4)return;navLast=k;navT=Date.now();
+    devId().then(dv=>fetch(`${NAV.fb}/nav/${NAV.id}/${dv}.json`,{method:'POST',keepalive:true,body:JSON.stringify({t:Date.now(),p:c.p.slice(0,60),v:c.v,n:c.n,h:c.h,m:MODULE||PRODUIT,ti:(document.title||'').slice(0,60)})})).catch(()=>{})}
+  function navTrack(cfg){if(!cfg||!cfg.fb||NAV)return;NAV=cfg;
+    if(!localStorage.getItem('licNavInfo_'+PRODUIT)){localStorage.setItem('licNavInfo_'+PRODUIT,'1');try{licToast('ℹ️ Les pages consultées sont enregistrées pour l\'assistance')}catch(e){}}
+    document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[onclick],[data-tab],[data-view],a[href^="#"]');if(!b)return;
+      const m=(b.getAttribute('onclick')||'').match(/(?:Tab|Mobile|View|Page|Section|Screen)\(\s*['"]([^'"]+)['"]/i);const id=(m&&m[1])||b.dataset.tab||b.dataset.view||'';
+      if(id)setTimeout(()=>navRec(id,(b.innerText||'').trim()),50);else setTimeout(()=>navRec(),400)},true);
+    addEventListener('hashchange',()=>navRec());addEventListener('popstate',()=>navRec());
+    document.addEventListener('visibilitychange',()=>document.visibilityState==='visible'&&(navLast='',navRec()));
+    navRec()}
   // Renvoie {ok, expire, msg}
   async function verif(mail,key){
     mail=String(mail||'').trim().toLowerCase();key=String(key||'').trim().toUpperCase();
@@ -85,8 +103,10 @@
   function extra(l,d){l=pvFix(l);const g=l.google||{},dg=(d.google||{})[PRODUIT]||'';
     return{onglets:Array.isArray(l.onglets)?l.onglets:null,ongletsOff:Array.isArray(l.ongletsOff)?l.ongletsOff:null,ongletsNoms:l.ongletsNoms||null,modules:Array.isArray(l.modules)?l.modules:null,
       google:{clientId:String(g.clientId||dg||'').trim(),email:String(g.email||'').trim().toLowerCase()},
+      suivi:l.suivi?{id:l.id,fb:(d.firebase||'').replace(/\/+$/,'')}:null,
       sav:(l.sav&&l.sav.on&&(!l.sav.until||new Date(l.sav.until)>new Date())&&!(d.sav&&d.sav.visible===false))?{until:l.sav.until||l.expire||null,contact:d.sav||{}}:null}}
   function applyData(x){if(!x)return;
+    try{navTrack(x.suivi)}catch(e){}
     try{const old=localStorage.getItem('licData_'+PRODUIT)||'',nv=JSON.stringify(x);if(old!==nv)localStorage.setItem('licData_'+PRODUIT,nv);
       const g=x.google||{};
       // Client ID Google partagé (COVO Pro et ses satellites lisent tous « gdrive_client_id »)

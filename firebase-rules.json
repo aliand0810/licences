@@ -54,6 +54,18 @@
           ".write": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || newData.val() === 'nouveau'"
         }
       }
+    },
+    "nav": {
+      ".read": "auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63'",
+      ".write": "auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63'",
+      "$lic": {
+        "$dev": {
+          "$e": {
+            ".write": "!data.exists() && newData.exists() && $dev.length <= 40",
+            ".validate": "newData.hasChildren(['t','p']) && newData.child('p').isString() && newData.child('p').val().length <= 60 && (!newData.child('n').exists() || newData.child('n').val().length <= 60) && (!newData.child('ti').exists() || newData.child('ti').val().length <= 60)"
+          }
+        }
+      }
     }
   }
 }

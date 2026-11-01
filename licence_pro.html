@@ -390,6 +390,17 @@ html[data-light] .mi.no{background:rgba(15,23,42,.05)}
 html[data-light] .tag{color:color-mix(in srgb,var(--sc) 75%,#000)}
 @media(max-width:1100px){.g8,.g6,.g4{grid-column:span 12}.sgrid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:640px){.sgrid{grid-template-columns:repeat(2,1fr)}.dgrid{gap:12px}.hbar{height:10px}.kpi::after{width:3px}}
+
+/* ═══ Parcours de navigation ═══ */
+.nvtop{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px;margin:8px 0 12px}
+.nvc{border:1px solid var(--bd);border-radius:14px;overflow:hidden;background:var(--glass)}
+.nvc .im{height:58px;display:grid;place-items:center;font-size:1.7rem;background:linear-gradient(135deg,color-mix(in srgb,var(--pc) 30%,transparent),color-mix(in srgb,var(--pc) 8%,transparent))}
+.nvc div{padding:6px 8px}.nvc b{display:block;font-size:.76rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.nvc small{font-size:.68rem;color:var(--mut)}
+.nvday{font-size:.72rem;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;margin:12px 0 6px}
+.nvl{display:flex;flex-direction:column;gap:6px}
+.nvi{display:grid;grid-template-columns:44px 1fr auto;gap:10px;align-items:center;padding:6px;border-radius:12px;border:1px solid var(--bd);background:var(--glass)}
+.nvi .im{width:44px;height:44px;border-radius:10px;display:grid;place-items:center;font-size:1.25rem;background:color-mix(in srgb,var(--pc) 22%,transparent)}
+.nvi b{font-size:.84rem;display:block}.nvi small{font-size:.72rem;color:var(--mut)}.nvi time{font-size:.74rem;font-weight:700;color:var(--mut)}
 </style>
 </head>
 <body>
@@ -1558,5 +1569,34 @@ function renderDash(){if(!$('hbar'))return;const K=['act','soon','exp','rev','ba
   $('dLog').innerHTML=lg.length?lg.slice(0,6).map(([l,x])=>{const[ic,col]=pm(l.produit),c=/Susp|Bann|Suppr/.test(x.a)?'#f43f5e':/Réact|Débann|Prolong|illimit/.test(x.a)?'#10b981':'#06b6d4';
     return `<div class="dr" onclick="openLic('${l.id}')"><div class="pi" style="--pc:${col}">${ic}</div><div><b>${esc(x.a)}</b><small>${esc(l.email)} · ${esc(l.produit)}</small></div><span class="tag" style="--sc:${c}">${ago(x.t)}</span></div>`}).join(''):'<div class="empty sm">Les prochaines actions (suspendre, prolonger…) apparaîtront ici</div>'}
 const _renderAll=renderAll;renderAll=function(){_renderAll();renderDash()};
+
+/* ═══════════ PARCOURS DE NAVIGATION ═══════════ */
+const NAVPAL=['#7c3aed','#06b6d4','#10b981','#f59e0b','#f43f5e','#3b82f6','#ec4899','#84cc16'];
+function navMeta(l,e){const T=(TABS_DEF[l.produit]||[]).find(t=>t[0]===e.v||t[0]==='tab-'+e.v||e.v==='tab-'+t[0]);const key=e.v||e.p;let h=0;for(const c of key)h=(h*31+c.charCodeAt(0))>>>0;
+  return{ic:T?T[1]:/caisse/i.test(key)?'💳':/stock|invent/i.test(key)?'📦':/client|fid/i.test(key)?'🎁':/stat|bilan/i.test(key)?'📊':/param|regl|set/i.test(key)?'⚙️':/hist/i.test(key)?'🧾':'📄',nm:T?T[2]:(e.n||e.ti||e.p),col:NAVPAL[h%NAVPAL.length]}}
+async function navLoad(id){const box=$('nvBox');if(!box)return;const l=LIC.find(x=>x.id===id);if(!l)return;
+  if(!l.suivi){box.innerHTML='<div class="empty sm">Suivi désactivé pour cette licence</div>';return}
+  box.innerHTML='<div class="empty sm">Chargement du parcours…</div>';let d=null;
+  try{const t=await fbTok();const r=await fetch(`${FB()}/nav/${id}.json?auth=${t}&t=${Date.now()}`);if(!r.ok)throw new Error(r.status===401||r.status===403?'règles Firebase à republier (nœud « nav »)':'HTTP '+r.status);d=await r.json()}
+  catch(e){box.innerHTML=`<div class="empty sm">⚠️ Parcours indisponible : ${esc(e.message)}</div>`;return}
+  const devs=devList(id),E=[];Object.entries(d||{}).forEach(([dv,ev])=>Object.values(ev||{}).forEach(e=>{if(e&&e.t)E.push({...e,dv})}));
+  if(!E.length){box.innerHTML='<div class="empty sm">Aucune page enregistrée pour l\'instant — le suivi démarre à la prochaine ouverture du logiciel par le client</div>';return}
+  E.sort((a,b)=>b.t-a.t);const devName=dv=>{const x=devs.find(([k,v])=>v.id===dv);if(!x)return'Appareil '+dv.slice(0,5);const u=shortUA(x[1].ua);return u.ic+' '+u.txt};
+  const cnt={};E.forEach(e=>{const m=navMeta(l,e),k=m.nm;(cnt[k]=cnt[k]||{m,n:0,last:0}).n++;cnt[k].last=Math.max(cnt[k].last,e.t)});
+  const top=Object.values(cnt).sort((a,b)=>b.n-a.n).slice(0,8);
+  const ND=[...new Set(E.map(e=>e.dv))];let last='';
+  box.innerHTML=`<div class="hint" style="margin:0">${E.length} page${E.length>1?'s':''} vue${E.length>1?'s':''} · ${ND.length} appareil${ND.length>1?'s':''} · dernière ${ago(E[0].t)}</div>
+    <div class="nvtop">${top.map(x=>`<div class="nvc" style="--pc:${x.m.col}"><div class="im">${x.m.ic}</div><div><b>${esc(x.m.nm)}</b><small>${x.n}× · ${ago(x.last)}</small></div></div>`).join('')}</div>
+    ${ND.length>1?`<div class="chips" id="nvF" style="margin-bottom:6px"><button class="act" data-d="">Tous</button>${ND.map(dv=>`<button data-d="${esc(dv)}">${devName(dv)}</button>`).join('')}</div>`:''}
+    <div class="nvl" id="nvL">${E.slice(0,80).map(e=>{const m=navMeta(l,e),day=new Date(e.t).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});const hd=day!==last?(last=day,`<div class="nvday">${day}</div>`):'';
+      return hd+`<div class="nvi" data-dv="${esc(e.dv)}" style="--pc:${m.col}"><div class="im">${m.ic}</div><div><b>${esc(m.nm)}</b><small>${esc(e.m||'')} · ${esc(e.p)}${e.h?' '+esc(e.h):''} · ${devName(e.dv)}</small></div><time>${new Date(e.t).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</time></div>`}).join('')}</div>
+    <div class="row" style="gap:8px;margin-top:10px"><button class="ghost sm" onclick="navLoad('${id}')">↻ Actualiser</button><button class="ghost sm danger" onclick="navClear('${id}')">🗑 Effacer l'historique</button></div>`;
+  const F=$('nvF');if(F)F.querySelectorAll('button').forEach(b=>b.onclick=()=>{F.querySelectorAll('button').forEach(x=>x.classList.toggle('act',x===b));document.querySelectorAll('#nvL .nvi').forEach(r=>r.hidden=!!b.dataset.d&&r.dataset.dv!==b.dataset.d);document.querySelectorAll('#nvL .nvday').forEach(h=>{let n=h.nextElementSibling,v=false;while(n&&!n.classList.contains('nvday')){if(!n.hidden)v=true;n=n.nextElementSibling}h.hidden=!v})})}
+async function navClear(id){if(!confirm('Effacer tout l\'historique de navigation de cette licence ?'))return;try{await fbPut('nav/'+id,null);toast('Historique effacé');navLoad(id)}catch(e){toast(e.message,'ko')}}
+function navToggle(id,on){licAct(id,on?'Suivi de navigation activé':'Suivi de navigation désactivé',(d,x)=>{if(on)x.suivi=1;else delete x.suivi},on?'👣 Suivi activé — démarre à la prochaine ouverture':'Suivi désactivé')}
+const _openLic2=openLic;
+openLic=function(id){_openLic2(id);const l=LIC.find(x=>x.id===id);const b=document.querySelector('#dw .dw-b');if(!l||!b)return;
+  const cc=b.querySelector('.cc');const html=`<h4>👣 Parcours de navigation</h4><div class="savBox" style="margin-bottom:10px"><label class="sw" style="margin:0;text-transform:none;letter-spacing:0;font-size:.9rem;color:var(--txt)"><input type="checkbox" ${l.suivi?'checked':''} onchange="navToggle('${id}',this.checked)"><span class="knob"></span><span><b>${l.suivi?'Suivi activé':'Suivi désactivé'}</b><small style="display:block;color:var(--mut);font-size:.76rem">Enregistre les pages et onglets ouverts par le client, avec l'heure et l'appareil. Le client en est informé une fois.</small></span></label></div><div id="nvBox"></div>`;
+  (cc?cc:b.firstElementChild).insertAdjacentHTML('afterend',html);navLoad(id)};
 </script>
 </body></html>
