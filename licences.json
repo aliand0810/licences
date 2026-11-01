@@ -41,7 +41,7 @@
       "expire": null,
       "actif": true,
       "modules": null,
-      "maxDevices": null,
+      "maxDevices": 2,
       "sav": {
         "on": true,
         "until": null
