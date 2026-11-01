@@ -323,6 +323,49 @@ textarea:focus{border-color:var(--a2);box-shadow:0 0 0 4px rgba(6,182,212,.14)}
  .accs{grid-template-columns:1fr}
  .toast{bottom:90px}
 }
+/* ═══ Thèmes de couleur ═══ */
+nav button.act{background:linear-gradient(135deg,color-mix(in srgb,var(--a1) 26%,transparent),color-mix(in srgb,var(--a2) 12%,transparent));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--a1) 45%,transparent)}
+.chips button.act{background:color-mix(in srgb,var(--a1) 22%,transparent);border-color:var(--a1);color:var(--txt)}
+.btn{box-shadow:0 10px 28px color-mix(in srgb,var(--a1) 32%,transparent)}
+.brand img{box-shadow:0 8px 26px color-mix(in srgb,var(--a1) 45%,transparent)}
+input:focus,select:focus,textarea:focus{border-color:var(--a2);box-shadow:0 0 0 4px color-mix(in srgb,var(--a2) 16%,transparent)}
+.chips button .cn{margin-left:6px;padding:1px 7px;border-radius:99px;background:var(--glass2);font-size:.72rem}
+html[data-light] .side{background:color-mix(in srgb,var(--panel) 80%,transparent)}
+html[data-light] input,html[data-light] select,html[data-light] textarea,html[data-light] .seg,html[data-light] .pt,html[data-light] .devPick,html[data-light] .savBox,html[data-light] .rules,html[data-light] .vv,html[data-light] .rq .rqm{background:#fff}
+html[data-light] .toast{background:#fff;color:var(--txt)}
+html[data-light] .x,html[data-light] .sheetHandle+.dw-h .x{color:var(--txt)}
+html[data-light] body::before,html[data-light] body::after{opacity:.16}
+html[data-light] .b-ok{color:#047857}html[data-light] .b-ko,html[data-light] .red,html[data-light] .pill.red{color:#be123c}html[data-light] .b-w{color:#b45309}
+html[data-light] .meter,html[data-light] .sw .knob{background:rgba(15,23,42,.1)}
+html[data-light] .sheetHandle{background:rgba(15,23,42,.2)}
+html[data-light] .mi.no{background:rgba(15,23,42,.05)}
+.thg{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.th{display:flex;flex-direction:column;gap:8px;padding:10px;border-radius:16px;border:2px solid var(--bd);background:var(--glass);color:var(--txt);font-weight:700;font-size:.85rem;text-align:left}
+.th.act{border-color:var(--a1);box-shadow:0 0 0 4px color-mix(in srgb,var(--a1) 20%,transparent)}
+.th i{display:block;height:54px;border-radius:11px;position:relative;overflow:hidden}
+.th i::after{content:"";position:absolute;left:10px;right:10px;bottom:10px;height:12px;border-radius:6px;background:var(--g)}
+/* ═══ Centre de contrôle d'une licence ═══ */
+.cc{border:1px solid var(--bd);border-radius:18px;padding:14px;background:var(--glass);margin-bottom:14px}
+.cc-h{display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap}
+.cc-st{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.02rem}
+.cc-st .dot2{width:12px;height:12px;border-radius:50%;background:var(--sc);box-shadow:0 0 0 5px color-mix(in srgb,var(--sc) 22%,transparent)}
+.cc-st small{display:block;font-weight:500;font-size:.78rem;color:var(--mut)}
+.steps{display:flex;align-items:center;gap:6px;margin:14px 0 4px}
+.steps span{flex:1;text-align:center;font-size:.68rem;font-weight:700;color:var(--mut);padding:7px 4px;border-radius:10px;border:1px solid var(--bd);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.steps span.on{color:#fff;background:var(--sc);border-color:transparent}
+.steps b{color:var(--mut);font-size:.7rem}
+.acts{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:12px}
+.act-c{display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:11px 12px;border-radius:14px;border:1px solid color-mix(in srgb,var(--ac) 40%,var(--bd));background:color-mix(in srgb,var(--ac) 9%,transparent);color:var(--txt);text-align:left;min-height:66px}
+.act-c:hover{background:color-mix(in srgb,var(--ac) 18%,transparent);transform:translateY(-1px)}
+.act-c b{font-size:.86rem;color:var(--txt)}.act-c small{font-size:.72rem;color:var(--mut);line-height:1.35}
+.act-c:disabled{opacity:.4;pointer-events:none}
+.ext{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.log{border-left:2px solid var(--bd);margin:6px 0 4px 6px;padding-left:12px}
+.log div{position:relative;font-size:.8rem;padding:4px 0;color:var(--txt)}.log div::before{content:"";position:absolute;left:-17px;top:10px;width:8px;height:8px;border-radius:50%;background:var(--lc,var(--a2))}
+.log small{color:var(--mut);margin-left:6px}
+.cf-imp{margin:10px 0;padding:12px 14px;border-radius:14px;background:color-mix(in srgb,var(--ac) 10%,transparent);border:1px solid color-mix(in srgb,var(--ac) 35%,transparent);font-size:.86rem;line-height:1.55}
+.cf-imp li{margin:3px 0}
+.lic{border-left:3px solid var(--sc,transparent)}
 </style>
 </head>
 <body>
@@ -345,7 +388,7 @@ textarea:focus{border-color:var(--a2);box-shadow:0 0 0 4px rgba(6,182,212,.14)}
 <main>
   <header class="top">
     <div><h1 id="vTitle">Vue d'ensemble</h1><p id="vSub">Tes licences et tes clients en un coup d'œil</p></div>
-    <div class="topR"><button class="ghost" title="Injecter un code du coffre" onclick="VAULT.length?openInject():loadVault().then(()=>openInject())">💉</button><button class="ghost" title="Actualiser" onclick="load(true)">↻</button><button class="btn hideM" onclick="newLic()">+ Licence</button></div>
+    <div class="topR"><button class="ghost" title="Thème de couleur" onclick="openTheme()">🎨</button><button class="ghost" title="Injecter un code du coffre" onclick="VAULT.length?openInject():loadVault().then(()=>openInject())">💉</button><button class="ghost" title="Actualiser" onclick="load(true)">↻</button><button class="btn hideM" onclick="newLic()">+ Licence</button></div>
   </header>
 
   <!-- VUE D'ENSEMBLE -->
@@ -662,7 +705,7 @@ function licRow(l){const[s,c]=status(l),[ic,col]=pm(l.produit),used=devUsed(l.id
          :`<div class="ls" style="margin-top:6px">📱 appareils illimités · ${dur}${savActive(l)?' · 🛟 SAV':''}</div>`}
     ${modRow(l)}</div><span class="chev">›</span></div>`}
 function renderAcc(){const q=$('q').value.toLowerCase(),g={};LIC.forEach(l=>(g[l.email]=g[l.email]||[]).push(l));
-  const ok=l=>{const k=status(l)[2];return FILTER==='all'||(FILTER==='exc'?excList(l.id).length>0:FILTER==='act'?k!=='off':k===FILTER)};
+  const ok=l=>fltOk(l);
   const rows=Object.entries(g).filter(([m,ls])=>(m+' '+ls.map(l=>l.produit).join(' ')).toLowerCase().includes(q)).map(([m,ls])=>[m,ls.filter(ok)]).filter(([m,ls])=>ls.length)
     .sort((a,b)=>b[1].reduce((s,l)=>s+excList(l.id).length,0)-a[1].reduce((s,l)=>s+excList(l.id).length,0));
   $('accs').innerHTML=rows.length?rows.map(([m,ls],i)=>{const nd=ls.reduce((a,l)=>a+devUsed(l.id),0),ne=ls.reduce((a,l)=>a+excList(l.id).length,0);
@@ -1380,5 +1423,99 @@ mergeTabs({});initCfg();newLic();go('dash');setDev(0);
 if(C().fbMail&&C().fbPass)fbTok().then(()=>{FBOK=true;renderConn()}).catch(()=>{});
 load();setInterval(load,60000);setInterval(()=>LIC.length&&renderAll(),30000);
 if(!C().tok)go('set');
+/* ═══════════ THÈMES ═══════════ */
+const THEMES={
+  nuit:{n:'🌙 Nuit',a1:'#7c3aed',a2:'#06b6d4'},
+  jour:{n:'☀️ Jour',light:1,a1:'#6366f1',a2:'#0891b2',bg:'#f3f5fb',panel:'#ffffff',txt:'#0f172a',mut:'#64748b',bd:'rgba(15,23,42,.1)',glass:'rgba(255,255,255,.75)',glass2:'rgba(15,23,42,.05)'},
+  bleu:{n:'🔵 Océan',a1:'#2563eb',a2:'#38bdf8',bg:'#06101f',panel:'#0a1830'},
+  rouge:{n:'🔴 Rubis',a1:'#e11d48',a2:'#fb923c',bg:'#14060a',panel:'#1d0a10'},
+  vert:{n:'🟢 Émeraude',a1:'#059669',a2:'#a3e635',bg:'#04120d',panel:'#081c15'},
+  or:{n:'🟡 Or',a1:'#d97706',a2:'#facc15',bg:'#120d04',panel:'#1c1407'},
+  rose:{n:'🌸 Rose',a1:'#db2777',a2:'#a78bfa',bg:'#13061096',panel:'#1c0a18'},
+  graphite:{n:'⚫ Graphite',a1:'#64748b',a2:'#94a3b8',bg:'#0b0c0f',panel:'#14161b'},
+  sable:{n:'🏖️ Sable (clair)',light:1,a1:'#b45309',a2:'#0d9488',bg:'#f7f3ea',panel:'#fffdf8',txt:'#1c1917',mut:'#78716c',bd:'rgba(28,25,23,.12)',glass:'rgba(255,255,255,.7)',glass2:'rgba(28,25,23,.05)'}};
+THEMES.rose.bg='#130610';
+function applyTheme(k){const t=THEMES[k]||THEMES.nuit,r=document.documentElement.style,d=THEMES.nuit;
+  const v={bg:'#070b16',panel:'#0c1120',txt:'#eef2ff',mut:'#8b93b0',bd:'rgba(255,255,255,.08)',glass:'rgba(255,255,255,.035)',glass2:'rgba(255,255,255,.06)',...t};
+  ['bg','panel','txt','mut','bd','glass','glass2','a1','a2'].forEach(x=>r.setProperty('--'+x,v[x]));r.setProperty('--grad',`linear-gradient(135deg,${v.a1},${v.a2})`);
+  if(t.light)document.documentElement.setAttribute('data-light','');else document.documentElement.removeAttribute('data-light');
+  const m=document.querySelector('meta[name=theme-color]');if(m)m.content=v.bg;
+  try{localStorage.setItem('lpTheme',k)}catch(e){}
+  if(window.Chart){Chart.defaults.color=v.mut;Chart.defaults.borderColor=t.light?'rgba(15,23,42,.08)':'rgba(255,255,255,.06)';Object.values(charts||{}).forEach(c=>{try{c.destroy()}catch(e){}});charts={};if($('v-dash').classList.contains('on'))drawCharts()}}
+const curTheme=()=>{try{return localStorage.getItem('lpTheme')||'nuit'}catch(e){return'nuit'}};
+function openTheme(){const c=curTheme();openModal(`<div class="md-h"><div class="pi" style="--pc:var(--a1)">🎨</div><div><h2>Thème de couleur</h2><span>S'applique instantanément · mémorisé sur cet appareil</span></div><button class="x" onclick="closeModal()">✕</button></div>
+  <div class="md-b"><div class="thg">${Object.entries(THEMES).map(([k,t])=>`<button class="th${k===c?' act':''}" onclick="applyTheme('${k}');openTheme()"><i style="background:${t.bg||'#070b16'};--g:linear-gradient(135deg,${t.a1},${t.a2});box-shadow:inset 0 0 0 1px rgba(127,127,127,.25)"></i>${t.n}</button>`).join('')}</div></div>`)}
+applyTheme(curTheme());
+
+/* ═══════════ CYCLE DE VIE D'UNE LICENCE ═══════════ */
+// états : active · bientôt expirée · expirée · suspendue (révoquée) · bannie
+const ST={act:['Active','#10b981','Le client utilise normalement le logiciel'],soon:['Expire bientôt','#f59e0b','Pensez à prolonger'],exp:['Expirée','#f43f5e','Accès bloqué jusqu\'à prolongation'],rev:['Suspendue','#f97316','Révoquée : bloquée chez le client en quelques secondes'],ban:['Bannie','#e11d48','Adresse interdite sur tous les logiciels']};
+function lifeOf(l){if(BAN.includes(l.email))return'ban';if(!l.actif)return'rev';const ms=l.expire?new Date(l.expire)-new Date():Infinity;return ms<0?'exp':ms<=30*864e5?'soon':'act'}
+const fmtT=t=>new Date(t).toLocaleString('fr-FR',{dateStyle:'short',timeStyle:'short'});
+// action commune : relit licences.json, applique, journalise, enregistre
+async function licAct(id,label,fn,okMsg,kind){try{const {data,sha:s}=await ghGet();const l=data.licences.find(x=>x.id===id);if(!l&&!/Débann/.test(label))throw new Error('Licence introuvable');
+    const r=fn(data,l);if(l&&r!=='deleted'){l.log=[{t:Date.now(),a:label},...(l.log||[])].slice(0,40)}
+    await ghPut(data,s,label+(l?' '+l.produit+' — '+l.email:''));LIC=data.licences;BAN=data.bannis||[];closeModal();renderAll();r==='deleted'?closeDrawer():openLic(id);toast(okMsg,kind||'ok')}
+  catch(e){toast(e.message,'ko')}}
+// fenêtre de confirmation claire : conséquences listées + saisie de sécurité pour les actions lourdes
+function confirmAct({ic,col,title,sub,points,btn,word,run}){window._cfRun=run;
+  openModal(`<div class="md-h"><div class="pi" style="--pc:${col}">${ic}</div><div><h2>${title}</h2><span>${sub}</span></div><button class="x" onclick="closeModal()">✕</button></div>
+  <div class="md-b"><div class="cf-imp" style="--ac:${col}"><b>Ce qui va se passer :</b><ul style="margin:6px 0 0;padding-left:18px">${points.map(p=>`<li>${p}</li>`).join('')}</ul></div>
+  ${word?`<label>Tape <b style="color:${col}">${word}</b> pour confirmer</label><input id="cfW" autocomplete="off" autocapitalize="characters" oninput="$('cfGo').disabled=this.value.trim().toUpperCase()!=='${word}'">`:''}</div>
+  <div class="md-f" style="display:flex;gap:8px;padding:14px 20px;border-top:1px solid var(--bd)"><button class="ghost" style="flex:1" onclick="closeModal()">Annuler</button><button id="cfGo" class="btn" style="flex:1.4;background:${col}"${word?' disabled':''} onclick="this.disabled=true;this.textContent='Enregistrement…';window._cfRun()">${btn}</button></div>`)}
+function aSuspend(id){const l=LIC.find(x=>x.id===id);confirmAct({ic:'⏸',col:'#f97316',title:'Suspendre la licence',sub:l.produit+' · '+l.email,btn:'⏸ Suspendre',
+  points:['Le logiciel se <b>bloque chez le client</b> en quelques secondes (écran de licence).','Ses données, appareils et réglages sont <b>conservés</b>.','Vous pourrez la <b>réactiver</b> à tout moment, avec la même clé.'],
+  run:()=>licAct(id,'Suspension',(d,x)=>{x.actif=false},'⏸ Licence suspendue','ko')})}
+function aActivate(id){const l=LIC.find(x=>x.id===id);confirmAct({ic:'▶️',col:'#10b981',title:'Réactiver la licence',sub:l.produit+' · '+l.email,btn:'▶️ Réactiver',
+  points:['Le client retrouve l\'accès <b>immédiatement</b>, avec sa clé actuelle.',l.expire&&new Date(l.expire)<new Date()?'⚠️ La licence est aussi <b>expirée</b> : prolongez-la ensuite.':'Durée et appareils inchangés.'],
+  run:()=>licAct(id,'Réactivation',(d,x)=>{x.actif=true},'✅ Licence réactivée')})}
+function aExtend(id,days){const l=LIC.find(x=>x.id===id),base=l.expire&&new Date(l.expire)>new Date()?new Date(l.expire):new Date(),to=days?new Date(+base+days*864e5):null;
+  confirmAct({ic:'⏱',col:'#06b6d4',title:days?'Prolonger de '+(days>=365?Math.round(days/365)+' an':days+' jours'):'Passer en illimitée',sub:l.produit+' · '+l.email,btn:'⏱ Prolonger',
+  points:[`Nouvelle échéance : <b>${to?to.toLocaleDateString('fr-FR'):'illimitée'}</b> (actuelle : ${l.expire?new Date(l.expire).toLocaleDateString('fr-FR'):'illimitée'}).`,'La clé du client ne change pas.',!l.actif?'⚠️ La licence est suspendue : réactivez-la aussi.':'Effet immédiat chez le client.'],
+  run:()=>licAct(id,to?'Prolongation → '+to.toLocaleDateString('fr-FR'):'Passage en illimitée',(d,x)=>{x.expire=to?to.toISOString():null},'⏱ Licence prolongée')})}
+function aBan(id){const l=LIC.find(x=>x.id===id),n=LIC.filter(x=>x.email===l.email).length;confirmAct({ic:'🚫',col:'#e11d48',title:'Bannir l\'adresse',sub:l.email,btn:'🚫 Bannir',word:'BANNIR',
+  points:[`<b>${esc(l.email)}</b> est interdite sur <b>tous vos logiciels</b> (${n} licence${n>1?'s':''}).`,'Les licences sont <b>conservées</b> mais inutilisables tant que l\'adresse est bannie.','Aucune nouvelle licence ne pourra être créée pour elle. Réversible avec « Débannir ».'],
+  run:()=>licAct(id,'Bannissement',d=>{d.bannis=[...new Set([...(d.bannis||[]),l.email])]},'🚫 Adresse bannie','ko')})}
+function aUnban(id){const l=LIC.find(x=>x.id===id);confirmAct({ic:'♻️',col:'#10b981',title:'Débannir l\'adresse',sub:l.email,btn:'♻️ Débannir',
+  points:['L\'adresse peut de nouveau utiliser ses licences actives.','Les licences suspendues restent suspendues.'],
+  run:()=>licAct(id,'Débannissement',d=>{d.bannis=(d.bannis||[]).filter(m=>m!==l.email)},'♻️ Adresse débannie')})}
+function aDelete(id,ban){const l=LIC.find(x=>x.id===id);confirmAct({ic:ban?'⛔':'🗑',col:ban?'#be123c':'#f43f5e',title:ban?'Supprimer et bannir':'Supprimer la licence',sub:l.produit+' · '+l.email,btn:ban?'⛔ Supprimer et bannir':'🗑 Supprimer',word:'SUPPRIMER',
+  points:['La licence est <b>retirée définitivement</b> : la clé ne fonctionne plus.',ban?'L\'adresse est en plus <b>bannie de tous vos logiciels</b>.':'L\'adresse n\'est pas bannie : vous pourrez lui recréer une licence (même clé si même secret maître).','Les notes et le journal de ce client dans Licence Pro sont conservés.'],
+  run:()=>licAct(id,ban?'Suppression + bannissement':'Suppression',d=>{d.licences=d.licences.filter(x=>x.id!==id);if(ban)d.bannis=[...new Set([...(d.bannis||[]),l.email])];return'deleted'},ban?'⛔ Licence supprimée, adresse bannie':'🗑 Licence supprimée','ko')})}
+// compat : anciens boutons
+window.revoke=id=>{const l=LIC.find(x=>x.id===id);l&&l.actif?aSuspend(id):aActivate(id)};
+window.delLic=id=>aDelete(id,true);
+function controlHTML(l){const k=lifeOf(l),[n,c,d]=ST[k],id=l.id,banned=k==='ban',ms=l.expire?new Date(l.expire)-new Date():Infinity;
+  const step=k==='ban'?3:k==='rev'?2:k==='exp'?1:0;const SN=['Active','Expirée','Suspendue','Bannie'];
+  return `<div class="cc" style="--sc:${c}"><div class="cc-h"><div class="cc-st"><span class="dot2"></span><div>${n}<small>${d}${l.expire?' · échéance '+new Date(l.expire).toLocaleDateString('fr-FR')+(ms>0?' ('+left(ms)+')':''):' · durée illimitée'}</small></div></div></div>
+    <div class="steps">${SN.map((s,i)=>`<span class="${i===step?'on':''}">${s}</span>${i<3?'<b>›</b>':''}`).join('')}</div>
+    <div class="acts">
+      <button class="act-c" style="--ac:#6366f1" onclick="editLic('${id}')"><b>✏️ Modifier</b><small>Modules, onglets, appareils, durée</small></button>
+      ${l.actif?`<button class="act-c" style="--ac:#f97316" onclick="aSuspend('${id}')"${banned?' disabled':''}><b>⏸ Suspendre</b><small>Bloque l'accès, garde tout</small></button>`
+               :`<button class="act-c" style="--ac:#10b981" onclick="aActivate('${id}')"><b>▶️ Réactiver</b><small>Rend l'accès immédiatement</small></button>`}
+      <button class="act-c" style="--ac:#06b6d4" onclick="this.nextElementSibling.hidden=!this.nextElementSibling.hidden"><b>⏱ Prolonger</b><small>Ajouter du temps</small></button>
+      <div class="ext" hidden style="grid-column:1/-1">${[[7,'+7 j'],[30,'+1 mois'],[90,'+3 mois'],[365,'+1 an'],[0,'∞ Illimitée']].map(([d,t])=>`<button class="ghost sm" onclick="aExtend('${id}',${d})">${t}</button>`).join('')}</div>
+      ${banned?`<button class="act-c" style="--ac:#10b981" onclick="aUnban('${id}')"><b>♻️ Débannir</b><small>Lève l'interdiction de l'adresse</small></button>`
+              :`<button class="act-c" style="--ac:#e11d48" onclick="aBan('${id}')"><b>🚫 Bannir</b><small>Interdit l'adresse partout</small></button>`}
+      <button class="act-c" style="--ac:#f43f5e" onclick="aDelete('${id}',false)"><b>🗑 Supprimer</b><small>Retire la licence</small></button>
+      <button class="act-c" style="--ac:#be123c" onclick="aDelete('${id}',true)"><b>⛔ Supprimer + bannir</b><small>Définitif et interdit</small></button>
+    </div></div>`}
+function logHTML(l){const L=l.log||[];return `<h4>🕘 Journal des actions</h4>${L.length?`<div class="log">${L.slice(0,12).map(x=>`<div style="--lc:${/Susp|Bann|Suppr/.test(x.a)?'#f43f5e':/Réact|Débann|Prolong|illimit/.test(x.a)?'#10b981':'var(--a2)'}">${esc(x.a)}<small>${fmtT(x.t)}</small></div>`).join('')}</div>`:'<div class="empty sm">Aucune action enregistrée depuis la mise à jour du journal</div>'}`}
+// greffe dans la fiche : centre de contrôle en tête, journal en fin, pied simplifié
+const _openLic=openLic;
+openLic=function(id){_openLic(id);const l=LIC.find(x=>x.id===id);if(!l)return;const b=document.querySelector('#dw .dw-b');if(!b)return;
+  const kv=b.querySelector('.kv');if(kv){const s=kv.querySelector('.badge');if(s){s.className='badge';const[n,c]=ST[lifeOf(l)];s.textContent=n;s.style.cssText=`background:color-mix(in srgb,${c} 18%,transparent);color:${c}`}}
+  b.insertAdjacentHTML('afterbegin',controlHTML(l));b.insertAdjacentHTML('beforeend',logHTML(l));
+  const f=document.querySelector('#dw .dw-f');if(f)f.innerHTML=`<button class="btn" onclick="editLic('${id}')">✏️ Modifier</button><button class="ghost" onclick="closeDrawer()">Fermer</button>`};
+// liste des comptes : filtres par état avec compteurs + couleur d'état sur chaque licence
+const FL=[['all','Toutes'],['act','Actives'],['soon','Expirent bientôt'],['exp','Expirées'],['rev','Suspendues'],['ban','Bannies'],['exc','⚠ En trop']];
+function fltOk(l){const k=lifeOf(l);return FILTER==='all'||(FILTER==='exc'?excList(l.id).length>0:FILTER==='act'?(k==='act'||k==='soon'):FILTER==='off'?k!=='act'&&k!=='soon':k===FILTER)}
+function renderFlt(){const n={};FL.forEach(([f])=>{const o=FILTER;FILTER=f;n[f]=LIC.filter(fltOk).length;FILTER=o});
+  $('flt').innerHTML=FL.map(([f,t])=>`<button data-f="${f}" class="${FILTER===f?'act':''}">${t}<span class="cn">${n[f]}</span></button>`).join('');
+  $('flt').querySelectorAll('button').forEach(b=>b.onclick=()=>{FILTER=b.dataset.f;renderAcc()})}
+const _licRow=licRow;
+licRow=function(l){const[n,c]=ST[lifeOf(l)];return _licRow(l).replace('<div class="lic" ',`<div class="lic" style="--sc:${c}" `).replace(/<span class="badge [^"]*">[^<]*<\/span>/,`<span class="badge" style="background:color-mix(in srgb,${c} 18%,transparent);color:${c}">${n}</span>`)};
+const _renderAcc=renderAcc;
+renderAcc=function(){renderFlt();_renderAcc()};
 </script>
 </body></html>
