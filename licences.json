@@ -43,11 +43,12 @@
       "modules": null,
       "maxDevices": null,
       "sav": {
-        "on": true,
-        "until": null
+        "on": false
       },
       "onglets": null,
-      "google": null
+      "google": null,
+      "ongletsOff": null,
+      "ongletsNoms": null
     },
     {
       "id": "1ade234be86afe017413f9aa46e151e2edcd3e6a50ecf6e87d3c65631312c8c7",
