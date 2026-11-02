@@ -37,32 +37,56 @@
   let CURLIC=null;
   // ⛔ Déconnexion / coupure à distance par adresse IP (nœud Firebase « ipblock »)
   let IPBLOCKED=false;
+  const ipk=ip=>'ip_'+String(ip).replace(/[.:]/g,'_').replace(/[^\w]/g,'');
+  // réseau IPv6 (/64) : stable pour une même box, alors que l'adresse IPv6 complète change plusieurs fois par jour
+  function v6net(ip){ip=String(ip||'');if(!ip.includes(':'))return'';const p=ip.split('::'),A=p[0]?p[0].split(':'):[],B=p.length>1&&p[1]?p[1].split(':'):[];
+    if(p.length<2&&A.length<8)return'';const H=[...A,...Array(Math.max(0,8-A.length-B.length)).fill('0'),...B].slice(0,4).map(x=>(x||'0').toLowerCase().replace(/^0+(?=.)/,''));return 'net6_'+H.join('_')}
   async function checkIpBlock(fb){fb=(fb||RLFB||'').replace(/\/+$/,'');if(!fb)return null;
-    try{const ni=await netInfo().catch(()=>({}));if(!ni.ip)return null;
-      const k='ip_'+String(ni.ip).replace(/[.:]/g,'_').replace(/[^\w]/g,'');
-      const b=await (await fetch(`${fb}/ipblock/${k}.json?t=${Date.now()}`,{cache:'no-store'})).json();
-      if(!b||(Array.isArray(b.prods)&&b.prods.length&&!b.prods.includes(PRODUIT)))return IPBLOCKED?(location.reload(),null):null;
-      if(b.mode==='block'){blocked(b.msg);return 'block'}
-      if(b.mode==='deco'){const kk='licKick_'+PRODUIT,done=+localStorage.getItem(kk)||0;
-        if(+b.t>done){KICKING=true;clearInterval(timer);try{localStorage.setItem(kk,String(b.t));localStorage.removeItem(KEY)}catch(e){}await hardReload();return 'deco'}}
+    try{const ni=await netInfo().catch(()=>({})),dv=await devId(),keys=['dev_'+dv];
+      if(ni.ip){keys.push(ipk(ni.ip));const n6=v6net(ni.ip);if(n6)keys.push(n6)}
+      const res=await Promise.all(keys.map(k=>fetch(`${fb}/ipblock/${k}.json?t=${Date.now()}`,{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null)));
+      const hits=res.filter(b=>b&&b.mode&&(!Array.isArray(b.prods)||!b.prods.length||b.prods.includes(PRODUIT)));
+      const blk=hits.find(b=>b.mode==='block');
+      if(blk){blocked(blk.msg);return 'block'}
+      if(IPBLOCKED){location.reload();return null}
+      const deco=hits.filter(b=>b.mode==='deco').sort((x,y)=>(+y.t)-(+x.t))[0];
+      if(deco){const kk='licKick_'+PRODUIT,done=+localStorage.getItem(kk)||0;
+        if(+deco.t>done){KICKING=true;clearInterval(timer);try{localStorage.setItem(kk,String(deco.t));localStorage.removeItem(KEY)}catch(e){}await hardReload();return 'deco'}}
     }catch(e){}return null}
   // 👣 Suivi de navigation (activé par licence dans Licence Pro) : page + onglet ouverts, horodatés
   let NAV=null,navLast='',navT=0;
-  function navCur(){const p=location.pathname.split('/').pop()||'accueil';
-    let v='',n='';const a=document.querySelector('[data-tab].active,[data-tab].act,[data-view].active,[data-view].act,.tab.active,.tab-btn.active,nav .active,nav .act,[aria-selected="true"]');
-    if(a){v=a.dataset.tab||a.dataset.view||a.id||'';n=(a.innerText||'').trim()}
+  const TABRX=/(?:Tab|Mobile|View|Page|Section|Screen)\(\s*['"]([^'"]+)['"]/i;
+  let CURTAB=null;
+  const cleanTxt=t=>String(t||'').split('\n')[0].replace(/\s+i$/,'').replace(/\s+/g,' ').trim().slice(0,50);
+  const visible=el=>!!(el&&el.getClientRects().length&&getComputedStyle(el).visibility!=='hidden');
+  const isSatLaunch=v=>{try{return !!(window._cpSatelliteTabs&&window._cpSatelliteTabs[v])}catch(e){return false}};
+  function nameFor(v){const b=[...document.querySelectorAll('[onclick],[data-tab],[data-view]')].find(e=>{const m=TABRX.exec(e.getAttribute('onclick')||'');return (m&&m[1]===v)||e.dataset.tab===v||e.dataset.view===v});
+    return b?cleanTxt(b.innerText||b.textContent):''}
+  function navCur(){const p=location.pathname.split('/').pop()||'accueil';let v='',n='';
+    if(CURTAB){v=CURTAB.v;n=CURTAB.n}
+    else{const c=[...document.querySelectorAll('[data-tab].active,[data-tab].act,[data-view].active,[data-view].act,.tab.active,.tab-btn.active,nav .active,nav .act,[aria-selected="true"]')].filter(visible);
+      const a=c.find(e=>TABRX.test(e.getAttribute('onclick')||'')||e.dataset.tab||e.dataset.view);
+      if(a){const m=TABRX.exec(a.getAttribute('onclick')||'');v=(m&&m[1])||a.dataset.tab||a.dataset.view||'';n=cleanTxt(a.innerText)}}
     return{p,v,n,h:location.hash.slice(0,40)}}
-  function navRec(v,n){if(!NAV)return;const c=navCur();if(v){c.v=v;c.n=n||c.n}
+  function navRec(v,n){if(!NAV)return;if(v&&isSatLaunch(v))return;if(v){n=cleanTxt(n)||nameFor(v)||tName(v);CURTAB={v,n}}const c=navCur();if(v){c.v=v;c.n=n}
     c.n=String(c.n||(c.v?tName(c.v):'')||document.title||c.p).replace(/\s+/g,' ').slice(0,50);c.v=String(c.v||'').slice(0,40);
     const k=c.p+'|'+c.v+'|'+c.h;if(k===navLast&&Date.now()-navT<6e4)return;navLast=k;navT=Date.now();
     Promise.all([devId(),netInfo().catch(()=>({}))]).then(([dv,ni])=>fetch(`${NAV.fb}/nav/${NAV.id}/${dv}.json`,{method:'POST',keepalive:true,body:JSON.stringify({t:Date.now(),p:c.p.slice(0,60),v:c.v,n:c.n,h:c.h,m:MODULE||PRODUIT,ti:(document.title||'').slice(0,60),ip:ni.ip||'',loc:ni.loc||''})})).catch(()=>{})}
+  let bgT=0;
+  function navBg(){if(!NAV||Date.now()-bgT<3000)return;bgT=Date.now();navLast='';
+    devId().then(dv=>fetch(`${NAV.fb}/nav/${NAV.id}/${dv}.json`,{method:'POST',keepalive:true,body:JSON.stringify({t:Date.now(),p:(location.pathname.split('/').pop()||'accueil').slice(0,60),ev:'bg',m:MODULE||PRODUIT,v:CURTAB?CURTAB.v:'',n:CURTAB?CURTAB.n:''})})).catch(()=>{})}
   function navTrack(cfg){if(!cfg||!cfg.fb||NAV)return;NAV=cfg;
     if(!localStorage.getItem('licNavInfo_'+PRODUIT)){localStorage.setItem('licNavInfo_'+PRODUIT,'1');try{licToast('ℹ️ Les pages consultées sont enregistrées pour l\'assistance')}catch(e){}}
     document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[onclick],[data-tab],[data-view],a[href^="#"]');if(!b)return;
-      const m=(b.getAttribute('onclick')||'').match(/(?:Tab|Mobile|View|Page|Section|Screen)\(\s*['"]([^'"]+)['"]/i);const id=(m&&m[1])||b.dataset.tab||b.dataset.view||'';
+      const m=TABRX.exec(b.getAttribute('onclick')||'');const id=(m&&m[1])||b.dataset.tab||b.dataset.view||'';
       if(id)setTimeout(()=>navRec(id,(b.innerText||'').trim()),50);else setTimeout(()=>navRec(),400)},true);
     addEventListener('hashchange',()=>navRec());addEventListener('popstate',()=>navRec());
-    document.addEventListener('visibilitychange',()=>document.visibilityState==='visible'&&(navLast='',navRec()));
+    document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){navLast='';navRec()}else navBg()});
+    addEventListener('pagehide',navBg);
+    // suit aussi les changements d'onglet déclenchés par le code (switchTab('products'), etc.)
+    const wrap=()=>['switchTab','showTab','openTab','setTab','switchView','showView','showPage','showSection'].forEach(f=>{const o=window[f];if(typeof o!=='function'||o.__licNav)return;
+      const w=function(x){const r=o.apply(this,arguments);try{if(typeof x==='string')setTimeout(()=>navRec(x),60)}catch(e){}return r};w.__licNav=1;window[f]=w});
+    wrap();addEventListener('load',wrap);setTimeout(wrap,3000);
     navRec()}
   // Renvoie {ok, expire, msg}
   // 🛡️ Verrou de domaine : le logiciel ne tourne que sur les adresses autorisées dans licences.json (« domaines »)

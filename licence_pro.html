@@ -507,6 +507,7 @@ html[data-light] .tag{color:color-mix(in srgb,var(--sc) 75%,#000)}
 .cut-opt:has(input:checked){border-color:var(--oc);background:color-mix(in srgb,var(--oc) 10%,transparent)}
 .cut-opt input{width:20px;height:20px;margin-top:2px}.cut-opt div>b{display:block;font-size:.95rem}.cut-opt small b{color:var(--txt)}.cut-opt small{color:var(--mut);font-size:.78rem;line-height:1.45}
 .cutb{display:inline-block;font-size:.7rem;font-weight:800;padding:3px 9px;border-radius:99px;background:color-mix(in srgb,var(--ko) 18%,transparent);color:var(--tko);margin-left:6px}
+.ax-oth{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}.ax-oth span{font-size:.7rem;padding:2px 8px;border-radius:99px;border:1px dashed var(--bd);color:var(--mut)}
 </style>
 </head>
 <body>
@@ -1798,7 +1799,7 @@ function ipSortCmp(a,b){const na=ipLbl(a.ip),nb=ipLbl(b.ip);
     case'ip':return a.ip.localeCompare(b.ip,undefined,{numeric:true});
     case'loc':return (a.loc||'~~~').localeCompare(b.loc||'~~~')||b.last-a.last;
     default:return b.last-a.last}}
-async function renderIpView(){$('ipList').innerHTML='<div class="empty">Chargement des adresses…</div>';await loadFB();await Promise.all([loadIpNames(),loadIpNav(true),loadIpBlocks()]);IPSEL={};renderIp()}
+async function renderIpView(){if(!ACTLOADED)loadActivity().catch(()=>{});$('ipList').innerHTML='<div class="empty">Chargement des adresses…</div>';await loadFB();await Promise.all([loadIpNames(),loadIpNav(true),loadIpBlocks()]);IPSEL={};renderIp()}
 function renderIp(){const q=($('ipq').value||'').toLowerCase();let rows=ipAgg().filter(x=>{const nm=ipLbl(x.ip),cl=Object.keys(x.clients).length;
     if(IPFILTER==='cut'&&!IPB[ipKey(x.ip)])return false;if(IPFILTER==='named'&&!nm)return false;if(IPFILTER==='unnamed'&&nm)return false;if(IPFILTER==='multi'&&cl<2)return false;if(IPFILTER==='refus'&&!x.refus)return false;
     return (x.ip+' '+nm+' '+x.loc+' '+Object.keys(x.clients).join(' ')+' '+Object.keys(x.prods).join(' ')).toLowerCase().includes(q)});
@@ -1845,11 +1846,11 @@ IPNAMES=IPNAMES;
 document.querySelectorAll('#ipflt button').forEach(b=>b.onclick=()=>{IPFILTER=b.dataset.f;renderIp()});
 
 /* ═══════════ SUIVI D'ACTIVITÉ (global) ═══════════ */
-let ACT=[],ACTLOADED=false,ASORT='recent',AFILTER='7j',AFPROD='';
-async function loadActivity(force){if(ACTLOADED&&!force)return;const suivi=LIC.filter(l=>l.suivi);ACT=[];
+let ACTBG=[],ACT=[],ACTLOADED=false,ASORT='recent',AFILTER='7j',AFPROD='';
+async function loadActivity(force){if(ACTLOADED&&!force)return;const suivi=LIC.filter(l=>l.suivi);const A=[],BG=[];
   await Promise.all(suivi.map(async l=>{try{const t=await fbTok(),r=await fetch(`${FB()}/nav/${l.id}.json?auth=${t}&t=${Date.now()}`);
-    if(r.ok){const d=await r.json()||{};Object.entries(d).forEach(([dv,ev])=>Object.values(ev||{}).forEach(e=>{if(e&&e.t)ACT.push({...e,dv,lic:l})}))}}catch(e){}}));
-  ACTLOADED=true}
+    if(r.ok){const d=await r.json()||{};Object.entries(d).forEach(([dv,ev])=>Object.values(ev||{}).forEach(e=>{if(e&&e.t)(e.ev==='bg'?BG:A).push({...e,dv,lic:l})}))}}catch(e){}}));
+  ACT=A;ACTBG=BG;ACTLOADED=true}
 let ALIVE=true,ALIVET=null,ALIM=80,ASEEN=null;
 async function renderActView(){if(!ACT.length)$('actList').innerHTML='<div class="empty">Chargement de l\'activité…</div>';await loadFB();await Promise.all([loadIpNames(),loadIpx(),loadActivity(true),loadIpBlocks()]);
   const sats=[...new Set(ACT.map(a=>satOf(a)).filter(Boolean))].sort();
@@ -1868,16 +1869,22 @@ const satIc=n=>MICON[n]||'🧩';
 function pageOf(a){const m=navMeta(a.lic,a);let nm=m.nm||'';
   if(!a.v&&(!nm||nm===a.lic.produit||nm===a.m||nm===a.ti)){const p=String(a.p||'').replace(/\.html?$/i,'').replace(/[-_]+/g,' ').trim();
     nm=!p||/^(index|accueil)$/i.test(p)||p.toLowerCase()===a.lic.produit.toLowerCase()?'Accueil':p.charAt(0).toUpperCase()+p.slice(1)}
-  return{ic:nm==='Accueil'?'🏠':m.ic,nm,col:m.col}}
+  let ic=nm==='Accueil'?'🏠':m.ic;const em=nm.match(/^(\p{Extended_Pictographic}\uFE0F?)\s*/u);if(em){ic=em[1];nm=nm.slice(em[0].length)||nm}
+  return{ic,nm,col:m.col}}
 function pathHTML(a){const[ic]=pm(a.lic.produit),st=satOf(a),p=pageOf(a);
   return `<span class="ax-path"><span>${ic} ${esc(a.lic.produit)}</span><i>›</i>${st?`<span class="sat">${satIc(st)} ${esc(st)}</span>`:'<span class="sat main">Appli principale</span>'}<i>›</i><span class="pg">${p.ic} ${esc(p.nm)}</span></span>`}
-function actNow(){const now=Date.now(),last={};
-  ACT.forEach(a=>{if(ipExcl(a.ip)||(AFPROD&&a.lic.produit!==AFPROD)||now-a.t>15*6e4)return;const k=a.lic.id+'|'+a.dv;if(!last[k]||last[k].t<a.t)last[k]=a});
-  const L=Object.values(last).sort((x,y)=>y.t-x.t);
-  $('aNow').innerHTML=L.length?L.map(a=>{const p=pageOf(a),[,col]=pm(a.lic.produit),on=now-a.t<5*6e4,ipn=a.ip?(ipLbl(a.ip)||a.ip):'';
-    return `<div class="ax-nw" style="--pc:${col}" onclick="openLic('${a.lic.id}')"><span class="dot${on?' on':''}" title="${on?'Actif':'Inactif depuis plus de 5 min'}"></span><div class="im">${p.ic}</div>
-      <div style="min-width:0"><b>${esc(a.lic.email)}</b>${pathHTML(a)}<small>${devNameG(a.lic,a.dv)}${ipn?' · 🌐 '+esc(ipn):''} · depuis ${ago(a.t).replace('il y a ','')}</small></div></div>`}).join('')
-    :'<div class="empty sm" style="grid-column:1/-1">Personne n\'est connecté en ce moment (aucune page ouverte ces 15 dernières minutes)</div>'}
+function actNow(){const now=Date.now(),W=20*6e4,G={};
+  ACT.concat(ACTBG).forEach(a=>{if(ipExcl(a.ip)||(AFPROD&&a.lic.produit!==AFPROD)||now-a.t>W)return;const dk=a.lic.id+'|'+a.dv,ak=a.m||a.lic.produit;
+    const d=G[dk]=G[dk]||{apps:{},lic:a.lic,dv:a.dv,ip:''};if(a.ip&&!d.ip)d.ip=a.ip;const x=d.apps[ak];if(!x||x.t<a.t)d.apps[ak]=a;
+    if(a.ev!=='bg'){const lp=d.apps[ak]._lp;if(!lp||lp.t<a.t)d.apps[ak]._lp=a}});
+  const L=Object.values(G).map(d=>{const apps=Object.values(d.apps).map(x=>({last:x,page:x.ev==='bg'?(x._lp||x):x,bg:x.ev==='bg'})).filter(x=>x.page);
+      apps.sort((x,y)=>(x.bg-y.bg)||(y.last.t-x.last.t));d.list=apps;d.t=Math.max(...apps.map(x=>x.last.t));d.fg=apps.find(x=>!x.bg);return d}).filter(d=>d.list.length).sort((x,y)=>(!!y.fg-!!x.fg)||(y.t-x.t));
+  $('aNow').innerHTML=L.length?L.map(d=>{const main=d.fg||d.list[0],a=main.page,p=pageOf(a),[,col]=pm(d.lic.produit),on=!!d.fg&&now-main.last.t<5*6e4,ipn=d.ip?(ipLbl(d.ip)||d.ip):'';
+    const others=d.list.filter(x=>x!==main);
+    return `<div class="ax-nw" style="--pc:${col}" onclick="openLic('${d.lic.id}')"><span class="dot${on?' on':''}" title="${on?'Au premier plan':'En arrière-plan ou inactif'}"></span><div class="im">${p.ic}</div>
+      <div style="min-width:0;flex:1"><b>${esc(d.lic.email)}</b>${pathHTML(a)}<small>${main.bg?'💤 en arrière-plan · ':'👁 au premier plan · '}${devNameG(d.lic,d.dv)}${ipn?' · 🌐 '+esc(ipn):''} · ${ago(main.last.t)}</small>
+      ${others.length?`<div class="ax-oth">${others.map(o=>{const st=satOf(o.page);return `<span>${o.bg?'💤':'👁'} ${st?satIc(st)+' '+esc(st):'Appli principale'} › ${esc(pageOf(o.page).nm)}</span>`}).join('')}</div>`:''}</div></div>`}).join('')
+    :'<div class="empty sm" style="grid-column:1/-1">Personne n\'est connecté en ce moment (aucune page ouverte ces 20 dernières minutes)</div>'}
 async function ipToggleExcl(ip,on){const k=ipKey(ip);try{await fbPut('crm/ipx/'+k,on?{ip,t:Date.now()}:null);if(on)IPX[k]={ip,t:Date.now()};else delete IPX[k];
     toast(on?'🚫 '+(ipLbl(ip)||ip)+' exclue du suivi d\'activité':'✅ '+(ipLbl(ip)||ip)+' réintégrée');renderAct();if($('ipxList'))openIpx()}
   catch(e){toast(String(e.message).includes('401')?'Règles Firebase à republier (nœud « crm ») — voir Réglages':e.message,'ko')}}
@@ -1991,6 +1998,13 @@ async function suiviSet(id,on,el){const lab=el.closest('label').querySelector('s
   catch(e){el.checked=!on;toast(e.message,'ko')}}
 
 /* ═══════════ DÉCONNEXION / COUPURE À DISTANCE PAR IP ═══════════ */
+function v6net(ip){ip=String(ip||'');if(!ip.includes(':'))return'';const p=ip.split('::'),A=p[0]?p[0].split(':'):[],B=p.length>1&&p[1]?p[1].split(':'):[];
+  if(p.length<2&&A.length<8)return'';const H=[...A,...Array(Math.max(0,8-A.length-B.length)).fill('0'),...B].slice(0,4).map(x=>(x||'0').toLowerCase().replace(/^0+(?=.)/,''));return 'net6_'+H.join('_')}
+// appareils (empreintes) vus sur une IP : nav + appareils de licence (IP actuelle et historique)
+function ipDevs(ip){const M={};const add=(id,ua,lab)=>{if(id&&!M[id])M[id]={id,ua:ua||'',lab}};
+  (ACT||[]).concat(ACTBG||[]).forEach(a=>{if(a.ip===ip){const x=DEV[a.lic.id]&&Object.values(DEV[a.lic.id]).find(v=>v&&v.id===a.dv);add(a.dv,x&&x.ua,a.lic.email)}});
+  LIC.forEach(l=>Object.values(DEV[l.id]||{}).forEach(v=>{if(!v)return;if(v.lastIp===ip||v.ip===ip||(Array.isArray(v.hist)&&v.hist.some(h=>h.ip===ip)))add(v.id,v.ua,l.email)}));
+  return Object.values(M)}
 async function loadIpBlocks(){try{const t=await fbTok(),r=await fetch(`${FB()}/ipblock.json?auth=${t}&t=${Date.now()}`);if(r.ok)IPB=await r.json()||{}}catch(e){}}
 function ipCutBadge(ip){const b=IPB[ipKey(ip)];if(!b)return'';return b.mode==='block'?`<span class="cutb" title="Coupé ${ago(b.t)}${b.prods?' · '+b.prods.join(', '):''}">⛔ Accès coupé</span>`:`<span class="cutb" style="background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--tw)" title="Déconnexion envoyée ${ago(b.t)}">🔌 Déconnecté ${ago(b.t)}</span>`}
 function ipKnown(){const M={};const add=(ip,email,prod)=>{if(!ip)return;const k=M[ip]=M[ip]||{ip,clients:new Set(),prods:new Set()};if(email)k.clients.add(email);if(prod)k.prods.add(prod)};
@@ -2015,7 +2029,8 @@ function openIpCut(ip){const K=ipKnown();if(ip&&!K.find(x=>x.ip===ip))K.unshift(
   cutInfo()}
 function cutInfo(){const sel=$('cutIp'),nw=sel.value==='__new';$('cutIpNew').hidden=!nw;const ip=nw?'':sel.value,x=ipKnown().find(k=>k.ip===ip);
   const prods=x&&x.prods.size?[...x.prods]:prods_all();
-  $('cutInfo').innerHTML=ip?(x&&x.clients.size?`👤 Vu avec : <b>${[...x.clients].map(esc).join(', ')}</b>`:'Aucun client connu sur cette adresse pour l\'instant.')+(IPB[ipKey(ip)]?` · ${ipCutBadge(ip)}`:''):'Saisissez l\'adresse IP à viser.';
+  const dv=ip?ipDevs(ip):[];
+  $('cutInfo').innerHTML=ip?(x&&x.clients.size?`👤 Vu avec : <b>${[...x.clients].map(esc).join(', ')}</b>`:'Aucun client connu sur cette adresse pour l\'instant.')+`<br>📱 ${dv.length?`<b>${dv.length} appareil(s)</b> reconnu(s) sur ce poste (${dv.map(d=>{const u=shortUA(d.ua);return u.ic+' '+u.txt}).join(', ')}) : ils seront visés <b>même si leur adresse IP change</b>.`:'Aucun appareil reconnu : seule l\'adresse IP sera visée.'}${v6net(ip)?' · 🌐 IPv6 : tout le réseau de la box ('+esc(v6net(ip).replace('net6_','').replace(/_/g,':'))+'::/64) est visé.':''}`+(IPB[ipKey(ip)]?` · ${ipCutBadge(ip)}`:''):'Saisissez l\'adresse IP à viser.';
   $('cutProds').innerHTML=`<label style="grid-column:1/-1"><input type="checkbox" id="cutAll" checked onchange="document.querySelectorAll('.cutP').forEach(c=>{c.checked=false;c.disabled=this.checked})"> Tous les logiciels</label>`+prods.map(p=>{const[ic]=pm(p);return `<label><input type="checkbox" class="cutP" value="${esc(p)}" disabled> ${ic} ${esc(p)}</label>`}).join('')}
 function prods_all(){return prods()}
 async function doIpCut(){const sel=$('cutIp').value,ip=(sel==='__new'?$('cutIpNew').value:sel).trim();
@@ -2025,13 +2040,16 @@ async function doIpCut(){const sel=$('cutIp').value,ip=(sel==='__new'?$('cutIpNe
   const nm=ipLbl(ip),lab=(nm?'« '+nm+' » ('+ip+')':ip);
   if(mode==='block'&&!confirm(`Couper l'accès de ${lab} à ${all?'tous vos logiciels':ps.join(', ')} ?\n\nLe poste restera bloqué jusqu'à ce que vous rétablissiez l'accès.`))return;
   const b=$('cutGo');b.disabled=true;b.textContent='Envoi…';
-  const rec={ip,mode,t:Date.now(),prods:all?null:ps,msg:$('cutMsg').value.trim().slice(0,300)||null,nom:nm||null};
-  try{await fbPut('ipblock/'+ipKey(ip),rec);IPB[ipKey(ip)]=rec;closeModal();
+  const t=Date.now(),devs=ipDevs(ip).map(d=>d.id),n6=v6net(ip),links=[...(n6?[n6]:[]),...devs.map(d=>'dev_'+d)];
+  const rec={ip,mode,t,prods:all?null:ps,msg:$('cutMsg').value.trim().slice(0,300)||null,nom:nm||null,links};
+  try{const old=IPB[ipKey(ip)];if(old&&Array.isArray(old.links))for(const k of old.links)if(!links.includes(k))await fbPut('ipblock/'+k,null);
+    await fbPut('ipblock/'+ipKey(ip),rec);for(const k of links)await fbPut('ipblock/'+k,{mode,t,prods:rec.prods,msg:rec.msg,ref:ipKey(ip)});
+    IPB[ipKey(ip)]=rec;closeModal();
     toast(mode==='block'?'⛔ Accès coupé pour '+lab+' — effet en quelques secondes':'🔌 Déconnexion envoyée à '+lab,'ko');
     if($('v-ip').classList.contains('on'))renderIp();if($('v-act').classList.contains('on'))renderAct()}
   catch(e){b.disabled=false;b.textContent='Appliquer';toast(String(e.message).includes('401')?'Règles Firebase à republier (nœud « ipblock ») — voir Réglages':e.message,'ko')}}
 async function ipRestore(ip){const lab=ipLbl(ip)?'« '+ipLbl(ip)+' »':ip;if(!confirm('Rétablir l\'accès pour '+lab+' ?'))return;
-  try{await fbPut('ipblock/'+ipKey(ip),null);delete IPB[ipKey(ip)];toast('✅ Accès rétabli pour '+lab+' — le poste se débloque en quelques secondes');
+  try{const old=IPB[ipKey(ip)];if(old&&Array.isArray(old.links))for(const k of old.links)await fbPut('ipblock/'+k,null);await fbPut('ipblock/'+ipKey(ip),null);delete IPB[ipKey(ip)];toast('✅ Accès rétabli pour '+lab+' — le poste se débloque en quelques secondes');
     if($('v-ip').classList.contains('on'))renderIp();if($('v-act').classList.contains('on'))renderAct()}catch(e){toast(e.message,'ko')}}
 </script>
 </body></html>
