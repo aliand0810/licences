@@ -531,6 +531,11 @@ html[data-light] .tag{color:color-mix(in srgb,var(--sc) 75%,#000)}
 .ipo-ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:1.2rem;background:color-mix(in srgb,var(--oc) 20%,transparent);flex-shrink:0}
 .ipo-t{flex:1;min-width:200px}.ipo-t b{font-size:.9rem}.ipo-t code{font-family:'JetBrains Mono',monospace;font-size:.8rem}.ipo-t small{display:block;color:var(--mut);font-size:.76rem;margin-top:2px}
 .ipo-b{display:flex;gap:6px;flex-wrap:wrap}.ipo-b .ok{font-weight:800}
+
+.ax-path .ax-ap{background:color-mix(in srgb,var(--pc,var(--a1)) 14%,transparent)}
+.ax-path .ax-ap.main{background:color-mix(in srgb,var(--ok) 14%,transparent);border-color:color-mix(in srgb,var(--ok) 40%,var(--bd));color:var(--tok)}
+.ax-path .ax-ap .cdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ok);margin-right:6px;vertical-align:1px;animation:axPulse 1.6s infinite}
+.ax-st{font-size:.78rem;font-weight:800;color:var(--tok);margin:3px 0 1px}.ax-st.sat{color:var(--ta)}
 </style>
 </head>
 <body>
@@ -665,7 +670,7 @@ html[data-light] .tag{color:color-mix(in srgb,var(--sc) 75%,#000)}
       <select id="aProd" onchange="AFPROD=this.value;renderAct()"><option value="">Tous les logiciels</option></select>
       <select id="aSat" onchange="ASAT=this.value;renderAct()"><option value="">Tous les satellites</option></select>
       <select id="aSort" onchange="ASORT=this.value;ALIM=80;renderAct()"><option value="recent">⏱ Fil chronologique</option><option value="sat">🧩 Par satellite</option><option value="ip">🌐 Par adresse IP</option><option value="client">👤 Par client</option><option value="prod">📦 Par logiciel</option><option value="page">📄 Par page</option></select>
-      <div class="ax-btns"><button class="ghost sm ax-live on" id="aLive" onclick="actLive(!ALIVE)" title="Actualisation automatique toutes les 30 s"><i></i>En direct</button><button class="ghost sm" onclick="renderActView()" title="Actualiser">↻</button><button class="ghost sm" id="aIpx" onclick="openIpx()">🚫 IP exclues</button><button class="ghost sm" onclick="openIpCut()">⛔ Déconnexion à distance</button><button class="ghost sm" onclick="openSuiviManager()">⚙️ Gérer le suivi</button></div>
+      <div class="ax-btns"><button class="ghost sm ax-live on" id="aLive" onclick="actLive(!ALIVE)" title="Actualisation automatique toutes les 15 s"><i></i>En direct</button><button class="ghost sm" onclick="renderActView()" title="Actualiser">↻</button><button class="ghost sm" id="aIpx" onclick="openIpx()">🚫 IP exclues</button><button class="ghost sm" onclick="openIpCut()">⛔ Déconnexion à distance</button><button class="ghost sm" onclick="openSuiviManager()">⚙️ Gérer le suivi</button></div>
     </div>
     <div class="ax-kpis" id="actKpi"></div>
     <div id="aOrders"></div>
@@ -1880,12 +1885,12 @@ async function loadActivity(force){if(ACTLOADED&&!force)return;const suivi=LIC.f
 let ALIVE=true,ALIVET=null,ALIM=80,ASEEN=null;
 async function renderActView(){if(!ACT.length)$('actList').innerHTML='<div class="empty">Chargement de l\'activité…</div>';await loadFB();await Promise.all([loadIpNames(),loadIpx(),loadActivity(true),loadIpBlocks()]);
   const sats=[...new Set(ACT.map(a=>satOf(a)).filter(Boolean))].sort();
-  $('aSat').innerHTML='<option value="">Tous les satellites</option><option value="__main">Appli principale</option>'+sats.map(x=>`<option value="${esc(x)}"${x===ASAT?' selected':''}>${satIc(x)} ${esc(x)}</option>`).join('');if(ASAT)$('aSat').value=ASAT;
+  $('aSat').innerHTML='<option value="">Tous les satellites</option><option value="__main">Application principale seule (sans satellite)</option>'+sats.map(x=>`<option value="${esc(x)}"${x===ASAT?' selected':''}>${satIc(x)} ${esc(x)}</option>`).join('');if(ASAT)$('aSat').value=ASAT;
   const prods=[...new Set(ACT.map(a=>a.lic.produit))].sort();
   $('aProd').innerHTML='<option value="">Tous les logiciels</option>'+prods.map(p=>`<option value="${esc(p)}"${p===AFPROD?' selected':''}>${esc(p)}</option>`).join('');
   renderAct();actLive(ALIVE)}
 function actLive(on){ALIVE=on;const b=$('aLive');if(b){b.classList.toggle('on',on);b.lastChild.textContent=on?'En direct':'En pause'}
-  clearInterval(ALIVET);if(on)ALIVET=setInterval(async()=>{if(!$('v-act').classList.contains('on')||document.hidden)return;await loadActivity(true);renderAct()},30000)}
+  clearInterval(ALIVET);if(on)ALIVET=setInterval(async()=>{if(!$('v-act').classList.contains('on')||document.hidden)return;await loadActivity(true);renderAct()},15000)}
 function devNameG(l,dv){const x=(DEV[l.id]&&Object.values(DEV[l.id]).find(v=>v&&v.id===dv));if(!x)return'Appareil';const u=shortUA(x.ua);return u.ic+' '+u.txt}
 let IPX={},ASAT='';
 const ipExcl=ip=>!!(ip&&IPX[ipKey(ip)]);
@@ -1893,12 +1898,16 @@ async function loadIpx(){try{const t=await fbTok(),r=await fetch(`${FB()}/crm/ip
 const satOf=a=>(a.m&&a.m!==a.lic.produit)?a.m:'';
 const satIc=n=>MICON[n]||'🧩';
 function pageOf(a){const m=navMeta(a.lic,a);let nm=m.nm||'';
+  const st=satOf(a);if(!a.v&&st&&(!nm||nm===a.m||nm===a.ti||new RegExp(st.normalize('NFD').replace(/[\u0300-\u036f]/g,''),'i').test(String(a.p||'')+' '+nm.normalize('NFD').replace(/[\u0300-\u036f]/g,''))))nm='Accueil';
   if(!a.v&&(!nm||nm===a.lic.produit||nm===a.m||nm===a.ti)){const p=String(a.p||'').replace(/\.html?$/i,'').replace(/[-_]+/g,' ').trim();
     nm=!p||/^(index|accueil)$/i.test(p)||p.toLowerCase()===a.lic.produit.toLowerCase()?'Accueil':p.charAt(0).toUpperCase()+p.slice(1)}
   let ic=nm==='Accueil'?'🏠':m.ic;const em=nm.match(/^(\p{Extended_Pictographic}\uFE0F?)\s*/u);if(em){ic=em[1];nm=nm.slice(em[0].length)||nm}
   return{ic,nm,col:m.col}}
-function pathHTML(a){const[ic]=pm(a.lic.produit),st=satOf(a),p=pageOf(a);
-  return `<span class="ax-path"><span>${ic} ${esc(a.lic.produit)}</span><i>›</i>${st?`<span class="sat">${satIc(st)} ${esc(st)}</span>`:'<span class="sat main">Appli principale</span>'}<i>›</i><span class="pg">${p.ic} ${esc(p.nm)}</span></span>`}
+// statut lisible : « Connecté à COVO Pro › Produits » ou « COVO Pro › Satellite Fidélité › Accueil »
+function pathHTML(a,live){const[ic]=pm(a.lic.produit),st=satOf(a),p=pageOf(a);
+  return st?`<span class="ax-path"><span class="ax-ap">${ic} ${esc(a.lic.produit)}</span><i>›</i><span class="sat">Satellite ${satIc(st)} ${esc(st)}</span><i>›</i><span class="pg">${p.ic} ${esc(p.nm)}</span></span>`
+    :`<span class="ax-path"><span class="ax-ap${live?' main':''}">${live?'<i class="cdot"></i>Connecté à ':''}${ic} ${esc(a.lic.produit)}</span><i>›</i><span class="pg">${p.ic} ${esc(p.nm)}</span></span>`}
+const placeTxt=a=>{const st=satOf(a),p=pageOf(a);return st?`${esc(a.lic.produit)} › Satellite ${satIc(st)} ${esc(st)} › ${esc(p.nm)}`:`${esc(a.lic.produit)} › ${esc(p.nm)}`};
 function actNow(){const now=Date.now(),W=20*6e4,G={};
   ACT.concat(ACTBG).forEach(a=>{if(ipExcl(a.ip)||(AFPROD&&a.lic.produit!==AFPROD)||now-a.t>W)return;const dk=a.lic.id+'|'+a.dv,ak=a.m||a.lic.produit;
     const d=G[dk]=G[dk]||{apps:{},lic:a.lic,dv:a.dv,ip:''};if(a.ip&&!d.ip)d.ip=a.ip;const x=d.apps[ak];if(!x||x.t<a.t)d.apps[ak]=a;
@@ -1908,8 +1917,8 @@ function actNow(){const now=Date.now(),W=20*6e4,G={};
   $('aNow').innerHTML=L.length?L.map(d=>{const main=d.fg||d.list[0],a=main.page,p=pageOf(a),[,col]=pm(d.lic.produit),on=!!d.fg&&now-main.last.t<5*6e4,ipn=d.ip?(ipLbl(d.ip)||d.ip):'';
     const others=d.list.filter(x=>x!==main);
     return `<div class="ax-nw" style="--pc:${col}" onclick="openLic('${d.lic.id}')"><span class="dot${on?' on':''}" title="${on?'Au premier plan':'En arrière-plan ou inactif'}"></span><div class="im">${p.ic}</div>
-      <div style="min-width:0;flex:1"><b>${esc(d.lic.email)}</b>${pathHTML(a)}<small>${main.bg?'💤 en arrière-plan · ':'👁 au premier plan · '}${devNameG(d.lic,d.dv)}${ipn?' · 🌐 '+esc(ipn):''} · ${ago(main.last.t)}</small>
-      ${others.length?`<div class="ax-oth">${others.map(o=>{const st=satOf(o.page);return `<span>${o.bg?'💤':'👁'} ${st?satIc(st)+' '+esc(st):'Appli principale'} › ${esc(pageOf(o.page).nm)}</span>`}).join('')}</div>`:''}</div></div>`}).join('')
+      <div style="min-width:0;flex:1"><b>${esc(d.lic.email)}</b>${main.bg?'<div class="ax-st" style="color:var(--mut)">💤 Inactif — dernière page :</div>':''}${pathHTML(a,!main.bg)}<small>${main.bg?'💤 en arrière-plan · ':'👁 au premier plan · '}${devNameG(d.lic,d.dv)}${ipn?' · 🌐 '+esc(ipn):''} · ${ago(main.last.t)}</small>
+      ${others.length?`<div class="ax-oth">${others.map(o=>{const st=satOf(o.page);return `<span>${o.bg?'💤':'👁'} ${placeTxt(o.page)}</span>`}).join('')}</div>`:''}</div></div>`}).join('')
     :'<div class="empty sm" style="grid-column:1/-1">Personne n\'est connecté en ce moment (aucune page ouverte ces 20 dernières minutes)</div>'}
 async function ipToggleExcl(ip,on){const k=ipKey(ip);try{await fbPut('crm/ipx/'+k,on?{ip,t:Date.now()}:null);if(on)IPX[k]={ip,t:Date.now()};else delete IPX[k];
     toast(on?'🚫 '+(ipLbl(ip)||ip)+' exclue du suivi d\'activité':'✅ '+(ipLbl(ip)||ip)+' réintégrée');renderAct();if($('ipxList'))openIpx()}
@@ -1956,7 +1965,7 @@ function renderAct(){const q=($('aq').value||'').toLowerCase(),now=Date.now(),[t
       if(day!==last){if(open)html+='</div></div>';last=day;open=true;const n=rows.filter(x=>new Date(x.t).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})===day).length;
         html+=`<div class="actgrp"><summary><div class="pi" style="--pc:var(--a1)">📅</div><div class="ti"><b style="text-transform:capitalize">${day}</b><small>${n} page(s)</small></div></summary><div class="actrows">`}html+=rowHTML(a)});
     if(open)html+='</div></div>';if(rows.length>ALIM)html+=`<button class="ghost ax-more" onclick="ALIM+=120;renderAct()">Afficher plus (${rows.length-ALIM} restantes)</button>`}
-  else{const G={};rows.forEach(a=>{const key=ASORT==='client'?a.lic.email:ASORT==='prod'?a.lic.produit:ASORT==='ip'?(a.ip||'IP inconnue'):ASORT==='sat'?a.lic.produit+' › '+(satOf(a)||'Appli principale'):pageOf(a).nm;(G[key]=G[key]||[]).push(a)});
+  else{const G={};rows.forEach(a=>{const key=ASORT==='client'?a.lic.email:ASORT==='prod'?a.lic.produit:ASORT==='ip'?(a.ip||'IP inconnue'):ASORT==='sat'?(satOf(a)?a.lic.produit+' › Satellite '+satOf(a):a.lic.produit+' (application principale)'):pageOf(a).nm;(G[key]=G[key]||[]).push(a)});
     const keys=Object.keys(G).sort((x,y)=>G[y].length-G[x].length);
     html=keys.map((key,i)=>{const arr=G[key],a0=arr[0],m=pageOf(a0),[ic,col]=pm(a0.lic.produit),nc=new Set(arr.map(a=>a.lic.email)).size,pr=[...new Set(arr.map(a=>a.lic.produit))].join(', ');
       const hd=ASORT==='sat'?`<div class="pi" style="--pc:${col}">${satOf(a0)?satIc(satOf(a0)):ic}</div><div class="ti"><b>${esc(key)}</b><small>${nc} client(s) · ${new Set(arr.map(a=>pageOf(a).nm)).size} page(s) différente(s) · dernière ${ago(a0.t)}</small></div>`
