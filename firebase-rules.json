@@ -66,6 +66,12 @@
           }
         }
       }
+    },
+    "reload": {
+      ".read": true,
+      "$lic": {
+        ".write": "auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63'"
+      }
     }
   }
 }

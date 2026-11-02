@@ -1551,11 +1551,16 @@ function aReload(id){const l=LIC.find(x=>x.id===id),devs=devList(id),W=l.reloadD
   <div class="md-f" style="display:flex;gap:8px;padding:14px 20px;border-top:1px solid var(--bd)"><button class="ghost" style="flex:1" onclick="closeModal()">Annuler</button><button id="rlGo" class="btn" style="flex:1.4;background:#0ea5e9" onclick="this.disabled=true;this.textContent='Envoi…';doReload('${id}')">🔄 Redémarrer</button></div>`)}
 async function doReload(id){const all=!!document.querySelector('.rlAll:checked'),sel=[...document.querySelectorAll('.rlD:checked')].map(c=>c.value);
   if(!all&&!sel.length){closeModal();return toast('Choisis au moins un appareil','ko')}
-  try{const {data,sha:s}=await ghGet(),x=data.licences.find(y=>y.id===id);if(!x)throw new Error('Licence introuvable');const now=Date.now();
-    if(all){x.reload=now;delete x.reloadDev}else{x.reloadDev={...(x.reloadDev||{})};sel.forEach(d=>x.reloadDev[d]=now)}
-    x.log=[{t:now,a:all?'Redémarrage (tous les appareils)':'Redémarrage ('+sel.length+' appareil'+(sel.length>1?'s':'')+')'},...(x.log||[])].slice(0,40);
-    await ghPut(data,s,'Redémarrage '+x.produit+' — '+x.email);LIC=data.licences;closeModal();openLic(id);toast('🔄 Redémarrage envoyé — effet en quelques secondes')}
-  catch(e){toast(e.message,'ko')}}
+  const l=LIC.find(x=>x.id===id);const now=Date.now();
+  try{
+    // 1) canal Firebase temps réel : livraison quasi instantanée, sans cache GitHub
+    if(all)await fbPut('reload/'+id,{all:now});else{const cur=(await fbGet('reload/'+id))||{};const dev={...(cur.dev||{})};sel.forEach(d=>dev[d]=now);await fbPut('reload/'+id,{...cur,dev})}
+  }catch(e){ // Firebase indisponible : on retombe sur le fichier de licences
+    try{const {data,sha:s}=await ghGet(),x=data.licences.find(y=>y.id===id);if(x){if(all){x.reload=now;delete x.reloadDev}else{x.reloadDev={...(x.reloadDev||{})};sel.forEach(d=>x.reloadDev[d]=now)}await ghPut(data,s,'Redémarrage '+x.produit+' — '+x.email);LIC=data.licences}}
+    catch(e2){closeModal();return toast('Échec de l\'envoi : '+(e2.message||e.message),'ko')}}
+  // 2) journal (best-effort, n'empêche pas le redémarrage)
+  try{if(l){l.log=[{t:now,a:all?'Redémarrage forcé (tous les appareils)':'Redémarrage forcé ('+sel.length+' appareil'+(sel.length>1?'s':'')+')'},...(l.log||[])].slice(0,40)}}catch(e){}
+  closeModal();if($('drawer').classList.contains('on'))openLic(id);toast('🔄 Redémarrage forcé envoyé — effet en quelques secondes')}
 function aSuspend(id){const l=LIC.find(x=>x.id===id);confirmAct({ic:'⏸',col:'#f97316',title:'Suspendre la licence',sub:l.produit+' · '+l.email,btn:'⏸ Suspendre',
   points:['Le logiciel se <b>bloque chez le client</b> en quelques secondes (écran de licence).','Ses données, appareils et réglages sont <b>conservés</b>.','Vous pourrez la <b>réactiver</b> à tout moment, avec la même clé.'],
   run:()=>licAct(id,'Suspension',(d,x)=>{x.actif=false},'⏸ Licence suspendue','ko')})}

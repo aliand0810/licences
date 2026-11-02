@@ -20,6 +20,20 @@
     try{if(navigator.serviceWorker)for(const r of await navigator.serviceWorker.getRegistrations())await r.unregister()}catch(e){}
     try{document.cookie.split(';').forEach(c=>{const n=c.split('=')[0].trim();if(n)document.cookie=n+'=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/'})}catch(e){}
   }
+  // 🔄 Redémarrage forcé : vide le cache et le service worker (code à jour) SANS toucher aux données, puis recharge
+  async function hardReload(){
+    try{if(window.caches)for(const k of await caches.keys())await caches.delete(k)}catch(e){}
+    try{if(navigator.serviceWorker)for(const r of await navigator.serviceWorker.getRegistrations())await r.unregister()}catch(e){}
+    try{const u=new URL(location.href);u.searchParams.set('_r',Date.now());location.replace(u.toString())}catch(e){location.reload()}
+  }
+  // vérifie l'ordre de redémarrage (licence + canal Firebase temps réel), déclenche un seul rechargement par ordre
+  let RLFB=null;
+  async function maybeReload(rtLic,fb){let rt=rtLic||0;fb=(fb||RLFB||'').replace(/\/+$/,'');if(fb)RLFB=fb;
+    if(fb&&CURLIC){try{const rr=await (await fetch(`${fb}/reload/${CURLIC}.json?t=${Date.now()}`,{cache:'no-store'})).json();
+      if(rr){const dv=await devId();rt=Math.max(rt,+rr.all||0,(rr.dev&&+rr.dev[dv])||0)}}catch(e){}}
+    if(!rt)return false;const rk='licReload_'+PRODUIT,done=+localStorage.getItem(rk)||0;
+    if(rt>done){try{localStorage.setItem(rk,String(rt))}catch(e){}await hardReload();return true}return false}
+  let CURLIC=null;
   // 👣 Suivi de navigation (activé par licence dans Licence Pro) : page + onglet ouverts, horodatés
   let NAV=null,navLast='',navT=0;
   function navCur(){const p=location.pathname.split('/').pop()||'accueil';
@@ -57,9 +71,9 @@
       const wt=Math.max(+l.wipe||0,l.wipeDev?(+l.wipeDev[await devId()]||0):0);
       if(wt){const wk='licWiped_'+PRODUIT,done=+localStorage.getItem(wk)||0;l={...l,wipe:wt};
         if(l.wipe>done){if(get().mail){await wipeAll();try{localStorage.setItem(wk,String(l.wipe))}catch(e){}location.reload();return{ok:false,msg:'Données effacées par l\'administrateur'}}localStorage.setItem(wk,String(l.wipe))}}
-      {const rt=Math.max(+l.reload||0,l.reloadDev?(+l.reloadDev[await devId()]||0):0);
-       if(rt){const rk='licReload_'+PRODUIT,done=+localStorage.getItem(rk)||0;
-         if(rt>done){try{localStorage.setItem(rk,String(rt))}catch(e){}location.reload();return{ok:true,expire:l.expire||null,data:extra(l,d)}}}}
+      CURLIC=l.id;const _fb=(d.firebase||'').replace(/\/+$/,'');if(_fb)RLFB=_fb;
+      {const rtLic=Math.max(+l.reload||0,l.reloadDev?(+l.reloadDev[await devId()]||0):0);
+       if(await maybeReload(rtLic,_fb))return{ok:true,expire:l.expire||null,data:extra(l,d)}}
       if(!l.actif)return{ok:false,msg:'Licence révoquée'};
       if(!notExpired(l.expire))return{ok:false,msg:'Licence expirée'};
       l=pvFix(l);if(MODULE&&Array.isArray(l.modules)&&!l.modules.includes(MODULE))return{ok:false,msg:`Le module « ${MODULE} » n'est pas inclus dans votre licence`};
@@ -136,12 +150,14 @@
     if(r.ok){save(s.mail,s.key,r.expire);applyData(r.data);curExp=r.expire}else lock(r.msg);
   }
   let curExp=null;
+  let rlT=null;
   function watch(expire){
     curExp=expire;clearInterval(timer);
     timer=setInterval(()=>{if(!notExpired(curExp))return lock('Votre période d\'essai / licence a expiré');recheck()},1000);
+    clearInterval(rlT);rlT=setInterval(()=>{if(!overlay&&document.visibilityState==='visible'&&RLFB)maybeReload(0,RLFB)},12000);
   }
-  document.addEventListener('visibilitychange',()=>document.visibilityState==='visible'&&recheck(true));
-  addEventListener('focus',()=>recheck(true));
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){if(RLFB)maybeReload(0,RLFB);recheck(true)}});
+  addEventListener('focus',()=>{if(RLFB)maybeReload(0,RLFB);recheck(true)});
   addEventListener('online',()=>recheck(true));
 
 
