@@ -423,6 +423,22 @@ html[data-light] .tag{color:color-mix(in srgb,var(--sc) 75%,#000)}
 .ipc .ipck{width:20px;height:20px;flex-shrink:0;margin-right:2px}
 .btn.sm{font-size:.84rem}
 @media(max-width:640px){.ipgrid{grid-template-columns:1fr}}
+
+/* ═══ Suivi d'activité ═══ */
+.actgrp{border:1px solid var(--bd);border-radius:16px;background:var(--glass);margin-bottom:12px;overflow:hidden;animation:up .3s both}
+.actgrp>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:12px;padding:12px 14px}
+.actgrp>summary::-webkit-details-marker{display:none}
+.actgrp>summary .pi{width:40px;height:40px;font-size:1.1rem}
+.actgrp .ti{flex:1;min-width:0}.actgrp .ti b{display:block;font-size:.92rem}.actgrp .ti small{color:var(--mut);font-size:.76rem}
+.actgrp .cnt{font-weight:800;font-size:1.05rem;color:var(--a2)}
+.actgrp[open]>summary{border-bottom:1px solid var(--bd)}
+.actrows{display:flex;flex-direction:column}
+.actr{display:grid;grid-template-columns:38px 1fr auto;gap:10px;align-items:center;padding:9px 14px;border-bottom:1px solid var(--bd)}
+.actr:last-child{border-bottom:0}.actr:hover{background:var(--glass2)}
+.actr .im{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:1.05rem;background:color-mix(in srgb,var(--pc) 22%,transparent)}
+.actr b{font-size:.85rem}.actr small{display:block;color:var(--mut);font-size:.74rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.actr time{font-size:.74rem;font-weight:700;color:var(--mut);white-space:nowrap}
+.acthint{font-size:.76rem;color:var(--mut);padding:4px 2px 10px}
 </style>
 </head>
 <body>
@@ -435,6 +451,7 @@ html[data-light] .tag{color:color-mix(in srgb,var(--sc) 75%,#000)}
     <button data-v="new"><span class="ni">➕</span><span>Nouvelle licence</span></button>
     <button data-v="req"><span class="ni">📨</span><span>Demandes</span><i class="nb" id="nbReq"></i></button>
     <button data-v="notes"><span class="ni">📝</span><span>Notes</span><i class="nb" id="nbNotes"></i></button>
+    <button data-v="act"><span class="ni">📡</span><span>Activité</span></button>
     <button data-v="vault"><span class="ni">🧰</span><span>Coffre</span></button>
     <button data-v="alerts"><span class="ni">⚠️</span><span>Alertes</span><i class="nb" id="nbAl"></i></button>
     <button data-v="ip"><span class="ni">🌐</span><span>Adresses IP</span></button>
@@ -546,6 +563,18 @@ html[data-light] .tag{color:color-mix(in srgb,var(--sc) 75%,#000)}
       <div class="chips" id="nflt"><button data-f="open" class="act">À traiter</button><button data-f="due">📌 Rappels</button><button data-f="ref">🚫 Refus</button><button data-f="done">✓ Traitées</button><button data-f="all">Toutes</button></div></div>
     <div class="nbar"><button class="btn" onclick="openNote()">＋ Nouvelle note</button><button class="ghost danger" onclick="openRefuse()">🚫 Refuser une demande</button></div>
     <div id="notesList" class="notes"></div>
+  </section>
+
+  <!-- SUIVI D'ACTIVITÉ -->
+  <section id="v-act" class="view">
+    <div class="toolbar">
+      <input id="aq" placeholder="🔎 Rechercher un client, un logiciel, une page, une IP…" oninput="renderAct()">
+      <div class="chips" id="aflt"><button data-f="all" class="act">Tout</button><button data-f="today">Aujourd'hui</button><button data-f="7j">7 jours</button></div>
+      <select id="aSort" onchange="ASORT=this.value;renderAct()" style="max-width:220px"><option value="recent">⏱ Plus récent d'abord</option><option value="client">👤 Par client</option><option value="prod">📦 Par logiciel</option><option value="page">📄 Par page</option></select>
+      <select id="aProd" onchange="AFPROD=this.value;renderAct()" style="max-width:200px"><option value="">Tous les logiciels</option></select>
+    </div>
+    <div id="actKpi" class="sgrid" style="margin-bottom:14px"></div>
+    <div id="actList"></div>
   </section>
 
   <!-- COFFRE -->
@@ -702,11 +731,11 @@ function MODS(){let m;try{m=C().mods?JSON.parse(C().mods):DEF_MODS}catch(e){m=DE
 const pm=p=>PMETA[p]||['📦',PAL[Math.max(0,prods().indexOf(p))%PAL.length]];
 
 /* ── navigation ── */
-const TITLES={dash:["Vue d'ensemble","Tes licences et tes clients en un coup d'œil"],acc:['Comptes clients','Chaque client, ses licences, ses appareils et ses modules'],new:['Nouvelle licence','Crée ou modifie une licence en quelques secondes'],alerts:['Licences en trop','Appareils refusés car la limite est atteinte'],req:['Demandes','Demandes de licence et inscriptions envoyées par tes clients'],vault:['Coffre à codes','Tes clés, configurations et informations — prêtes à injecter'],notes:['Notes','Journal professionnel : appels, échanges, suivis et refus'],set:['Réglages','Connexions GitHub et Firebase'],ip:['Adresses IP','Qui se connecte, depuis quelle adresse, sur quel logiciel']};
+const TITLES={dash:["Vue d'ensemble","Tes licences et tes clients en un coup d'œil"],acc:['Comptes clients','Chaque client, ses licences, ses appareils et ses modules'],new:['Nouvelle licence','Crée ou modifie une licence en quelques secondes'],alerts:['Licences en trop','Appareils refusés car la limite est atteinte'],req:['Demandes','Demandes de licence et inscriptions envoyées par tes clients'],act:["Suivi d'activité","Les pages et logiciels consultés par tes clients, en direct"],vault:['Coffre à codes','Tes clés, configurations et informations — prêtes à injecter'],notes:['Notes','Journal professionnel : appels, échanges, suivis et refus'],set:['Réglages','Connexions GitHub et Firebase'],ip:['Adresses IP','Qui se connecte, depuis quelle adresse, sur quel logiciel']};
 function go(v){if(v!=='set'&&UNLOCKED)lockSet();if(v==='set'&&!UNLOCKED)showLock();document.querySelectorAll('.view').forEach(x=>x.classList.toggle('on',x.id==='v-'+v));
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('act',b.dataset.v===v));
   $('vTitle').textContent=TITLES[v][0];$('vSub').textContent=TITLES[v][1];
-  document.body.className='on'+v[0].toUpperCase()+v.slice(1);if(v==='ip')renderIpView();{const nb=document.querySelector(`nav button[data-v="${v}"]`);if(nb&&innerWidth<=860)nb.scrollIntoView({inline:'center',block:'nearest'})}if(v==='dash')drawCharts();window.scrollTo({top:0})}
+  document.body.className='on'+v[0].toUpperCase()+v.slice(1);if(v==='ip')renderIpView();if(v==='act')renderActView();{const nb=document.querySelector(`nav button[data-v="${v}"]`);if(nb&&innerWidth<=860)nb.scrollIntoView({inline:'center',block:'nearest'})}if(v==='dash')drawCharts();window.scrollTo({top:0})}
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>b.dataset.v==='new'?newLic():go(b.dataset.v));
 
 /* ── crypto ── */
@@ -1734,5 +1763,48 @@ function ipFind(email){go('acc');$('q').value=email;renderAcc()}
 IPNAMES=IPNAMES;
 
 document.querySelectorAll('#ipflt button').forEach(b=>b.onclick=()=>{IPFILTER=b.dataset.f;renderIp()});
+
+/* ═══════════ SUIVI D'ACTIVITÉ (global) ═══════════ */
+let ACT=[],ACTLOADED=false,ASORT='recent',AFILTER='all',AFPROD='';
+async function loadActivity(force){if(ACTLOADED&&!force)return;const suivi=LIC.filter(l=>l.suivi);ACT=[];
+  await Promise.all(suivi.map(async l=>{try{const t=await fbTok(),r=await fetch(`${FB()}/nav/${l.id}.json?auth=${t}&t=${Date.now()}`);
+    if(r.ok){const d=await r.json()||{};Object.entries(d).forEach(([dv,ev])=>Object.values(ev||{}).forEach(e=>{if(e&&e.t)ACT.push({...e,dv,lic:l})}))}}catch(e){}}));
+  ACTLOADED=true}
+async function renderActView(){$('actList').innerHTML='<div class="empty">Chargement de l\'activité…</div>';await loadFB();await Promise.all([loadIpNames(),loadActivity(true)]);
+  const prods=[...new Set(ACT.map(a=>a.lic.produit))].sort();
+  $('aProd').innerHTML='<option value="">Tous les logiciels</option>'+prods.map(p=>`<option value="${esc(p)}"${p===AFPROD?' selected':''}>${esc(p)}</option>`).join('');
+  renderAct()}
+function devNameG(l,dv){const x=(DEV[l.id]&&Object.values(DEV[l.id]).find(v=>v&&v.id===dv));if(!x)return'Appareil';const u=shortUA(x.ua);return u.ic+' '+u.txt}
+function renderAct(){const q=($('aq').value||'').toLowerCase(),now=Date.now();
+  const sd=new Date();sd.setHours(0,0,0,0);
+  let rows=ACT.filter(a=>{if(AFPROD&&a.lic.produit!==AFPROD)return false;
+    if(AFILTER==='today'&&a.t<+sd)return false;if(AFILTER==='7j'&&a.t<now-7*864e5)return false;
+    const m=navMeta(a.lic,a);return (a.lic.email+' '+a.lic.produit+' '+(m.nm||'')+' '+(a.m||'')+' '+(a.ip||'')+' '+(a.loc||'')).toLowerCase().includes(q)});
+  $('aflt').querySelectorAll('button').forEach(b=>b.classList.toggle('act',b.dataset.f===AFILTER));
+  $('aSort').value=ASORT;
+  // KPIs
+  const clients=new Set(rows.map(a=>a.lic.email)),pages=rows.length,today=rows.filter(a=>a.t>=+sd).length,prods=new Set(rows.map(a=>a.lic.produit));
+  $('actKpi').innerHTML=[['👤',clients.size,'clients actifs'],['📄',pages,'pages vues'],['📦',prods.size,'logiciels'],['🕐',today,'aujourd\'hui']].map(([ic,n,lb])=>`<div class="sg" style="--sc:var(--a2)"><span style="font-size:1.1rem">${ic}</span><div><b>${n}</b><small>${lb}</small></div></div>`).join('');
+  if(!ACT.length){$('actList').innerHTML='<div class="empty">Aucune activité pour l\'instant. Active le <b>suivi</b> dans la fiche d\'un client (👣 Parcours de navigation) : les pages qu\'il ouvre apparaîtront ici.</div>';return}
+  if(!rows.length){$('actList').innerHTML='<div class="empty">Aucune activité ne correspond aux filtres</div>';return}
+  rows.sort((a,b)=>b.t-a.t);
+  const rowHTML=a=>{const m=navMeta(a.lic,a),[ic,col]=pm(a.lic.produit),ipn=a.ip?(ipLbl(a.ip)||a.ip):'';
+    return `<div class="actr" style="--pc:${col}" onclick="openLic('${a.lic.id}')"><div class="im">${m.ic}</div>
+      <div><b>${esc(m.nm)}</b><small>👤 ${esc(a.lic.email)} · ${ic} ${esc(a.lic.produit)}${a.m&&a.m!==a.lic.produit?' · '+esc(a.m):''} · ${devNameG(a.lic,a.dv)}${ipn?' · 🌐 '+esc(ipn):''}</small></div>
+      <time>${ago(a.t)}</time></div>`};
+  let html='';
+  if(ASORT==='recent'){let last='';html='<div class="actgrp" open style="border:0;background:none"><div class="actrows">';
+    rows.forEach(a=>{const day=new Date(a.t).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});if(day!==last){last=day;html+=`</div></div><div class="actgrp" open><summary><div class="pi" style="--pc:var(--a1)">📅</div><div class="ti"><b>${day}</b></div></summary><div class="actrows">`}html+=rowHTML(a)});
+    html+='</div></div>';html=html.replace('<div class="actgrp" open style="border:0;background:none"><div class="actrows"></div></div>','')}
+  else{const G={};rows.forEach(a=>{const key=ASORT==='client'?a.lic.email:ASORT==='prod'?a.lic.produit:navMeta(a.lic,a).nm;(G[key]=G[key]||[]).push(a)});
+    const keys=Object.keys(G).sort((x,y)=>G[y].length-G[x].length);
+    html=keys.map(key=>{const arr=G[key],a0=arr[0],m=navMeta(a0.lic,a0),[ic,col]=pm(a0.lic.produit);
+      const hd=ASORT==='client'?`<div class="pi" style="--pc:var(--a1)">👤</div><div class="ti"><b>${esc(key)}</b><small>${[...new Set(arr.map(a=>a.lic.produit))].join(', ')}</small></div>`
+        :ASORT==='prod'?`<div class="pi" style="--pc:${col}">${ic}</div><div class="ti"><b>${esc(key)}</b><small>${new Set(arr.map(a=>a.lic.email)).size} client(s)</small></div>`
+        :`<div class="pi" style="--pc:${col}">${m.ic}</div><div class="ti"><b>${esc(key)}</b><small>${new Set(arr.map(a=>a.lic.email)).size} client(s) · ${[...new Set(arr.map(a=>a.lic.produit))].join(', ')}</small></div>`;
+      return `<details class="actgrp"><summary>${hd}<span class="cnt">${arr.length}</span></summary><div class="actrows">${arr.slice(0,60).map(rowHTML).join('')}</div></details>`}).join('')}
+  $('actList').innerHTML=`<div class="acthint">${rows.length} page(s) vue(s)${AFPROD?' · '+esc(AFPROD):''} · cliquez une ligne pour ouvrir la fiche client</div>`+html}
+
+document.querySelectorAll('#aflt button').forEach(b=>b.onclick=()=>{AFILTER=b.dataset.f;renderAct()});
 </script>
 </body></html>
