@@ -1922,6 +1922,7 @@ function pageOf(a){const m=navMeta(a.lic,a);let nm=m.nm||'';
   const st=satOf(a);if(!a.v&&st&&(!nm||nm===a.m||nm===a.ti||new RegExp(st.normalize('NFD').replace(/[\u0300-\u036f]/g,''),'i').test(String(a.p||'')+' '+nm.normalize('NFD').replace(/[\u0300-\u036f]/g,''))))nm='Accueil';
   if(!a.v&&(!nm||nm===a.lic.produit||nm===a.m||nm===a.ti)){const p=String(a.p||'').replace(/\.html?$/i,'').replace(/[-_]+/g,' ').trim();
     nm=!p||/^(index|accueil)$/i.test(p)||p.toLowerCase()===a.lic.produit.toLowerCase()?'Accueil':p.charAt(0).toUpperCase()+p.slice(1)}
+  if(/^accueil$/i.test(nm))nm='Accueil';
   let ic=nm==='Accueil'?'🏠':m.ic;const em=nm.match(/^(\p{Extended_Pictographic}\uFE0F?)\s*/u);if(em){ic=em[1];nm=nm.slice(em[0].length)||nm}
   return{ic,nm,col:m.col}}
 // statut lisible : « Connecté à COVO Pro › Produits » ou « COVO Pro › Satellite Fidélité › Accueil »
@@ -1930,6 +1931,7 @@ function pathHTML(a,live){const[ic]=pm(a.lic.produit),st=satOf(a),p=pageOf(a);
     :`<span class="ax-path"><span class="ax-ap${live?' main':''}">${live?'<i class="cdot"></i>Connecté à ':''}${ic} ${esc(a.lic.produit)}</span><i>›</i><span class="pg">${p.ic} ${esc(p.nm)}</span></span>`}
 const placeTxt=a=>{const st=satOf(a),p=pageOf(a);return st?`${esc(a.lic.produit)} › Satellite ${satIc(st)} ${esc(st)} › ${esc(p.nm)}`:`${esc(a.lic.produit)} › ${esc(p.nm)}`};
 // états d'un appareil : 🟢 connecté · 🟠 inactif (arrière-plan / sans action) · 🔴 déconnecté (fermé, déconnecté à distance, écran de licence) · ⛔ accès coupé
+const SRCL={pwa:'appli installée',popup:'fenêtre ouverte depuis une autre appli',tab:'onglet'};
 const OFFR={close:'application fermée',deco:'déconnecté à distance',lock:'sur l\'écran de licence',block:'accès coupé'};
 function devState(d,now){const ord=IPB['dev_'+d.dv]||(d.ip&&IPB[ipKey(d.ip)]);
   if(ord&&ord.mode==='block'&&(!ord.prods||ord.prods.includes(d.lic.produit)))return{k:'cut',lb:'⛔ Accès coupé',col:'#e11d48',why:'coupé à distance '+ago(ord.t)};
@@ -1943,17 +1945,17 @@ function actNow(){const now=Date.now(),W=30*6e4,G={};
     if(!a.ev){const lp=d.apps[ak]._lp;if(!lp||lp.t<a.t)d.apps[ak]._lp=a}});
   const RK={on:0,idle:1,off:2,cut:3};
   const L=Object.values(G).map(d=>{d.list=Object.values(d.apps).map(x=>({last:x,page:x.ev?(x._lp||x):x,bg:x.ev==='bg',off:x.ev==='off'}))
-      .sort((x,y)=>(x.off-y.off)||(x.bg-y.bg)||(y.last.t-x.last.t));d.t=Math.max(...d.list.map(x=>x.last.t));d.st=devState(d,now);return d})
+      .sort((x,y)=>(x.off-y.off)||(x.bg-y.bg)||((x.bg&&y.bg)?(!!satOf(x.page)-!!satOf(y.page)):0)||(y.last.t-x.last.t));d.t=Math.max(...d.list.map(x=>x.last.t));d.st=devState(d,now);return d})
     .sort((x,y)=>RK[x.st.k]-RK[y.st.k]||(y.t-x.t));
   const cnt={on:0,idle:0,off:0,cut:0};L.forEach(d=>cnt[d.st.k]++);
   const sum=L.length?`<div class="ax-cnt">${cnt.on?`<span style="--c:#10b981">🟢 ${cnt.on} connecté(s)</span>`:''}${cnt.idle?`<span style="--c:#f59e0b">🟠 ${cnt.idle} inactif(s)</span>`:''}${cnt.off?`<span style="--c:#ef4444">🔴 ${cnt.off} déconnecté(s)</span>`:''}${cnt.cut?`<span style="--c:#e11d48">⛔ ${cnt.cut} coupé(s)</span>`:''}</div>`:'';
-  $('aNow').innerHTML=L.length?sum+L.map(d=>{const st=d.st,main=d.list.find(x=>!x.off&&!x.bg)||d.list.find(x=>!x.off)||d.list[0],a=main.page,p=pageOf(a),[,col]=pm(d.lic.produit),ipn=d.ip?(ipLbl(d.ip)||d.ip):'';
+  $('aNow').innerHTML=L.length?sum+L.map(d=>{const st=d.st,main=d.list.find(x=>!x.off&&!x.bg)||d.list.find(x=>!x.off&&!satOf(x.page))||d.list.find(x=>!x.off)||d.list[0],a=main.page,p=pageOf(a),[,col]=pm(d.lic.produit),ipn=d.ip?(ipLbl(d.ip)||d.ip):'';
     const others=d.list.filter(x=>x!==main&&!x.off);
     return `<div class="ax-nw st-${st.k}" style="--pc:${col};--sc:${st.col}" onclick="openLic('${d.lic.id}')"><div class="im">${st.k==='on'?p.ic:st.k==='idle'?'💤':st.k==='cut'?'⛔':'🔴'}</div>
       <div style="min-width:0;flex:1"><div class="ax-nwh"><b>${esc(d.lic.email)}</b><span class="ax-pill">${st.lb}</span></div>
       ${st.k==='on'?pathHTML(a,true):`<div class="ax-last">${st.k==='off'||st.k==='cut'?'Dernière page :':'Page ouverte :'} ${placeTxt(a)}</div>`}
       <small>${esc(st.why)} · ${devNameG(d.lic,d.dv)}${ipn?' · 🌐 '+esc(ipn):''}</small>
-      ${others.length&&st.k!=='off'?`<div class="ax-oth">${others.map(o=>`<span>${o.bg?'💤':'👁'} ${placeTxt(o.page)}</span>`).join('')}</div>`:''}</div></div>`}).join('')
+      ${others.length&&st.k!=='off'?`<div class="ax-oth">${others.map(o=>`<span title="${esc(SRCL[o.last.src]||'')}">${o.bg?'💤':'👁'} ${placeTxt(o.page)}${satOf(o.page)?' — '+(o.bg?'ouvert en arrière-plan':'ouvert')+(o.last.src&&o.last.src!=='tab'?' ('+SRCL[o.last.src]+')':''):''}</span>`).join('')}</div>`:''}</div></div>`}).join('')
     :'<div class="empty sm" style="grid-column:1/-1">Aucun appareil actif ces 30 dernières minutes</div>'}
 async function ipToggleExcl(ip,on){const k=ipKey(ip);try{await fbPut('crm/ipx/'+k,on?{ip,t:Date.now()}:null);if(on)IPX[k]={ip,t:Date.now()};else delete IPX[k];
     toast(on?'🚫 '+(ipLbl(ip)||ip)+' exclue du suivi d\'activité':'✅ '+(ipLbl(ip)||ip)+' réintégrée');renderAct();if($('ipxList'))openIpx()}
