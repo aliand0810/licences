@@ -35,10 +35,17 @@
       "suivi": 1,
       "log": [
         {
+          "t": 1793593332232,
+          "a": "Redémarrage (1 appareil)"
+        },
+        {
           "t": 1793572274913,
           "a": "Suivi de navigation activé"
         }
-      ]
+      ],
+      "reloadDev": {
+        "f4821529bed7b34d4668d88f": 1793593332232
+      }
     },
     {
       "id": "4dd7a434fd4813907afaaab9fe377a11c09f02ec9317bdbefa5d9246d6ade619",
