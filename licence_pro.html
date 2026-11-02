@@ -570,7 +570,8 @@ html[data-light] .tag{color:color-mix(in srgb,var(--sc) 75%,#000)}
     <div class="toolbar">
       <input id="aq" placeholder="🔎 Rechercher un client, un logiciel, une page, une IP…" oninput="renderAct()">
       <div class="chips" id="aflt"><button data-f="all" class="act">Tout</button><button data-f="today">Aujourd'hui</button><button data-f="7j">7 jours</button></div>
-      <select id="aSort" onchange="ASORT=this.value;renderAct()" style="max-width:220px"><option value="recent">⏱ Plus récent d'abord</option><option value="client">👤 Par client</option><option value="prod">📦 Par logiciel</option><option value="page">📄 Par page</option></select>
+      <select id="aSort" onchange="ASORT=this.value;renderAct()" style="max-width:220px"><option value="recent">⏱ Plus récent d'abord</option><option value="client">👤 Par client</option><option value="prod">📦 Par logiciel</option><option value="ip">🌐 Par adresse IP</option><option value="page">📄 Par page</option></select>
+      <button class="ghost sm" onclick="openSuiviManager()">⚙️ Gérer le suivi</button>
       <select id="aProd" onchange="AFPROD=this.value;renderAct()" style="max-width:200px"><option value="">Tous les logiciels</option></select>
     </div>
     <div id="actKpi" class="sgrid" style="margin-bottom:14px"></div>
@@ -1685,10 +1686,7 @@ async function navLoad(id){const box=$('nvBox');if(!box)return;const l=LIC.find(
   const F=$('nvF');if(F)F.querySelectorAll('button').forEach(b=>b.onclick=()=>{F.querySelectorAll('button').forEach(x=>x.classList.toggle('act',x===b));document.querySelectorAll('#nvL .nvi').forEach(r=>r.hidden=!!b.dataset.d&&r.dataset.dv!==b.dataset.d);document.querySelectorAll('#nvL .nvday').forEach(h=>{let n=h.nextElementSibling,v=false;while(n&&!n.classList.contains('nvday')){if(!n.hidden)v=true;n=n.nextElementSibling}h.hidden=!v})})}
 async function navClear(id){if(!confirm('Effacer tout l\'historique de navigation de cette licence ?'))return;try{await fbPut('nav/'+id,null);toast('Historique effacé');navLoad(id)}catch(e){toast(e.message,'ko')}}
 function navToggle(id,on){licAct(id,on?'Suivi de navigation activé':'Suivi de navigation désactivé',(d,x)=>{if(on)x.suivi=1;else delete x.suivi},on?'👣 Suivi activé — démarre à la prochaine ouverture':'Suivi désactivé')}
-const _openLic2=openLic;
-openLic=function(id){_openLic2(id);const l=LIC.find(x=>x.id===id);const b=document.querySelector('#dw .dw-b');if(!l||!b)return;
-  const cc=b.querySelector('.cc');const html=`<h4>👣 Parcours de navigation</h4><div class="savBox" style="margin-bottom:10px"><label class="sw" style="margin:0;text-transform:none;letter-spacing:0;font-size:.9rem;color:var(--txt)"><input type="checkbox" ${l.suivi?'checked':''} onchange="navToggle('${id}',this.checked)"><span class="knob"></span><span><b>${l.suivi?'Suivi activé':'Suivi désactivé'}</b><small style="display:block;color:var(--mut);font-size:.76rem">Enregistre les pages et onglets ouverts par le client, avec l'heure et l'appareil. Le client en est informé une fois.</small></span></label></div><div id="nvBox"></div>`;
-  (cc?cc:b.firstElementChild).insertAdjacentHTML('afterend',html);navLoad(id)};
+// Parcours de navigation déplacé dans l'onglet « Suivi d'activité »
 
 /* ═══════════ PROTECTION ANTI-COPIE (domaines autorisés) ═══════════ */
 async function loadDomaines(){try{const d=await ghGet();if($('domBox'))$('domBox').value=(d.data.domaines||[]).join('\n')}catch(e){}}
@@ -1790,21 +1788,53 @@ function renderAct(){const q=($('aq').value||'').toLowerCase(),now=Date.now();
   rows.sort((a,b)=>b.t-a.t);
   const rowHTML=a=>{const m=navMeta(a.lic,a),[ic,col]=pm(a.lic.produit),ipn=a.ip?(ipLbl(a.ip)||a.ip):'';
     return `<div class="actr" style="--pc:${col}" onclick="openLic('${a.lic.id}')"><div class="im">${m.ic}</div>
-      <div><b>${esc(m.nm)}</b><small>👤 ${esc(a.lic.email)} · ${ic} ${esc(a.lic.produit)}${a.m&&a.m!==a.lic.produit?' · '+esc(a.m):''} · ${devNameG(a.lic,a.dv)}${ipn?' · 🌐 '+esc(ipn):''}</small></div>
+      <div><b>${esc(m.nm)}</b><small>👤 ${esc(a.lic.email)} · ${ic} ${esc(a.lic.produit)}${a.m&&a.m!==a.lic.produit?' · '+esc(a.m):''} · ${devNameG(a.lic,a.dv)}${a.ip?` · <span class="ipt cli" style="padding:2px 8px" onclick="event.stopPropagation();ipSteps('${esc(a.ip)}')">🌐 ${esc(ipn)}</span>`:''}</small></div>
       <time>${ago(a.t)}</time></div>`};
   let html='';
   if(ASORT==='recent'){let last='';html='<div class="actgrp" open style="border:0;background:none"><div class="actrows">';
     rows.forEach(a=>{const day=new Date(a.t).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});if(day!==last){last=day;html+=`</div></div><div class="actgrp" open><summary><div class="pi" style="--pc:var(--a1)">📅</div><div class="ti"><b>${day}</b></div></summary><div class="actrows">`}html+=rowHTML(a)});
     html+='</div></div>';html=html.replace('<div class="actgrp" open style="border:0;background:none"><div class="actrows"></div></div>','')}
-  else{const G={};rows.forEach(a=>{const key=ASORT==='client'?a.lic.email:ASORT==='prod'?a.lic.produit:navMeta(a.lic,a).nm;(G[key]=G[key]||[]).push(a)});
+  else{const G={};rows.forEach(a=>{const key=ASORT==='client'?a.lic.email:ASORT==='prod'?a.lic.produit:ASORT==='ip'?(a.ip||'IP inconnue'):navMeta(a.lic,a).nm;(G[key]=G[key]||[]).push(a)});
     const keys=Object.keys(G).sort((x,y)=>G[y].length-G[x].length);
     html=keys.map(key=>{const arr=G[key],a0=arr[0],m=navMeta(a0.lic,a0),[ic,col]=pm(a0.lic.produit);
       const hd=ASORT==='client'?`<div class="pi" style="--pc:var(--a1)">👤</div><div class="ti"><b>${esc(key)}</b><small>${[...new Set(arr.map(a=>a.lic.produit))].join(', ')}</small></div>`
         :ASORT==='prod'?`<div class="pi" style="--pc:${col}">${ic}</div><div class="ti"><b>${esc(key)}</b><small>${new Set(arr.map(a=>a.lic.email)).size} client(s)</small></div>`
+        :ASORT==='ip'?`<div class="pi" style="--pc:var(--a2)">${ipLbl(key)?'🏷️':'🌐'}</div><div class="ti"><b>${ipLbl(key)?esc(ipLbl(key))+' · ':''}<code style="font-family:'JetBrains Mono',monospace;font-size:.82rem">${esc(key)}</code></b><small>${new Set(arr.map(a=>a.lic.email)).size} client(s) · ${[...new Set(arr.map(a=>a.lic.produit))].join(', ')}${arr[0].loc?' · 📍 '+esc(arr[0].loc):''}</small></div>`
         :`<div class="pi" style="--pc:${col}">${m.ic}</div><div class="ti"><b>${esc(key)}</b><small>${new Set(arr.map(a=>a.lic.email)).size} client(s) · ${[...new Set(arr.map(a=>a.lic.produit))].join(', ')}</small></div>`;
-      return `<details class="actgrp"><summary>${hd}<span class="cnt">${arr.length}</span></summary><div class="actrows">${arr.slice(0,60).map(rowHTML).join('')}</div></details>`}).join('')}
+      const extra=ASORT==='ip'&&key!=='IP inconnue'?`<button class="ghost sm" style="margin-right:8px" onclick="event.stopPropagation();ipSteps('${esc(key)}')">👣 Suivi des pas</button>`:'';
+      return `<details class="actgrp"${ASORT==='ip'?' open':''}><summary>${hd}${extra}<span class="cnt">${arr.length}</span></summary><div class="actrows">${arr.slice(0,60).map(rowHTML).join('')}</div></details>`}).join('')}
   $('actList').innerHTML=`<div class="acthint">${rows.length} page(s) vue(s)${AFPROD?' · '+esc(AFPROD):''} · cliquez une ligne pour ouvrir la fiche client</div>`+html}
 
 document.querySelectorAll('#aflt button').forEach(b=>b.onclick=()=>{AFILTER=b.dataset.f;renderAct()});
+
+/* ═══════════ SUIVI DES PAS PAR ADRESSE IP ═══════════ */
+async function ipSteps(ip){const nm=ipLbl(ip);
+  openModal(`<div class="md-h"><div class="pi" style="--pc:var(--a2)">👣</div><div><h2>Suivi des pas${nm?' · '+esc(nm):''}</h2><span><code style="font-family:'JetBrains Mono',monospace">${esc(ip)}</code> — tout ce qui a été fait depuis cette adresse</span></div><button class="x" onclick="closeModal()">✕</button></div>
+    <div class="md-b" id="ipStepsBody"><div class="empty sm">Chargement…</div></div>`);
+  await loadFB();await Promise.all([loadIpNames(),loadActivity(true)]);
+  const E=ACT.filter(a=>a.ip===ip).sort((a,b)=>b.t-a.t);
+  const body=$('ipStepsBody');if(!body)return;
+  if(!E.length){body.innerHTML='<div class="empty sm">Aucune page enregistrée depuis cette adresse IP.</div>';return}
+  const clients=[...new Set(E.map(a=>a.lic.email))],prods=[...new Set(E.map(a=>a.lic.produit))];
+  const cnt={};E.forEach(a=>{const m=navMeta(a.lic,a);(cnt[m.nm]=cnt[m.nm]||{m,n:0,last:0}).n++;cnt[m.nm].last=Math.max(cnt[m.nm].last,a.t)});
+  const top=Object.values(cnt).sort((x,y)=>y.n-x.n).slice(0,8);
+  let last='';
+  body.innerHTML=`<div class="kv" style="margin-bottom:12px"><div><span>Pages vues</span><b>${E.length}</b></div><div><span>Clients</span><b>${clients.length}</b></div><div><span>Logiciels</span><b>${prods.length}</b></div><div><span>Dernière activité</span><b>${ago(E[0].t)}</b></div></div>
+    ${clients.length>1?`<div class="cf-imp" style="--ac:var(--ko)"><b>⚠ ${clients.length} clients différents</b> utilisent cette même adresse IP : ${clients.map(esc).join(', ')}.</div>`:''}
+    <h4>Pages les plus vues</h4><div class="nvtop">${top.map(x=>`<div class="nvc" style="--pc:${x.m.col}"><div class="im">${x.m.ic}</div><div><b>${esc(x.m.nm)}</b><small>${x.n}× · ${ago(x.last)}</small></div></div>`).join('')}</div>
+    <h4>Journal détaillé</h4><div class="nvl">${E.slice(0,120).map(a=>{const m=navMeta(a.lic,a),[ic]=pm(a.lic.produit),day=new Date(a.t).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});const hd=day!==last?(last=day,`<div class="nvday">${day}</div>`):'';
+      return hd+`<div class="nvi" style="--pc:${m.col}"><div class="im">${m.ic}</div><div><b>${esc(m.nm)}</b><small>👤 ${esc(a.lic.email)} · ${ic} ${esc(a.lic.produit)}${a.m&&a.m!==a.lic.produit?' · '+esc(a.m):''}</small></div><time>${new Date(a.t).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</time></div>`}).join('')}</div>
+    <div class="row" style="gap:8px;margin-top:12px"><button class="ghost sm" onclick="ipRename('${esc(ip)}').then(()=>ipSteps('${esc(ip)}'))">🏷️ ${nm?'Renommer l\'IP':'Nommer cette IP'}</button><button class="ghost sm" onclick="copyTxt('${esc(ip)}')">📋 Copier l'IP</button></div>`}
+
+/* ═══════════ GÉRER LE SUIVI (activer/désactiver par licence) ═══════════ */
+function openSuiviManager(){const rows=LIC.slice().sort((a,b)=>(b.suivi?1:0)-(a.suivi?1:0)||a.email.localeCompare(b.email));
+  openModal(`<div class="md-h"><div class="pi" style="--pc:var(--a1)">👣</div><div><h2>Gérer le suivi d'activité</h2><span>Active l'enregistrement des pages par client</span></div><button class="x" onclick="closeModal()">✕</button></div>
+    <div class="md-b"><p class="hint">Quand le suivi est actif, le logiciel du client enregistre les pages et onglets ouverts, avec l'heure, l'appareil et l'adresse IP. Le client en est informé une fois. Tout apparaît ici, dans « Suivi d'activité ».</p>
+    <div id="suiviList">${rows.map(l=>{const[ic,col]=pm(l.produit);return `<label class="dev" style="cursor:pointer;text-transform:none;letter-spacing:normal;font-size:inherit;font-weight:inherit;color:inherit;margin:0 0 6px"><input type="checkbox" ${l.suivi?'checked':''} style="width:20px;height:20px" onchange="suiviSet('${l.id}',this.checked,this)"><span class="di" style="background:color-mix(in srgb,${col} 22%,transparent)">${ic}</span><div><b>${esc(l.email)}</b><small>${esc(l.produit)} · ${l.suivi?'suivi activé':'suivi désactivé'}</small></div></label>`}).join('')||'<div class="empty sm">Aucune licence</div>'}</div></div>`)}
+async function suiviSet(id,on,el){const lab=el.closest('label').querySelector('small'),l=LIC.find(x=>x.id===id);
+  try{const {data,sha:s}=await ghGet(),x=data.licences.find(y=>y.id===id);if(!x)throw new Error('Licence introuvable');if(on)x.suivi=1;else delete x.suivi;
+    x.log=[{t:Date.now(),a:on?'Suivi de navigation activé':'Suivi de navigation désactivé'},...(x.log||[])].slice(0,40);
+    await ghPut(data,s,(on?'Suivi activé':'Suivi désactivé')+' '+x.produit+' — '+x.email);LIC=data.licences;if(lab)lab.textContent=esc(x.produit)+' · '+(on?'suivi activé':'suivi désactivé')}
+  catch(e){el.checked=!on;toast(e.message,'ko')}}
 </script>
 </body></html>
