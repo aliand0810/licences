@@ -87,6 +87,10 @@
       "ongletsNoms": null,
       "log": [
         {
+          "t": 1793642903227,
+          "a": "Suivi de navigation désactivé"
+        },
+        {
           "t": 1793642899539,
           "a": "Suivi de navigation activé"
         },
@@ -98,8 +102,7 @@
           "t": 1793572334075,
           "a": "Suivi de navigation activé"
         }
-      ],
-      "suivi": 1
+      ]
     }
   ],
   "bannis": [],
