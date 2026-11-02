@@ -524,6 +524,13 @@ html[data-light] .tag{color:color-mix(in srgb,var(--sc) 75%,#000)}
 .nc-sp{display:inline-block;width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;animation:ncS .8s linear infinite;vertical-align:-2px}@keyframes ncS{to{transform:rotate(360deg)}}
 .ghost.ok{color:var(--tok);border-color:color-mix(in srgb,var(--ok) 45%,var(--bd))}
 @media(max-width:640px){.nc-sum div{grid-template-columns:1fr;gap:2px}}
+
+.ipo{margin-bottom:14px;border-color:color-mix(in srgb,var(--warn) 40%,var(--bd))}
+.ipo-l{display:flex;flex-direction:column;gap:8px}
+.ipo-i{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 12px;border-radius:14px;border:1px solid color-mix(in srgb,var(--oc) 35%,var(--bd));background:color-mix(in srgb,var(--oc) 7%,transparent)}
+.ipo-ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:1.2rem;background:color-mix(in srgb,var(--oc) 20%,transparent);flex-shrink:0}
+.ipo-t{flex:1;min-width:200px}.ipo-t b{font-size:.9rem}.ipo-t code{font-family:'JetBrains Mono',monospace;font-size:.8rem}.ipo-t small{display:block;color:var(--mut);font-size:.76rem;margin-top:2px}
+.ipo-b{display:flex;gap:6px;flex-wrap:wrap}.ipo-b .ok{font-weight:800}
 </style>
 </head>
 <body>
@@ -661,6 +668,7 @@ html[data-light] .tag{color:color-mix(in srgb,var(--sc) 75%,#000)}
       <div class="ax-btns"><button class="ghost sm ax-live on" id="aLive" onclick="actLive(!ALIVE)" title="Actualisation automatique toutes les 30 s"><i></i>En direct</button><button class="ghost sm" onclick="renderActView()" title="Actualiser">↻</button><button class="ghost sm" id="aIpx" onclick="openIpx()">🚫 IP exclues</button><button class="ghost sm" onclick="openIpCut()">⛔ Déconnexion à distance</button><button class="ghost sm" onclick="openSuiviManager()">⚙️ Gérer le suivi</button></div>
     </div>
     <div class="ax-kpis" id="actKpi"></div>
+    <div id="aOrders"></div>
     <div class="card ax-now"><h3><span>🟢 En ce moment <small class="hint" style="margin:0 0 0 6px">où se trouve chaque client connecté</small></span></h3><div id="aNow" class="ax-nowl"></div></div>
     <div class="ax-row">
       <div class="card ax-c8"><h3><span>📈 Activité <small class="hint" id="aChartSub" style="margin:0 0 0 6px"></small></span></h3><div class="ax-cv"><canvas id="aChart"></canvas></div></div>
@@ -697,6 +705,7 @@ html[data-light] .tag{color:color-mix(in srgb,var(--sc) 75%,#000)}
       <button class="ghost sm" style="border-color:color-mix(in srgb,var(--ko) 45%,var(--bd))" onclick="openIpCut()">⛔ Déconnexion à distance</button>
       <select id="ipSort" onchange="ipSetSort(this.value)" style="max-width:220px"><option value="recent">⏱ Plus récentes d'abord</option><option value="clients">👥 Plus de clients</option><option value="hits">🔁 Plus de passages</option><option value="name">🏷️ Par nom</option><option value="loc">📍 Par ville</option><option value="ip">🔢 Par adresse IP</option></select>
     </div>
+    <div id="ipOrders"></div>
     <div id="ipList"></div>
   </section>
 
@@ -1807,6 +1816,7 @@ function ipAgg(){const M={};const add=(ip,loc,email,prod,t,ua,kind,ref)=>{if(!ip
   LIC.forEach(l=>{(Object.values(DEV[l.id]||{})).forEach(v=>{if(!v)return;add(v.lastIp||v.ip,v.lastLoc||v.loc,l.email,l.produit,v.seen||v.t,v.ua,'dev');(Array.isArray(v.hist)?v.hist:[]).forEach(h=>add(h.ip,h.loc,l.email,l.produit,h.t,v.ua,'dev'))});
     (Object.entries(EXC[l.id]||{})).forEach(([dev,v])=>{if(!v)return;add(v.ip,v.loc,l.email,l.produit,v.t,v.ua,'refus','excess/'+l.id+'/'+dev)})});
   Object.entries(IPNAV).forEach(([ip,arr])=>arr.forEach(e=>add(ip,e.loc,e.lic.email,e.lic.produit,e.t,null,'nav',e.path)));
+  Object.values(IPB||{}).forEach(b=>{if(b&&b.ip&&!b.ref&&!M[b.ip])M[b.ip]={ip:b.ip,loc:'',clients:{},prods:{},devs:new Set(),last:b.t||0,hits:0,refus:0,nav:0,refs:[]}});
   return Object.values(M)}
 function ipSortCmp(a,b){const na=ipLbl(a.ip),nb=ipLbl(b.ip);
   switch(IPSORT){case'clients':return Object.keys(b.clients).length-Object.keys(a.clients).length||b.last-a.last;
@@ -1816,7 +1826,7 @@ function ipSortCmp(a,b){const na=ipLbl(a.ip),nb=ipLbl(b.ip);
     case'loc':return (a.loc||'~~~').localeCompare(b.loc||'~~~')||b.last-a.last;
     default:return b.last-a.last}}
 async function renderIpView(){if(!ACTLOADED)loadActivity().catch(()=>{});$('ipList').innerHTML='<div class="empty">Chargement des adresses…</div>';await loadFB();await Promise.all([loadIpNames(),loadIpNav(true),loadIpBlocks()]);IPSEL={};renderIp()}
-function renderIp(){const q=($('ipq').value||'').toLowerCase();let rows=ipAgg().filter(x=>{const nm=ipLbl(x.ip),cl=Object.keys(x.clients).length;
+function renderIp(){renderOrders();const q=($('ipq').value||'').toLowerCase();let rows=ipAgg().filter(x=>{const nm=ipLbl(x.ip),cl=Object.keys(x.clients).length;
     if(IPFILTER==='cut'&&!IPB[ipKey(x.ip)])return false;if(IPFILTER==='named'&&!nm)return false;if(IPFILTER==='unnamed'&&nm)return false;if(IPFILTER==='multi'&&cl<2)return false;if(IPFILTER==='refus'&&!x.refus)return false;
     return (x.ip+' '+nm+' '+x.loc+' '+Object.keys(x.clients).join(' ')+' '+Object.keys(x.prods).join(' ')).toLowerCase().includes(q)});
   rows.sort(ipSortCmp);IPROWS=rows;
@@ -1932,7 +1942,7 @@ function renderAct(){const q=($('aq').value||'').toLowerCase(),now=Date.now(),[t
     ['','#f59e0b','🌐 Adresses IP',uniq(rows.filter(a=>a.ip),a=>a.ip),trend(uniq(rows.filter(a=>a.ip),a=>a.ip),prev&&uniq(prev.filter(a=>a.ip),a=>a.ip))],
     ['','#ec4899','🧩 Satellites',uniq(rows,a=>a.lic.produit+'|'+satOf(a)),'<div class="d">'+(rows.length?esc([...new Set(rows.map(a=>satOf(a)||a.lic.produit))].slice(0,3).join(', ')):'—')+'</div>']];
   $('actKpi').innerHTML=K.map(([c,col,l,v,d])=>`<div class="ax-k ${c}" style="--kc:${col}"><div class="l">${l}</div><div class="v">${v}</div>${d}</div>`).join('');
-  actNow();actChart(rows,t0,t1);actHeat(rows);actTops(rows);
+  renderOrders();actNow();actChart(rows,t0,t1);actHeat(rows);actTops(rows);
   // ── fil ──
   if(!ACT.length){$('actList').innerHTML='<div class="empty">Aucune activité pour l\'instant.<br>Ouvrez <b>⚙️ Gérer le suivi</b> et activez-le pour vos clients : les pages qu\'ils ouvrent apparaîtront ici en direct.</div>';return}
   if(!rows.length){$('actList').innerHTML='<div class="empty">Aucune activité sur cette période ou pour ces filtres</div>';return}
@@ -2063,7 +2073,7 @@ async function ipWrite(ip,mode,extra){const t=Date.now(),devs=ipDevs(ip).map(d=>
   const rec={ip,mode,t,prods:null,msg:null,nom:ipLbl(ip)||null,...(extra||{}),links:[...new Set([...links,...((mode==='reco'&&old&&old.links)||[])])]};
   if(old&&Array.isArray(old.links))for(const k of old.links)if(!rec.links.includes(k))await fbPut('ipblock/'+k,null);
   await fbPut('ipblock/'+ipKey(ip),rec);for(const k of rec.links)await fbPut('ipblock/'+k,{mode,t,prods:rec.prods,msg:rec.msg,ref:ipKey(ip)});IPB[ipKey(ip)]=rec;return rec}
-const ipRefresh=()=>{if($('v-ip').classList.contains('on'))renderIp();if($('v-act').classList.contains('on'))renderAct()};
+const ipRefresh=()=>{renderOrders();if($('v-ip').classList.contains('on'))renderIp();if($('v-act').classList.contains('on'))renderAct()};
 const ipErr=e=>toast(String(e.message).includes('401')?'Règles Firebase à republier (nœud « ipblock ») — voir Réglages':e.message,'ko');
 let CUTDRAFT=null;
 function doIpCut(){const sel=$('cutIp').value,ip=(sel==='__new'?$('cutIpNew').value:sel).trim();
@@ -2092,5 +2102,14 @@ function ipCutBtns(ip){const b=IPB[ipKey(ip)],q=esc(ip);if(!b)return `<button cl
   if(b.mode==='block')return `<button class="ghost sm ok" onclick="ipRestore('${q}')">✅ Rétablir l'accès</button>`;
   if(b.mode==='deco')return `<button class="ghost sm ok" onclick="ipReco('${q}')">🔄 Reconnecter</button><button class="ghost sm" onclick="ipRestore('${q}')">🧹 Clore</button>`;
   return `<button class="ghost sm" onclick="ipRestore('${q}')">🧹 Clore</button><button class="ghost sm danger" onclick="openIpCut('${q}')">⛔ Déconnecter / couper</button>`}
+
+/* ═══════════ PANNEAU « POSTES DÉCONNECTÉS / COUPÉS » ═══════════ */
+function ipOrdersHTML(){const L=Object.values(IPB||{}).filter(b=>b&&b.ip&&!b.ref).sort((a,b)=>(a.mode==='reco')-(b.mode==='reco')||b.t-a.t);if(!L.length)return'';
+  const MD={deco:['🔌','Déconnecté','#f59e0b'],block:['⛔','Accès coupé','#e11d48'],reco:['🔄','Reconnecté','#10b981']};
+  return `<div class="card ipo"><h3><span>🔌 Postes déconnectés / coupés <small class="hint" style="margin:0 0 0 6px">${L.length} ordre(s) en cours</small></span></h3><div class="ipo-l">${L.map(b=>{const[ic,lb,col]=MD[b.mode]||MD.deco,n=Array.isArray(b.links)?b.links.filter(k=>k.startsWith('dev_')).length:0;
+    return `<div class="ipo-i" style="--oc:${col}"><div class="ipo-ic">${ic}</div><div class="ipo-t"><b>${ipLbl(b.ip)?'🏷️ '+esc(ipLbl(b.ip))+' · ':''}<code>${esc(b.ip)}</code></b>
+      <small><span style="color:${col};font-weight:700">${lb}</span> ${ago(b.t)} · ${n} appareil(s) · ${b.prods?esc(b.prods.join(', ')):'tous les logiciels'}${b.msg?' · « '+esc(b.msg)+' »':''}</small></div>
+      <div class="ipo-b">${ipCutBtns(b.ip)}</div></div>`}).join('')}</div></div>`}
+function renderOrders(){const h=ipOrdersHTML();if($('ipOrders'))$('ipOrders').innerHTML=h;if($('aOrders'))$('aOrders').innerHTML=h}
 </script>
 </body></html>
