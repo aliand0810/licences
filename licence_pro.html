@@ -401,6 +401,19 @@ html[data-light] .tag{color:color-mix(in srgb,var(--sc) 75%,#000)}
 .nvi{display:grid;grid-template-columns:44px 1fr auto;gap:10px;align-items:center;padding:6px;border-radius:12px;border:1px solid var(--bd);background:var(--glass)}
 .nvi .im{width:44px;height:44px;border-radius:10px;display:grid;place-items:center;font-size:1.25rem;background:color-mix(in srgb,var(--pc) 22%,transparent)}
 .nvi b{font-size:.84rem;display:block}.nvi small{font-size:.72rem;color:var(--mut)}.nvi time{font-size:.74rem;font-weight:700;color:var(--mut)}
+
+/* ═══ Annuaire IP ═══ */
+.ipc{border:1px solid var(--bd);border-radius:18px;background:var(--glass);padding:14px 16px;margin-bottom:12px;animation:up .35s both}
+.ipc.multi{border-color:color-mix(in srgb,var(--warn) 45%,var(--bd))}
+.iph{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.ipav{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;font-size:1.3rem;flex-shrink:0;background:linear-gradient(135deg,color-mix(in srgb,var(--a1) 55%,transparent),color-mix(in srgb,var(--a2) 40%,transparent));color:#fff}
+.iph .nm{font-size:1.02rem;font-weight:800;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.iph code{font-family:'JetBrains Mono',monospace;font-size:.82rem;font-weight:700;color:var(--a2);background:var(--glass2);padding:2px 8px;border-radius:7px}
+.iph .mut{font-size:.76rem;color:var(--mut);margin-top:2px}
+.ipb{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.ipt{font-size:.74rem;font-weight:600;padding:5px 10px;border-radius:99px;background:var(--glass2);border:1px solid var(--bd);display:inline-flex;align-items:center;gap:5px}
+.ipt.cli{cursor:pointer}.ipt.cli:hover{border-color:var(--a2)}
+.ipx{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
 </style>
 </head>
 <body>
@@ -415,6 +428,7 @@ html[data-light] .tag{color:color-mix(in srgb,var(--sc) 75%,#000)}
     <button data-v="notes"><span class="ni">📝</span><span>Notes</span><i class="nb" id="nbNotes"></i></button>
     <button data-v="vault"><span class="ni">🧰</span><span>Coffre</span></button>
     <button data-v="alerts"><span class="ni">⚠️</span><span>Alertes</span><i class="nb" id="nbAl"></i></button>
+    <button data-v="ip"><span class="ni">🌐</span><span>Adresses IP</span></button>
     <button data-v="set"><span class="ni">⚙️</span><span>Réglages</span></button>
   </nav>
   <div class="conn"><div><span class="dot" id="dGh"></span><span id="tGh">GitHub non configuré</span></div><div><span class="dot" id="dFb"></span><span id="tFb">Firebase non connecté</span></div></div>
@@ -536,6 +550,15 @@ html[data-light] .tag{color:color-mix(in srgb,var(--sc) 75%,#000)}
   <!-- ALERTES -->
   <section id="v-alerts" class="view">
     <div class="card"><h3>⚠️ Appareils refusés (licence en trop)</h3><p class="hint">Un code utilisé sur plus d'appareils que prévu est bloqué automatiquement et apparaît ici. Tu peux autoriser un appareil de plus ou ignorer la tentative.</p><div id="alList"></div></div>
+  </section>
+
+  <!-- ADRESSES IP -->
+  <section id="v-ip" class="view">
+    <div class="toolbar">
+      <input id="ipq" placeholder="🔎 Rechercher une IP, un nom, un client, une ville…" oninput="renderIp()">
+      <div class="chips" id="ipflt"><button data-f="all" class="act">Toutes</button><button data-f="named">Nommées</button><button data-f="multi">Plusieurs clients</button></div>
+    </div>
+    <div id="ipList"></div>
   </section>
 
   <!-- RÉGLAGES -->
@@ -660,6 +683,7 @@ function mergeTabs(cat){TABCAT=cat||{};TABS_DEF=JSON.parse(JSON.stringify(TABS_B
 let GDEF={};
 const GCID_RE=/^[\w.-]+\.apps\.googleusercontent\.com$/i;
 const C=()=>{try{return JSON.parse(localStorage.getItem('licCfg')||'{}')}catch(e){return{}}};
+let IPNAMES={},IPFILTER='all',IPNAV={},IPNAVLOADED=false;
 let LIC=[],BAN=[],DEV={},EXC={},EXCN=0,FILTER='all',PER=30,EDIT=null,KEEP=false,PROD='',DEVN=0,LASTID=null,charts={},FBT=null,FBOK=false;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function toast(t,c='ok'){const e=$('toast');e.textContent=t;e.className='toast show '+c;clearTimeout(e._t);e._t=setTimeout(()=>e.className='toast',3200)}
@@ -668,11 +692,11 @@ function MODS(){let m;try{m=C().mods?JSON.parse(C().mods):DEF_MODS}catch(e){m=DE
 const pm=p=>PMETA[p]||['📦',PAL[Math.max(0,prods().indexOf(p))%PAL.length]];
 
 /* ── navigation ── */
-const TITLES={dash:["Vue d'ensemble","Tes licences et tes clients en un coup d'œil"],acc:['Comptes clients','Chaque client, ses licences, ses appareils et ses modules'],new:['Nouvelle licence','Crée ou modifie une licence en quelques secondes'],alerts:['Licences en trop','Appareils refusés car la limite est atteinte'],req:['Demandes','Demandes de licence et inscriptions envoyées par tes clients'],vault:['Coffre à codes','Tes clés, configurations et informations — prêtes à injecter'],notes:['Notes','Journal professionnel : appels, échanges, suivis et refus'],set:['Réglages','Connexions GitHub et Firebase']};
+const TITLES={dash:["Vue d'ensemble","Tes licences et tes clients en un coup d'œil"],acc:['Comptes clients','Chaque client, ses licences, ses appareils et ses modules'],new:['Nouvelle licence','Crée ou modifie une licence en quelques secondes'],alerts:['Licences en trop','Appareils refusés car la limite est atteinte'],req:['Demandes','Demandes de licence et inscriptions envoyées par tes clients'],vault:['Coffre à codes','Tes clés, configurations et informations — prêtes à injecter'],notes:['Notes','Journal professionnel : appels, échanges, suivis et refus'],set:['Réglages','Connexions GitHub et Firebase'],ip:['Adresses IP','Qui se connecte, depuis quelle adresse, sur quel logiciel']};
 function go(v){if(v!=='set'&&UNLOCKED)lockSet();if(v==='set'&&!UNLOCKED)showLock();document.querySelectorAll('.view').forEach(x=>x.classList.toggle('on',x.id==='v-'+v));
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('act',b.dataset.v===v));
   $('vTitle').textContent=TITLES[v][0];$('vSub').textContent=TITLES[v][1];
-  document.body.className='on'+v[0].toUpperCase()+v.slice(1);{const nb=document.querySelector(`nav button[data-v="${v}"]`);if(nb&&innerWidth<=860)nb.scrollIntoView({inline:'center',block:'nearest'})}if(v==='dash')drawCharts();window.scrollTo({top:0})}
+  document.body.className='on'+v[0].toUpperCase()+v.slice(1);if(v==='ip')renderIpView();{const nb=document.querySelector(`nav button[data-v="${v}"]`);if(nb&&innerWidth<=860)nb.scrollIntoView({inline:'center',block:'nearest'})}if(v==='dash')drawCharts();window.scrollTo({top:0})}
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>b.dataset.v==='new'?newLic():go(b.dataset.v));
 
 /* ── crypto ── */
@@ -712,7 +736,7 @@ async function fbPut(path,val){const t=await fbTok();const r=await fetch(`${FB()
 async function fbGet(path){try{const r=await fetch(`${FB()}/${path}.json?t=${Date.now()}`);return r.ok?await r.json():null}catch(e){return null}}
 let RULES_OK=true;
 async function fbRaw(path){try{const r=await fetch(`${FB()}/${path}.json?t=${Date.now()}`);return{ok:r.ok,status:r.status,j:r.ok?await r.json():null}}catch(e){return{ok:false,status:0,j:null}}}
-async function loadFB(){const lim=LIC.filter(l=>l.maxDevices);const D={},E={};let denied=false;
+async function loadFB(){try{if(!Object.keys(IPNAMES).length)await loadIpNames()}catch(e){}const lim=LIC.filter(l=>l.maxDevices);const D={},E={};let denied=false;
   await Promise.all(lim.map(async l=>{const[d,e]=await Promise.all([fbRaw('devices/'+l.id),fbRaw('excess/'+l.id)]);
     if(d.j)D[l.id]=d.j;if(e.j)E[l.id]=e.j;if(e.status===401||d.status===401)denied=true}));
   DEV=D;EXC=E;RULES_OK=!denied;renderAll()}
@@ -801,7 +825,7 @@ document.querySelectorAll('#flt button').forEach(b=>b.onclick=()=>{document.quer
 function closeDrawer(){$('drawer').classList.remove('on')}
 document.addEventListener('keydown',e=>e.key==='Escape'&&closeDrawer());
 const ago=t=>{const m=Math.round((Date.now()-t)/6e4);return m<1?'à l\'instant':m<60?'il y a '+m+' min':m<1440?'il y a '+Math.round(m/60)+' h':'le '+new Date(t).toLocaleDateString('fr-FR')};
-const ipLine=(ip,loc,v)=>ip?`🌐 <b class="ip" onclick="event.stopPropagation();copyTxt('${esc(ip)}')" title="Copier l'adresse IP">${esc(ip)}</b>${loc?' · 📍 '+esc(loc):''}`:v&&('ip' in v||'lastIp' in v)?'🌐 IP masquée (bloqueur de publicité ou VPN côté client)':'🕓 IP pas encore relevée — elle s\'enregistrera à la prochaine ouverture du logiciel';
+const ipLine=(ip,loc,v)=>ip?`🌐 <b class="ip" onclick="event.stopPropagation();copyTxt('${esc(ip)}')" title="Copier l'adresse IP">${esc(ip)}</b>${(typeof ipLbl==='function'&&ipLbl(ip))?` <span class="pill" style="padding:2px 8px">🏷️ ${esc(ipLbl(ip))}</span>`:''}${loc?' · 📍 '+esc(loc):''}`:v&&('ip' in v||'lastIp' in v)?'🌐 IP masquée (bloqueur de publicité ou VPN côté client)':'🕓 IP pas encore relevée — elle s\'enregistrera à la prochaine ouverture du logiciel';
 function histHTML(v){const h=Array.isArray(v.hist)?v.hist:[];if(h.length<2)return'';
   return `<details class="hist"><summary>Historique des connexions (${h.length})</summary>${h.map(x=>`<div><span>${fmtD(new Date(x.t))}</span><span>${x.ip?esc(x.ip):'—'}${x.loc?' · '+esc(x.loc):''}</span></div>`).join('')}</details>`}
 function openLic(id){const l=LIC.find(x=>x.id===id);if(!l)return;const[s,c]=status(l),[ic,col]=pm(l.produit),devs=devList(id),ex=excList(id),all=MODS()[l.produit];
@@ -1612,5 +1636,41 @@ async function saveDomaines(){const b=$('domSave');b.disabled=true;b.textContent
     await ghPut(data,s,'Domaines autorisés ('+list.length+')');
     $('domMsg').innerHTML=list.length?'🛡️ Protection active sur : <b>'+list.map(esc).join('</b>, <b>')+'</b>':'Aucune restriction de domaine.';toast('🛡️ Protection anti-copie enregistrée')}
   catch(e){toast(e.message,'ko')}finally{b.disabled=false;b.textContent='💾 Enregistrer'}}
+
+/* ═══════════ ANNUAIRE DES ADRESSES IP ═══════════ */
+const ipKey=ip=>'ip_'+String(ip).replace(/[.:]/g,'_').replace(/[^\w]/g,'');
+async function loadIpNames(){try{const t=await fbTok(),r=await fetch(`${FB()}/crm/ips.json?auth=${t}&t=${Date.now()}`);if(r.ok)IPNAMES=await r.json()||{}}catch(e){}}
+// agrège toutes les adresses IP vues : appareils, refus, et navigation
+async function loadIpNav(){if(IPNAVLOADED)return;const suivi=LIC.filter(l=>l.suivi);IPNAV={};
+  await Promise.all(suivi.map(async l=>{try{const t=await fbTok(),r=await fetch(`${FB()}/nav/${l.id}.json?auth=${t}&t=${Date.now()}`);if(r.ok){const d=await r.json()||{};Object.values(d).forEach(ev=>Object.values(ev||{}).forEach(e=>{if(e&&e.ip){(IPNAV[e.ip]=IPNAV[e.ip]||[]).push({...e,lic:l})}}))}}catch(e){}}));IPNAVLOADED=true}
+function ipAgg(){const M={};const add=(ip,loc,email,prod,t,ua,kind)=>{if(!ip)return;const k=M[ip]=M[ip]||{ip,loc:'',clients:{},prods:{},devs:new Set(),last:0,hits:0,refus:0};
+    if(loc&&!k.loc)k.loc=loc;if(email)k.clients[email]=(k.clients[email]||0)+1;if(prod)k.prods[prod]=(k.prods[prod]||0)+1;if(t&&t>k.last)k.last=t;k.hits++;if(kind==='refus')k.refus++;if(ua)k.devs.add(shortUA(ua).txt)};
+  LIC.forEach(l=>{(Object.values(DEV[l.id]||{})).forEach(v=>{if(!v)return;add(v.lastIp||v.ip,v.lastLoc||v.loc,l.email,l.produit,v.seen||v.t,v.ua,'dev');(Array.isArray(v.hist)?v.hist:[]).forEach(h=>add(h.ip,h.loc,l.email,l.produit,h.t,v.ua,'dev'))});
+    (Object.values(EXC[l.id]||{})).forEach(v=>{if(!v)return;add(v.ip,v.loc,l.email,l.produit,v.t,v.ua,'refus')})});
+  Object.entries(IPNAV).forEach(([ip,arr])=>arr.forEach(e=>add(ip,e.loc,e.lic.email,e.lic.produit,e.t,null,'nav')));
+  return Object.values(M).sort((a,b)=>b.last-a.last)}
+async function renderIpView(){$('ipList').innerHTML='<div class="empty">Chargement des adresses…</div>';await Promise.all([loadIpNames(),loadIpNav(),loadFB()]);renderIp()}
+function renderIp(){const q=($('ipq').value||'').toLowerCase(),all=ipAgg();
+  const rows=all.filter(x=>{const nm=ipLbl(x.ip);const cl=Object.keys(x.clients).length;
+    if(IPFILTER==='named'&&!nm)return false;if(IPFILTER==='multi'&&cl<2)return false;
+    return (x.ip+' '+nm+' '+x.loc+' '+Object.keys(x.clients).join(' ')+' '+Object.keys(x.prods).join(' ')).toLowerCase().includes(q)});
+  $('ipflt').querySelectorAll('button').forEach(b=>b.classList.toggle('act',b.dataset.f===IPFILTER));
+  if(!all.length){$('ipList').innerHTML='<div class="empty">Aucune adresse IP relevée pour l\'instant. Les IP s\'enregistrent quand un client ouvre un logiciel (licence à appareils limités, ou suivi de navigation activé).</div>';return}
+  $('ipList').innerHTML=rows.length?rows.map(x=>{const nm=ipLbl(x.ip),cl=Object.entries(x.clients).sort((a,b)=>b[1]-a[1]),pr=Object.entries(x.prods).sort((a,b)=>b[1]-a[1]),multi=cl.length>1;
+    return `<div class="ipc${multi?' multi':''}"><div class="iph"><div class="ipav">${nm?'🏷️':'🌐'}</div>
+      <div style="flex:1;min-width:160px"><div class="nm">${nm?esc(nm)+' ':''}<code>${esc(x.ip)}</code>${multi?`<span class="pill red">${cl.length} clients</span>`:''}</div>
+        <div class="mut">${x.loc?'📍 '+esc(x.loc)+' · ':''}${[...x.devs].slice(0,3).map(esc).join(', ')||'appareil inconnu'} · vue ${ago(x.last)}${x.refus?` · ⚠ ${x.refus} refus`:''}</div></div></div>
+      <div class="ipb">${cl.map(([e,n])=>`<span class="ipt cli" onclick="ipFind('${esc(e)}')">👤 ${esc(e)}${n>1?' ·'+n:''}</span>`).join('')}</div>
+      <div class="ipb">${pr.map(([p,n])=>{const[ic]=pm(p);return `<span class="ipt">${ic} ${esc(p)}</span>`}).join('')}</div>
+      <div class="ipx"><button class="ghost sm" onclick="ipRename('${esc(x.ip)}')">🏷️ ${nm?'Renommer':'Nommer cette IP'}</button><button class="ghost sm" onclick="copyTxt('${esc(x.ip)}')">📋 Copier l'IP</button>${nm?`<button class="ghost sm danger" onclick="ipRename('${esc(x.ip)}','')">Retirer le nom</button>`:''}</div></div>`}).join('')
+    :'<div class="empty">Aucune adresse ne correspond à la recherche</div>'}
+async function ipRename(ip,force){const cur=IPNAMES[ipKey(ip)]||'';let nm=force!==undefined?force:prompt('Nom de cette adresse IP ('+ip+')\nEx. « Boutique Lyon », « Domicile Marie », « Wifi entrepôt » :',cur);
+  if(nm===null)return;nm=nm.trim().slice(0,60);
+  try{await fbPut('crm/ips/'+ipKey(ip),nm?{ip,nom:nm,t:Date.now()}:null);if(nm)IPNAMES[ipKey(ip)]={ip,nom:nm};else delete IPNAMES[ipKey(ip)];renderIp();toast(nm?'🏷️ IP nommée « '+nm+' »':'Nom retiré')}
+  catch(e){toast(e.message.includes('401')?'Règles Firebase à republier (nœud « crm ») — voir Réglages':e.message,'ko')}}
+// lecture d'un nom : utilisée partout où une IP s'affiche
+function ipLbl(ip){const n=IPNAMES[ipKey(ip)];return n&&n.nom?n.nom:''}
+function ipFind(email){go('acc');$('q').value=email;renderAcc()}
+IPNAMES=IPNAMES;
 </script>
 </body></html>

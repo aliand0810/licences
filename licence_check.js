@@ -29,7 +29,7 @@
   function navRec(v,n){if(!NAV)return;const c=navCur();if(v){c.v=v;c.n=n||c.n}
     c.n=String(c.n||(c.v?tName(c.v):'')||document.title||c.p).replace(/\s+/g,' ').slice(0,50);c.v=String(c.v||'').slice(0,40);
     const k=c.p+'|'+c.v+'|'+c.h;if(k===navLast&&Date.now()-navT<6e4)return;navLast=k;navT=Date.now();
-    devId().then(dv=>fetch(`${NAV.fb}/nav/${NAV.id}/${dv}.json`,{method:'POST',keepalive:true,body:JSON.stringify({t:Date.now(),p:c.p.slice(0,60),v:c.v,n:c.n,h:c.h,m:MODULE||PRODUIT,ti:(document.title||'').slice(0,60)})})).catch(()=>{})}
+    Promise.all([devId(),netInfo().catch(()=>({}))]).then(([dv,ni])=>fetch(`${NAV.fb}/nav/${NAV.id}/${dv}.json`,{method:'POST',keepalive:true,body:JSON.stringify({t:Date.now(),p:c.p.slice(0,60),v:c.v,n:c.n,h:c.h,m:MODULE||PRODUIT,ti:(document.title||'').slice(0,60),ip:ni.ip||'',loc:ni.loc||''})})).catch(()=>{})}
   function navTrack(cfg){if(!cfg||!cfg.fb||NAV)return;NAV=cfg;
     if(!localStorage.getItem('licNavInfo_'+PRODUIT)){localStorage.setItem('licNavInfo_'+PRODUIT,'1');try{licToast('ℹ️ Les pages consultées sont enregistrées pour l\'assistance')}catch(e){}}
     document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[onclick],[data-tab],[data-view],a[href^="#"]');if(!b)return;
