@@ -34,6 +34,10 @@
       "ongletsNoms": null,
       "log": [
         {
+          "t": 1793642901855,
+          "a": "Suivi de navigation désactivé"
+        },
+        {
           "t": 1793620029449,
           "a": "Suivi de navigation activé"
         },
@@ -61,8 +65,7 @@
       "reloadDev": {
         "f4821529bed7b34d4668d88f": 1793593531496,
         "a1ecac686dea2902cffcc53a": 1793593531496
-      },
-      "suivi": 1
+      }
     },
     {
       "id": "4dd7a434fd4813907afaaab9fe377a11c09f02ec9317bdbefa5d9246d6ade619",
