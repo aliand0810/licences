@@ -443,7 +443,7 @@ html[data-light] .tag{color:color-mix(in srgb,var(--sc) 75%,#000)}
 /* ═══ Activité : tableau de bord dynamique ═══ */
 .ax-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:12px;margin-bottom:14px}.ax-bar .ax-q{flex:1 1 260px;min-width:0}.ax-bar select{flex:0 1 190px;width:auto}.ax-bar button{white-space:nowrap}
 .ax-bar .seg{flex-wrap:nowrap}.ax-bar select{padding:10px 12px}
-.ax-btns{display:flex;gap:6px;justify-content:flex-end}
+.ax-btns{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
 .ax-live{display:inline-flex;align-items:center;gap:7px}.ax-live i{width:9px;height:9px;border-radius:50%;background:var(--mut)}
 .ax-live.on{border-color:color-mix(in srgb,var(--ok) 50%,var(--bd));color:var(--tok)}.ax-live.on i{background:var(--ok);animation:axPulse 1.6s infinite}
 @keyframes axPulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--ok) 60%,transparent)}70%{box-shadow:0 0 0 8px transparent}100%{box-shadow:0 0 0 0 transparent}}
@@ -486,6 +486,22 @@ html[data-light] .tag{color:color-mix(in srgb,var(--sc) 75%,#000)}
 @media(max-width:1100px){.ax-row,.ax-main{grid-template-columns:1fr}.ax-side{position:static;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}}
 @media(max-width:640px){.ax-bar{padding:10px}.ax-bar .seg{overflow-x:auto;flex:1 1 100%}.ax-bar select{flex:1 1 45%}.ax-btns{flex:1 1 100%}.ax-kpis{grid-template-columns:repeat(2,1fr);gap:10px}.ax-k .v{font-size:1.45rem}.ax-cv{height:190px}
  .ax-heat{grid-template-columns:24px repeat(24,minmax(9px,1fr));overflow-x:auto}.actr{grid-template-columns:4px 34px 1fr auto;gap:8px}.actr time small{display:none}.ax-k.live{grid-column:1/-1}.ax-head span:last-child{display:none}.ax-side{grid-template-columns:1fr}}
+
+.ax-path{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin:3px 0 2px;font-size:.74rem;font-weight:600}
+.ax-path>span{padding:2px 8px;border-radius:99px;background:var(--glass2);border:1px solid var(--bd);white-space:nowrap}
+.ax-path .sat{background:color-mix(in srgb,var(--a1) 16%,transparent);border-color:color-mix(in srgb,var(--a1) 35%,var(--bd))}
+.ax-path .sat.main{background:var(--glass2);border-color:var(--bd);color:var(--mut);font-weight:500}
+.ax-path .pg{background:color-mix(in srgb,var(--a2) 16%,transparent);border-color:color-mix(in srgb,var(--a2) 35%,var(--bd))}
+.ax-path i{font-style:normal;color:var(--mut)}
+.ax-now{margin-bottom:14px}
+.ax-nowl{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+.ax-nw{display:flex;gap:12px;align-items:flex-start;padding:12px;border-radius:14px;border:1px solid var(--bd);background:var(--glass);cursor:pointer;position:relative}
+.ax-nw:hover{border-color:var(--a2)}
+.ax-nw .dot{position:absolute;top:12px;right:12px;width:10px;height:10px;border-radius:50%;background:var(--warn)}.ax-nw .dot.on{background:var(--ok);animation:axPulse 1.6s infinite}
+.ax-nw .im{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:1.3rem;flex-shrink:0;background:color-mix(in srgb,var(--pc) 22%,transparent)}
+.ax-nw b{font-size:.88rem;display:block;padding-right:16px}.ax-nw small{font-size:.74rem;color:var(--mut);display:block}
+.ax-x{border:0;background:none;color:var(--mut);font-size:.8rem;padding:2px 6px;border-radius:6px;cursor:pointer}.ax-x:hover{color:var(--tko);background:color-mix(in srgb,var(--ko) 12%,transparent)}
+.ax-t{grid-template-columns:28px 1fr auto auto}
 </style>
 </head>
 <body>
@@ -618,10 +634,12 @@ html[data-light] .tag{color:color-mix(in srgb,var(--sc) 75%,#000)}
       <input id="aq" class="ax-q" placeholder="🔎 Client, logiciel, page, IP, ville…" oninput="renderAct()">
       <div class="seg ax-per" id="aflt"><button data-f="today">Aujourd'hui</button><button data-f="24h">24 h</button><button data-f="7j" class="act">7 j</button><button data-f="30j">30 j</button><button data-f="all">Tout</button></div>
       <select id="aProd" onchange="AFPROD=this.value;renderAct()"><option value="">Tous les logiciels</option></select>
-      <select id="aSort" onchange="ASORT=this.value;ALIM=80;renderAct()"><option value="recent">⏱ Fil chronologique</option><option value="ip">🌐 Par adresse IP</option><option value="client">👤 Par client</option><option value="prod">📦 Par logiciel</option><option value="page">📄 Par page</option></select>
-      <div class="ax-btns"><button class="ghost sm ax-live on" id="aLive" onclick="actLive(!ALIVE)" title="Actualisation automatique toutes les 30 s"><i></i>En direct</button><button class="ghost sm" onclick="renderActView()" title="Actualiser">↻</button><button class="ghost sm" onclick="openSuiviManager()">⚙️ Gérer le suivi</button></div>
+      <select id="aSat" onchange="ASAT=this.value;renderAct()"><option value="">Tous les satellites</option></select>
+      <select id="aSort" onchange="ASORT=this.value;ALIM=80;renderAct()"><option value="recent">⏱ Fil chronologique</option><option value="sat">🧩 Par satellite</option><option value="ip">🌐 Par adresse IP</option><option value="client">👤 Par client</option><option value="prod">📦 Par logiciel</option><option value="page">📄 Par page</option></select>
+      <div class="ax-btns"><button class="ghost sm ax-live on" id="aLive" onclick="actLive(!ALIVE)" title="Actualisation automatique toutes les 30 s"><i></i>En direct</button><button class="ghost sm" onclick="renderActView()" title="Actualiser">↻</button><button class="ghost sm" id="aIpx" onclick="openIpx()">🚫 IP exclues</button><button class="ghost sm" onclick="openSuiviManager()">⚙️ Gérer le suivi</button></div>
     </div>
     <div class="ax-kpis" id="actKpi"></div>
+    <div class="card ax-now"><h3><span>🟢 En ce moment <small class="hint" style="margin:0 0 0 6px">où se trouve chaque client connecté</small></span></h3><div id="aNow" class="ax-nowl"></div></div>
     <div class="ax-row">
       <div class="card ax-c8"><h3><span>📈 Activité <small class="hint" id="aChartSub" style="margin:0 0 0 6px"></small></span></h3><div class="ax-cv"><canvas id="aChart"></canvas></div></div>
       <div class="card ax-c4"><h3>🔥 Heures de pointe</h3><div id="aHeat" class="ax-heat"></div><div class="ax-hleg"><span>moins</span><i></i><span>plus</span></div><div id="aPeak" class="ax-peak"></div></div>
@@ -1827,56 +1845,89 @@ async function loadActivity(force){if(ACTLOADED&&!force)return;const suivi=LIC.f
     if(r.ok){const d=await r.json()||{};Object.entries(d).forEach(([dv,ev])=>Object.values(ev||{}).forEach(e=>{if(e&&e.t)ACT.push({...e,dv,lic:l})}))}}catch(e){}}));
   ACTLOADED=true}
 let ALIVE=true,ALIVET=null,ALIM=80,ASEEN=null;
-async function renderActView(){if(!ACT.length)$('actList').innerHTML='<div class="empty">Chargement de l\'activité…</div>';await loadFB();await Promise.all([loadIpNames(),loadActivity(true)]);
+async function renderActView(){if(!ACT.length)$('actList').innerHTML='<div class="empty">Chargement de l\'activité…</div>';await loadFB();await Promise.all([loadIpNames(),loadIpx(),loadActivity(true)]);
+  const sats=[...new Set(ACT.map(a=>satOf(a)).filter(Boolean))].sort();
+  $('aSat').innerHTML='<option value="">Tous les satellites</option><option value="__main">Appli principale</option>'+sats.map(x=>`<option value="${esc(x)}"${x===ASAT?' selected':''}>${satIc(x)} ${esc(x)}</option>`).join('');if(ASAT)$('aSat').value=ASAT;
   const prods=[...new Set(ACT.map(a=>a.lic.produit))].sort();
   $('aProd').innerHTML='<option value="">Tous les logiciels</option>'+prods.map(p=>`<option value="${esc(p)}"${p===AFPROD?' selected':''}>${esc(p)}</option>`).join('');
   renderAct();actLive(ALIVE)}
 function actLive(on){ALIVE=on;const b=$('aLive');if(b){b.classList.toggle('on',on);b.lastChild.textContent=on?'En direct':'En pause'}
   clearInterval(ALIVET);if(on)ALIVET=setInterval(async()=>{if(!$('v-act').classList.contains('on')||document.hidden)return;await loadActivity(true);renderAct()},30000)}
 function devNameG(l,dv){const x=(DEV[l.id]&&Object.values(DEV[l.id]).find(v=>v&&v.id===dv));if(!x)return'Appareil';const u=shortUA(x.ua);return u.ic+' '+u.txt}
+let IPX={},ASAT='';
+const ipExcl=ip=>!!(ip&&IPX[ipKey(ip)]);
+async function loadIpx(){try{const t=await fbTok(),r=await fetch(`${FB()}/crm/ipx.json?auth=${t}&t=${Date.now()}`);if(r.ok)IPX=await r.json()||{}}catch(e){}}
+const satOf=a=>(a.m&&a.m!==a.lic.produit)?a.m:'';
+const satIc=n=>MICON[n]||'🧩';
+function pageOf(a){const m=navMeta(a.lic,a);let nm=m.nm||'';
+  if(!a.v&&(!nm||nm===a.lic.produit||nm===a.m||nm===a.ti)){const p=String(a.p||'').replace(/\.html?$/i,'').replace(/[-_]+/g,' ').trim();
+    nm=!p||/^(index|accueil)$/i.test(p)||p.toLowerCase()===a.lic.produit.toLowerCase()?'Accueil':p.charAt(0).toUpperCase()+p.slice(1)}
+  return{ic:nm==='Accueil'?'🏠':m.ic,nm,col:m.col}}
+function pathHTML(a){const[ic]=pm(a.lic.produit),st=satOf(a),p=pageOf(a);
+  return `<span class="ax-path"><span>${ic} ${esc(a.lic.produit)}</span><i>›</i>${st?`<span class="sat">${satIc(st)} ${esc(st)}</span>`:'<span class="sat main">Appli principale</span>'}<i>›</i><span class="pg">${p.ic} ${esc(p.nm)}</span></span>`}
+function actNow(){const now=Date.now(),last={};
+  ACT.forEach(a=>{if(ipExcl(a.ip)||(AFPROD&&a.lic.produit!==AFPROD)||now-a.t>15*6e4)return;const k=a.lic.id+'|'+a.dv;if(!last[k]||last[k].t<a.t)last[k]=a});
+  const L=Object.values(last).sort((x,y)=>y.t-x.t);
+  $('aNow').innerHTML=L.length?L.map(a=>{const p=pageOf(a),[,col]=pm(a.lic.produit),on=now-a.t<5*6e4,ipn=a.ip?(ipLbl(a.ip)||a.ip):'';
+    return `<div class="ax-nw" style="--pc:${col}" onclick="openLic('${a.lic.id}')"><span class="dot${on?' on':''}" title="${on?'Actif':'Inactif depuis plus de 5 min'}"></span><div class="im">${p.ic}</div>
+      <div style="min-width:0"><b>${esc(a.lic.email)}</b>${pathHTML(a)}<small>${devNameG(a.lic,a.dv)}${ipn?' · 🌐 '+esc(ipn):''} · depuis ${ago(a.t).replace('il y a ','')}</small></div></div>`}).join('')
+    :'<div class="empty sm" style="grid-column:1/-1">Personne n\'est connecté en ce moment (aucune page ouverte ces 15 dernières minutes)</div>'}
+async function ipToggleExcl(ip,on){const k=ipKey(ip);try{await fbPut('crm/ipx/'+k,on?{ip,t:Date.now()}:null);if(on)IPX[k]={ip,t:Date.now()};else delete IPX[k];
+    toast(on?'🚫 '+(ipLbl(ip)||ip)+' exclue du suivi d\'activité':'✅ '+(ipLbl(ip)||ip)+' réintégrée');renderAct();if($('ipxList'))openIpx()}
+  catch(e){toast(String(e.message).includes('401')?'Règles Firebase à republier (nœud « crm ») — voir Réglages':e.message,'ko')}}
+function openIpx(){const L=Object.values(IPX).filter(x=>x&&x.ip).sort((a,b)=>b.t-a.t);const known=[...new Set(ACT.map(a=>a.ip).filter(ip=>ip&&!ipExcl(ip)))];
+  openModal(`<div class="md-h"><div class="pi" style="--pc:var(--ko)">🚫</div><div><h2>Adresses IP exclues</h2><span>Leurs pages n'apparaissent plus dans « Suivi d'activité »</span></div><button class="x" onclick="closeModal()">✕</button></div>
+  <div class="md-b"><p class="hint">Pratique pour masquer vos propres connexions (bureau, domicile) ou un poste de test. Les données ne sont pas supprimées : réintégrez l'IP pour les revoir.</p>
+    <div class="row" style="display:flex;gap:8px;margin-bottom:10px"><input id="ipxIn" placeholder="Adresse IP à exclure (ex. 82.64.10.5)" list="ipxKnown"><datalist id="ipxKnown">${known.map(ip=>`<option value="${esc(ip)}">${esc(ipLbl(ip)||'')}</option>`).join('')}</datalist><button class="btn sm" style="min-height:0;padding:10px 14px" onclick="const v=$('ipxIn').value.trim();if(v)ipToggleExcl(v,true)">Exclure</button></div>
+    <button class="ghost sm" onclick="myIpExcl(this)">📍 Exclure mon adresse IP actuelle</button>
+    <h4>Liste (${L.length})</h4><div id="ipxList">${L.length?L.map(x=>`<div class="dev"><span class="di">🚫</span><div><b>${ipLbl(x.ip)?esc(ipLbl(x.ip))+' · ':''}<code style="font-family:'JetBrains Mono',monospace">${esc(x.ip)}</code></b><small>exclue ${ago(x.t)} · ${ACT.filter(a=>a.ip===x.ip).length} page(s) masquée(s)</small></div><button class="ghost sm" onclick="ipToggleExcl('${esc(x.ip)}',false)">Réintégrer</button></div>`).join(''):'<div class="empty sm">Aucune IP exclue</div>'}</div></div>`)}
+async function myIpExcl(b){b.disabled=true;b.textContent='Recherche de votre IP…';try{const j=await (await fetch('https://get.geojs.io/v1/ip.json',{cache:'no-store'})).json();if(!j.ip)throw 0;await ipToggleExcl(j.ip,true)}catch(e){toast('Impossible de détecter votre IP (bloqueur ?) — saisissez-la à la main','ko');b.disabled=false;b.textContent='📍 Exclure mon adresse IP actuelle'}}
 function actRange(f){const now=Date.now(),sd=new Date();sd.setHours(0,0,0,0);
   return f==='today'?[+sd,now]:f==='24h'?[now-864e5,now]:f==='7j'?[now-7*864e5,now]:f==='30j'?[now-30*864e5,now]:[0,now]}
-function actMatch(a,q){const m=navMeta(a.lic,a);return (a.lic.email+' '+a.lic.produit+' '+(m.nm||'')+' '+(a.m||'')+' '+(a.ip||'')+' '+(ipLbl(a.ip||'')||'')+' '+(a.loc||'')).toLowerCase().includes(q)}
+function actMatch(a,q){const m=pageOf(a);return (a.lic.email+' '+a.lic.produit+' '+(m.nm||'')+' '+(a.m||'')+' '+(a.ip||'')+' '+(ipLbl(a.ip||'')||'')+' '+(a.loc||'')).toLowerCase().includes(q)}
 function actPeriodAvail(){const f=AFILTER;return f!=='all'}
 function renderAct(){const q=($('aq').value||'').toLowerCase(),now=Date.now(),[t0,t1]=actRange(AFILTER),span=t1-t0;
-  const base=ACT.filter(a=>(!AFPROD||a.lic.produit===AFPROD)&&(!q||actMatch(a,q)));
+  const hidden=ACT.filter(a=>ipExcl(a.ip)).length;
+  const base=ACT.filter(a=>!ipExcl(a.ip)&&(!AFPROD||a.lic.produit===AFPROD)&&(!ASAT||(ASAT==='__main'?!satOf(a):satOf(a)===ASAT))&&(!q||actMatch(a,q)));
+  {const b=$('aIpx'),n=Object.keys(IPX).length;if(b)b.textContent='🚫 IP exclues'+(n?' ('+n+')':'')}
   const rows=base.filter(a=>a.t>=t0&&a.t<=t1).sort((a,b)=>b.t-a.t);
   const prev=AFILTER==='all'?null:base.filter(a=>a.t>=t0-span&&a.t<t0);
   $('aflt').querySelectorAll('button').forEach(b=>b.classList.toggle('act',b.dataset.f===AFILTER));$('aSort').value=ASORT;
   // ── KPI avec tendance ──
   const uniq=(arr,f)=>new Set(arr.map(f)).size;
-  const online=uniq(ACT.filter(a=>now-a.t<5*6e4&&(!AFPROD||a.lic.produit===AFPROD)),a=>a.lic.email+'|'+a.dv);
+  const online=uniq(ACT.filter(a=>!ipExcl(a.ip)&&now-a.t<5*6e4&&(!AFPROD||a.lic.produit===AFPROD)),a=>a.lic.email+'|'+a.dv);
   const trend=(c,p)=>{if(prev===null)return'<div class="d">sur toute la période</div>';if(!p)return c?'<div class="d up">▲ nouveau</div>':'<div class="d">—</div>';const d=Math.round((c-p)/p*100);return `<div class="d ${d>0?'up':d<0?'dn':''}">${d>0?'▲':d<0?'▼':'='} ${Math.abs(d)} % vs période préc.</div>`};
   const K=[['live','var(--ok)','<i></i>En ligne',online,'<div class="d">actifs ces 5 dernières min</div>'],
     ['','var(--a1)','👤 Clients',uniq(rows,a=>a.lic.email),trend(uniq(rows,a=>a.lic.email),prev&&uniq(prev,a=>a.lic.email))],
     ['','var(--a2)','📄 Pages vues',rows.length,trend(rows.length,prev&&prev.length)],
     ['','#f59e0b','🌐 Adresses IP',uniq(rows.filter(a=>a.ip),a=>a.ip),trend(uniq(rows.filter(a=>a.ip),a=>a.ip),prev&&uniq(prev.filter(a=>a.ip),a=>a.ip))],
-    ['','#ec4899','📦 Logiciels',uniq(rows,a=>a.lic.produit),'<div class="d">'+(rows.length?esc([...new Set(rows.map(a=>a.lic.produit))].slice(0,2).join(', ')):'—')+'</div>']];
+    ['','#ec4899','🧩 Satellites',uniq(rows,a=>a.lic.produit+'|'+satOf(a)),'<div class="d">'+(rows.length?esc([...new Set(rows.map(a=>satOf(a)||a.lic.produit))].slice(0,3).join(', ')):'—')+'</div>']];
   $('actKpi').innerHTML=K.map(([c,col,l,v,d])=>`<div class="ax-k ${c}" style="--kc:${col}"><div class="l">${l}</div><div class="v">${v}</div>${d}</div>`).join('');
-  actChart(rows,t0,t1);actHeat(rows);actTops(rows);
+  actNow();actChart(rows,t0,t1);actHeat(rows);actTops(rows);
   // ── fil ──
   if(!ACT.length){$('actList').innerHTML='<div class="empty">Aucune activité pour l\'instant.<br>Ouvrez <b>⚙️ Gérer le suivi</b> et activez-le pour vos clients : les pages qu\'ils ouvrent apparaîtront ici en direct.</div>';return}
   if(!rows.length){$('actList').innerHTML='<div class="empty">Aucune activité sur cette période ou pour ces filtres</div>';return}
   const isNew=a=>ASEEN&&!ASEEN.has(a.t+'|'+a.dv);
-  const rowHTML=a=>{const m=navMeta(a.lic,a),[ic,col]=pm(a.lic.produit),ipn=a.ip?(ipLbl(a.ip)||a.ip):'';
+  const rowHTML=a=>{const m=pageOf(a),[ic,col]=pm(a.lic.produit),ipn=a.ip?(ipLbl(a.ip)||a.ip):'';
     return `<div class="actr${isNew(a)?' new':''}" style="--pc:${col}" onclick="openLic('${a.lic.id}')"><span class="st"></span><div class="im">${m.ic}</div>
-      <div style="min-width:0"><b>${esc(m.nm)}</b><small>👤 ${esc(a.lic.email)} · ${ic} ${esc(a.lic.produit)}${a.m&&a.m!==a.lic.produit?' · '+esc(a.m):''} · ${devNameG(a.lic,a.dv)}${a.ip?` · <span class="ipt cli" style="padding:2px 8px" onclick="event.stopPropagation();ipSteps('${esc(a.ip)}')">🌐 ${esc(ipn)}</span>`:''}</small></div>
+      <div style="min-width:0"><b>${esc(m.nm)}</b>${pathHTML(a)}<small>👤 ${esc(a.lic.email)} · ${devNameG(a.lic,a.dv)}${a.ip?` · <span class="ipt cli" style="padding:2px 8px" onclick="event.stopPropagation();ipSteps('${esc(a.ip)}')">🌐 ${esc(ipn)}</span>`:''}</small></div>
       <time>${new Date(a.t).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}<br><small>${ago(a.t)}</small></time></div>`};
   let html='';
   if(ASORT==='recent'){let last='',open=false;rows.slice(0,ALIM).forEach(a=>{const day=new Date(a.t).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
       if(day!==last){if(open)html+='</div></div>';last=day;open=true;const n=rows.filter(x=>new Date(x.t).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})===day).length;
         html+=`<div class="actgrp"><summary><div class="pi" style="--pc:var(--a1)">📅</div><div class="ti"><b style="text-transform:capitalize">${day}</b><small>${n} page(s)</small></div></summary><div class="actrows">`}html+=rowHTML(a)});
     if(open)html+='</div></div>';if(rows.length>ALIM)html+=`<button class="ghost ax-more" onclick="ALIM+=120;renderAct()">Afficher plus (${rows.length-ALIM} restantes)</button>`}
-  else{const G={};rows.forEach(a=>{const key=ASORT==='client'?a.lic.email:ASORT==='prod'?a.lic.produit:ASORT==='ip'?(a.ip||'IP inconnue'):navMeta(a.lic,a).nm;(G[key]=G[key]||[]).push(a)});
+  else{const G={};rows.forEach(a=>{const key=ASORT==='client'?a.lic.email:ASORT==='prod'?a.lic.produit:ASORT==='ip'?(a.ip||'IP inconnue'):ASORT==='sat'?a.lic.produit+' › '+(satOf(a)||'Appli principale'):pageOf(a).nm;(G[key]=G[key]||[]).push(a)});
     const keys=Object.keys(G).sort((x,y)=>G[y].length-G[x].length);
-    html=keys.map((key,i)=>{const arr=G[key],a0=arr[0],m=navMeta(a0.lic,a0),[ic,col]=pm(a0.lic.produit),nc=new Set(arr.map(a=>a.lic.email)).size,pr=[...new Set(arr.map(a=>a.lic.produit))].join(', ');
-      const hd=ASORT==='client'?`<div class="pi" style="--pc:var(--a1)">👤</div><div class="ti"><b>${esc(key)}</b><small>${esc(pr)} · dernière ${ago(a0.t)}</small></div>`
+    html=keys.map((key,i)=>{const arr=G[key],a0=arr[0],m=pageOf(a0),[ic,col]=pm(a0.lic.produit),nc=new Set(arr.map(a=>a.lic.email)).size,pr=[...new Set(arr.map(a=>a.lic.produit))].join(', ');
+      const hd=ASORT==='sat'?`<div class="pi" style="--pc:${col}">${satOf(a0)?satIc(satOf(a0)):ic}</div><div class="ti"><b>${esc(key)}</b><small>${nc} client(s) · ${new Set(arr.map(a=>pageOf(a).nm)).size} page(s) différente(s) · dernière ${ago(a0.t)}</small></div>`
+        :ASORT==='client'?`<div class="pi" style="--pc:var(--a1)">👤</div><div class="ti"><b>${esc(key)}</b><small>${esc(pr)} · dernière ${ago(a0.t)}</small></div>`
         :ASORT==='prod'?`<div class="pi" style="--pc:${col}">${ic}</div><div class="ti"><b>${esc(key)}</b><small>${nc} client(s) · dernière ${ago(a0.t)}</small></div>`
         :ASORT==='ip'?`<div class="pi" style="--pc:var(--a2)">${ipLbl(key)?'🏷️':'🌐'}</div><div class="ti"><b>${ipLbl(key)?esc(ipLbl(key))+' · ':''}<code style="font-family:'JetBrains Mono',monospace;font-size:.8rem">${esc(key)}</code>${nc>1?` <span class="pill red" style="padding:2px 8px">${nc} clients</span>`:''}</b><small>${esc(pr)}${a0.loc?' · 📍 '+esc(a0.loc):''} · dernière ${ago(a0.t)}</small></div>`
         :`<div class="pi" style="--pc:${col}">${m.ic}</div><div class="ti"><b>${esc(key)}</b><small>${nc} client(s) · ${esc(pr)}</small></div>`;
-      const extra=ASORT==='ip'&&key!=='IP inconnue'?`<button class="ghost sm" style="margin-right:6px" onclick="event.preventDefault();event.stopPropagation();ipSteps('${esc(key)}')">👣 Suivi des pas</button>`:'';
+      const extra=ASORT==='ip'&&key!=='IP inconnue'?`<button class="ghost sm" style="margin-right:6px" onclick="event.preventDefault();event.stopPropagation();ipSteps('${esc(key)}')">👣 Suivi des pas</button><button class="ghost sm" style="margin-right:6px" onclick="event.preventDefault();event.stopPropagation();ipToggleExcl('${esc(key)}',true)">🚫 Exclure</button>`:'';
       return `<details class="actgrp"${i<3?' open':''}><summary>${hd}${extra}<span class="cnt">${arr.length}</span></summary><div class="actrows">${arr.slice(0,60).map(rowHTML).join('')}${arr.length>60?`<div class="acthint" style="padding:8px 14px">+ ${arr.length-60} autres</div>`:''}</div></details>`}).join('')}
-  $('actList').innerHTML=`<div class="ax-head"><span>${rows.length} page(s) vue(s)${AFPROD?' · '+esc(AFPROD):''}</span><span>Cliquez une ligne pour ouvrir la fiche client · une IP pour son suivi des pas</span></div>`+html;
+  $('actList').innerHTML=`<div class="ax-head"><span>${rows.length} page(s) vue(s)${AFPROD?' · '+esc(AFPROD):''}${hidden?` · <a href="#" onclick="event.preventDefault();openIpx()">${hidden} masquée(s) par exclusion d'IP</a>`:''}</span><span>Cliquez une ligne pour ouvrir la fiche client · une IP pour son suivi des pas</span></div>`+html;
   ASEEN=new Set(ACT.map(a=>a.t+'|'+a.dv))}
 function actChart(rows,t0,t1){if(!window.Chart||!$('aChart'))return;const CS=getComputedStyle(document.documentElement),A1=CS.getPropertyValue('--a1').trim(),A2=CS.getPropertyValue('--a2').trim();
   const hourly=AFILTER==='today'||AFILTER==='24h';let labels=[],pages=[],cli=[];
@@ -1895,12 +1946,12 @@ function actHeat(rows){const H=Array.from({length:7},()=>Array(24).fill(0));rows
   $('aHeat').innerHTML='<b></b>'+Array.from({length:24},(_,h)=>`<b class="hx">${h%6===0?h:''}</b>`).join('')+H.map((r,d)=>`<b>${J[d]}</b>`+r.map((n,h)=>`<i style="--h:${n?(.18+.82*n/mx).toFixed(2):0}" title="${J[d]} ${h} h : ${n} page(s)"></i>`).join('')).join('')}
 function actTops(rows){const top=(key,lim=6)=>{const M={};rows.forEach(a=>{const k=key(a);if(!k)return;(M[k]=M[k]||{n:0,a,c:new Set()}).n++;M[k].c.add(a.lic.email)});return Object.entries(M).sort((x,y)=>y[1].n-x[1].n).slice(0,lim)};
   const empty='<div class="empty sm">—</div>';
-  const P=top(a=>navMeta(a.lic,a).nm),mp=P[0]?P[0][1].n:1;
-  $('aTopP').innerHTML=P.length?P.map(([k,v])=>{const m=navMeta(v.a.lic,v.a);return `<div class="ax-t" style="--w:${v.n/mp*100}%;--bc:${m.col}" onclick="$('aq').value='${esc(k).replace(/'/g,"\\'")}';renderAct()"><span class="bar"></span><span class="ic">${m.ic}</span><div><b>${esc(k)}</b><small>${v.c.size} client(s)</small></div><span class="n">${v.n}</span></div>`}).join(''):empty;
+  const P=top(a=>pageOf(a).nm),mp=P[0]?P[0][1].n:1;
+  $('aTopP').innerHTML=P.length?P.map(([k,v])=>{const m=pageOf(v.a);return `<div class="ax-t" style="--w:${v.n/mp*100}%;--bc:${m.col}" onclick="$('aq').value='${esc(k).replace(/'/g,"\\'")}';renderAct()"><span class="bar"></span><span class="ic">${m.ic}</span><div><b>${esc(k)}</b><small>${esc(satOf(v.a)||v.a.lic.produit)} · ${v.c.size} client(s)</small></div><span class="n">${v.n}</span><span></span></div>`}).join(''):empty;
   const I=top(a=>a.ip),mi=I[0]?I[0][1].n:1;
-  $('aTopI').innerHTML=I.length?I.map(([k,v])=>`<div class="ax-t" style="--w:${v.n/mi*100}%" onclick="ipSteps('${esc(k)}')"><span class="bar"></span><span class="ic">${ipLbl(k)?'🏷️':'🌐'}</span><div><b>${ipLbl(k)?esc(ipLbl(k)):esc(k)}</b><small>${ipLbl(k)?esc(k)+' · ':''}${v.c.size>1?'<span class="red">'+v.c.size+' clients</span>':esc([...v.c][0])}</small></div><span class="n">${v.n}</span></div>`).join(''):empty;
+  $('aTopI').innerHTML=I.length?I.map(([k,v])=>`<div class="ax-t" style="--w:${v.n/mi*100}%" onclick="ipSteps('${esc(k)}')"><span class="bar"></span><span class="ic">${ipLbl(k)?'🏷️':'🌐'}</span><div><b>${ipLbl(k)?esc(ipLbl(k)):esc(k)}</b><small>${ipLbl(k)?esc(k)+' · ':''}${v.c.size>1?'<span class="red">'+v.c.size+' clients</span>':esc([...v.c][0])}</small></div><span class="n">${v.n}</span><button class="ax-x" title="Exclure cette IP du suivi" onclick="event.stopPropagation();ipToggleExcl('${esc(k)}',true)">🚫</button></div>`).join(''):empty;
   const C=top(a=>a.lic.email),mc=C[0]?C[0][1].n:1;
-  $('aTopC').innerHTML=C.length?C.map(([k,v])=>{const[ic,col]=pm(v.a.lic.produit);return `<div class="ax-t" style="--w:${v.n/mc*100}%;--bc:${col}" onclick="openLic('${v.a.lic.id}')"><span class="bar"></span><span class="ic">👤</span><div><b>${esc(k)}</b><small>${ic} ${esc(v.a.lic.produit)} · ${ago(v.a.t)}</small></div><span class="n">${v.n}</span></div>`}).join(''):empty}
+  $('aTopC').innerHTML=C.length?C.map(([k,v])=>{const[ic,col]=pm(v.a.lic.produit);return `<div class="ax-t" style="--w:${v.n/mc*100}%;--bc:${col}" onclick="openLic('${v.a.lic.id}')"><span class="bar"></span><span class="ic">👤</span><div><b>${esc(k)}</b><small>${ic} ${esc(v.a.lic.produit)} · ${ago(v.a.t)}</small></div><span class="n">${v.n}</span><span></span></div>`}).join(''):empty}
 document.querySelectorAll('#aflt button').forEach(b=>b.onclick=()=>{AFILTER=b.dataset.f;renderAct()});
 
 /* ═══════════ SUIVI DES PAS PAR ADRESSE IP ═══════════ */
@@ -1912,15 +1963,15 @@ async function ipSteps(ip){const nm=ipLbl(ip);
   const body=$('ipStepsBody');if(!body)return;
   if(!E.length){body.innerHTML='<div class="empty sm">Aucune page enregistrée depuis cette adresse IP.</div>';return}
   const clients=[...new Set(E.map(a=>a.lic.email))],prods=[...new Set(E.map(a=>a.lic.produit))];
-  const cnt={};E.forEach(a=>{const m=navMeta(a.lic,a);(cnt[m.nm]=cnt[m.nm]||{m,n:0,last:0}).n++;cnt[m.nm].last=Math.max(cnt[m.nm].last,a.t)});
+  const cnt={};E.forEach(a=>{const m=pageOf(a);(cnt[m.nm]=cnt[m.nm]||{m,n:0,last:0}).n++;cnt[m.nm].last=Math.max(cnt[m.nm].last,a.t)});
   const top=Object.values(cnt).sort((x,y)=>y.n-x.n).slice(0,8);
   let last='';
   body.innerHTML=`<div class="kv" style="margin-bottom:12px"><div><span>Pages vues</span><b>${E.length}</b></div><div><span>Clients</span><b>${clients.length}</b></div><div><span>Logiciels</span><b>${prods.length}</b></div><div><span>Dernière activité</span><b>${ago(E[0].t)}</b></div></div>
     ${clients.length>1?`<div class="cf-imp" style="--ac:var(--ko)"><b>⚠ ${clients.length} clients différents</b> utilisent cette même adresse IP : ${clients.map(esc).join(', ')}.</div>`:''}
     <h4>Pages les plus vues</h4><div class="nvtop">${top.map(x=>`<div class="nvc" style="--pc:${x.m.col}"><div class="im">${x.m.ic}</div><div><b>${esc(x.m.nm)}</b><small>${x.n}× · ${ago(x.last)}</small></div></div>`).join('')}</div>
-    <h4>Journal détaillé</h4><div class="nvl">${E.slice(0,120).map(a=>{const m=navMeta(a.lic,a),[ic]=pm(a.lic.produit),day=new Date(a.t).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});const hd=day!==last?(last=day,`<div class="nvday">${day}</div>`):'';
-      return hd+`<div class="nvi" style="--pc:${m.col}"><div class="im">${m.ic}</div><div><b>${esc(m.nm)}</b><small>👤 ${esc(a.lic.email)} · ${ic} ${esc(a.lic.produit)}${a.m&&a.m!==a.lic.produit?' · '+esc(a.m):''}</small></div><time>${new Date(a.t).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</time></div>`}).join('')}</div>
-    <div class="row" style="gap:8px;margin-top:12px"><button class="ghost sm" onclick="ipRename('${esc(ip)}').then(()=>ipSteps('${esc(ip)}'))">🏷️ ${nm?'Renommer l\'IP':'Nommer cette IP'}</button><button class="ghost sm" onclick="copyTxt('${esc(ip)}')">📋 Copier l'IP</button></div>`}
+    <h4>Journal détaillé</h4><div class="nvl">${E.slice(0,120).map(a=>{const m=pageOf(a),[ic]=pm(a.lic.produit),day=new Date(a.t).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});const hd=day!==last?(last=day,`<div class="nvday">${day}</div>`):'';
+      return hd+`<div class="nvi" style="--pc:${m.col}"><div class="im">${m.ic}</div><div><b>${esc(m.nm)}</b>${pathHTML(a)}<small>👤 ${esc(a.lic.email)}</small></div><time>${new Date(a.t).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</time></div>`}).join('')}</div>
+    <div class="row" style="gap:8px;margin-top:12px"><button class="ghost sm" onclick="ipRename('${esc(ip)}').then(()=>ipSteps('${esc(ip)}'))">🏷️ ${nm?'Renommer l\'IP':'Nommer cette IP'}</button><button class="ghost sm" onclick="copyTxt('${esc(ip)}')">📋 Copier l'IP</button><button class="ghost sm${ipExcl(ip)?'':' danger'}" onclick="ipToggleExcl('${esc(ip)}',${!ipExcl(ip)}).then(()=>ipSteps('${esc(ip)}'))">${ipExcl(ip)?'✅ Réintégrer dans l\'activité':'🚫 Exclure de l\'activité'}</button></div>`}
 
 /* ═══════════ GÉRER LE SUIVI (activer/désactiver par licence) ═══════════ */
 function openSuiviManager(){const rows=LIC.slice().sort((a,b)=>(b.suivi?1:0)-(a.suivi?1:0)||a.email.localeCompare(b.email));
