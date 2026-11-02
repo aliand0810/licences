@@ -951,7 +951,7 @@ async function allowExtra(id,dev){const l=LIC.find(x=>x.id===id);if(!l)return;
 async function ignoreExc(id,dev){try{await fbPut(`excess/${id}/${dev}`,null);await loadFB();toast('Alerte ignorée');if($('drawer').classList.contains('on'))openLic(id)}catch(e){toast(e.message,'ko')}}
 async function devDel(id,k){if(!confirm('Retirer cet appareil ? Il sera bloqué et libérera une place.'))return;
   try{await fbPut(`devices/${id}/${k}`,null);await loadFB();toast('Appareil retiré');openLic(id)}catch(e){toast(e.message,'ko')}}
-function wipeBox(l,devs,ex){const W=l.wipeDev||{},opts=[...devs.map(([k,v])=>({d:v.id,u:shortUA(v.ua),sub:`Place ${+k+1}${v.seen?' · vu '+ago(v.seen):''} · ${esc(v.lastIp||v.ip||'IP inconnue')}${(v.lastLoc||v.loc)?' · '+esc(v.lastLoc||v.loc):''}`})),...ex.map(v=>({d:v.dev,u:shortUA(v.ua),sub:`En trop · ${v.t?ago(v.t):''} · ${esc(v.ip||'IP inconnue')}`}))].filter(o=>o.d);
+function wipeBox(l,devs,ex){const W=l.wipeDev||{},opts=[...devs.map(([k,v])=>({d:v.id,u:shortUA(v.ua),sub:`Place ${+k+1}${v.seen?' · vu '+ago(v.seen):''} · ${ipShow(v.lastIp||v.ip,v.lastLoc||v.loc)}`})),...ex.map(v=>({d:v.dev,u:shortUA(v.ua),sub:`En trop · ${v.t?ago(v.t):''} · ${ipShow(v.ip)}`}))].filter(o=>o.d);
   const pend=[];if(l.wipe)pend.push(`<b>tous les appareils</b> (le ${fmtW(l.wipe)})`);Object.entries(W).forEach(([d,t])=>{const o=opts.find(x=>x.d===d);pend.push(`${o?o.u.ic+' '+o.u.txt:'appareil '+esc(d.slice(0,6))} (le ${fmtW(t)})`)});
   return `${pend.length?`<div class="hint" style="padding:10px 12px;border-radius:12px;background:rgba(244,63,94,.12);color:var(--tko)">🧨 Effacement envoyé pour : ${pend.join(', ')} — exécuté à la prochaine connexion.</div>`:''}
     <div class="wpl" style="display:flex;flex-direction:column;gap:6px;margin:8px 0">
@@ -1541,7 +1541,7 @@ function confirmAct({ic,col,title,sub,points,btn,word,run}){window._cfRun=run;
   ${word?`<label>Tape <b style="color:${col}">${word}</b> pour confirmer</label><input id="cfW" autocomplete="off" autocapitalize="characters" oninput="$('cfGo').disabled=this.value.trim().toUpperCase()!=='${word}'">`:''}</div>
   <div class="md-f" style="display:flex;gap:8px;padding:14px 20px;border-top:1px solid var(--bd)"><button class="ghost" style="flex:1" onclick="closeModal()">Annuler</button><button id="cfGo" class="btn" style="flex:1.4;background:${col}"${word?' disabled':''} onclick="this.disabled=true;this.textContent='Enregistrement…';window._cfRun()">${btn}</button></div>`)}
 function aReload(id){const l=LIC.find(x=>x.id===id),devs=devList(id),W=l.reloadDev||{};
-  const opts=devs.map(([k,v])=>{const u=shortUA(v.ua);return{d:v.id,ic:u.ic,txt:u.txt,sub:`Place ${+k+1}${v.seen?' · vu '+ago(v.seen):''} · ${esc(v.lastIp||v.ip||'IP inconnue')}`}}).filter(o=>o.d);
+  const opts=devs.map(([k,v])=>{const u=shortUA(v.ua);return{d:v.id,ic:u.ic,txt:u.txt,sub:`Place ${+k+1}${v.seen?' · vu '+ago(v.seen):''} · ${ipShow(v.lastIp||v.ip,v.lastLoc||v.loc)}`}}).filter(o=>o.d);
   openModal(`<div class="md-h"><div class="pi" style="--pc:#0ea5e9">🔄</div><div><h2>Redémarrer la page</h2><span>${esc(l.produit)} · ${esc(l.email)}</span></div><button class="x" onclick="closeModal()">✕</button></div>
   <div class="md-b"><div class="cf-imp" style="--ac:#0ea5e9"><b>Ce qui va se passer :</b><ul style="margin:6px 0 0;padding-left:18px"><li>La page du client se <b>recharge toute seule</b> (comme Ctrl+R), en quelques secondes ou au retour sur l'onglet.</li><li>Aucune donnée n'est effacée : c'est seulement un rafraîchissement.</li><li>Utile pour appliquer une mise à jour ou débloquer un écran figé.</li></ul></div>
     <div class="wpl" style="display:flex;flex-direction:column;gap:6px;margin:8px 0">
@@ -1722,6 +1722,8 @@ async function ipRename(ip,force){const cur=IPNAMES[ipKey(ip)]||'';let nm=force!
   catch(e){toast(e.message.includes('401')?'Règles Firebase à republier (nœud « crm ») — voir Réglages':e.message,'ko')}}
 // lecture d'un nom : utilisée partout où une IP s'affiche
 function ipLbl(ip){const n=IPNAMES[ipKey(ip)];return n&&n.nom?n.nom:''}
+const ipShow=(ip,loc)=>{if(!ip)return loc?esc(loc):'IP inconnue';const n=ipLbl(ip);return (n?'🏷️ '+esc(n)+' · ':'')+esc(ip)+(loc?' · '+esc(loc):'')};
+
 function ipFind(email){go('acc');$('q').value=email;renderAcc()}
 IPNAMES=IPNAMES;
 
