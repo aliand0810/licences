@@ -1530,6 +1530,22 @@ function confirmAct({ic,col,title,sub,points,btn,word,run}){window._cfRun=run;
   <div class="md-b"><div class="cf-imp" style="--ac:${col}"><b>Ce qui va se passer :</b><ul style="margin:6px 0 0;padding-left:18px">${points.map(p=>`<li>${p}</li>`).join('')}</ul></div>
   ${word?`<label>Tape <b style="color:${col}">${word}</b> pour confirmer</label><input id="cfW" autocomplete="off" autocapitalize="characters" oninput="$('cfGo').disabled=this.value.trim().toUpperCase()!=='${word}'">`:''}</div>
   <div class="md-f" style="display:flex;gap:8px;padding:14px 20px;border-top:1px solid var(--bd)"><button class="ghost" style="flex:1" onclick="closeModal()">Annuler</button><button id="cfGo" class="btn" style="flex:1.4;background:${col}"${word?' disabled':''} onclick="this.disabled=true;this.textContent='Enregistrement…';window._cfRun()">${btn}</button></div>`)}
+function aReload(id){const l=LIC.find(x=>x.id===id),devs=devList(id),W=l.reloadDev||{};
+  const opts=devs.map(([k,v])=>{const u=shortUA(v.ua);return{d:v.id,ic:u.ic,txt:u.txt,sub:`Place ${+k+1}${v.seen?' · vu '+ago(v.seen):''} · ${esc(v.lastIp||v.ip||'IP inconnue')}`}}).filter(o=>o.d);
+  openModal(`<div class="md-h"><div class="pi" style="--pc:#0ea5e9">🔄</div><div><h2>Redémarrer la page</h2><span>${esc(l.produit)} · ${esc(l.email)}</span></div><button class="x" onclick="closeModal()">✕</button></div>
+  <div class="md-b"><div class="cf-imp" style="--ac:#0ea5e9"><b>Ce qui va se passer :</b><ul style="margin:6px 0 0;padding-left:18px"><li>La page du client se <b>recharge toute seule</b> (comme Ctrl+R), en quelques secondes ou au retour sur l'onglet.</li><li>Aucune donnée n'est effacée : c'est seulement un rafraîchissement.</li><li>Utile pour appliquer une mise à jour ou débloquer un écran figé.</li></ul></div>
+    <div class="wpl" style="display:flex;flex-direction:column;gap:6px;margin:8px 0">
+      <label class="dev" style="cursor:pointer;text-transform:none;letter-spacing:normal;font-size:inherit;font-weight:inherit;color:inherit;margin:0"><input type="checkbox" class="rlAll" checked style="width:20px;height:20px" onchange="document.querySelectorAll('.rlD').forEach(c=>{c.checked=false;c.disabled=this.checked})"><div><b>🔄 Tous les appareils</b><small>Tout le monde recharge</small></div></label>
+      ${opts.length?opts.map(o=>`<label class="dev" style="cursor:pointer;text-transform:none;letter-spacing:normal;font-size:inherit;font-weight:inherit;color:inherit;margin:0"><input type="checkbox" class="rlD" value="${esc(o.d)}" disabled style="width:20px;height:20px"><div><b>${o.ic} ${esc(o.txt)}</b><small>${o.sub}</small></div></label>`).join(''):`<div class="empty sm">Aucun appareil listé${l.maxDevices?'':' — active une limite d\'appareils pour cibler un appareil précis'}</div>`}
+    </div></div>
+  <div class="md-f" style="display:flex;gap:8px;padding:14px 20px;border-top:1px solid var(--bd)"><button class="ghost" style="flex:1" onclick="closeModal()">Annuler</button><button id="rlGo" class="btn" style="flex:1.4;background:#0ea5e9" onclick="this.disabled=true;this.textContent='Envoi…';doReload('${id}')">🔄 Redémarrer</button></div>`)}
+async function doReload(id){const all=!!document.querySelector('.rlAll:checked'),sel=[...document.querySelectorAll('.rlD:checked')].map(c=>c.value);
+  if(!all&&!sel.length){closeModal();return toast('Choisis au moins un appareil','ko')}
+  try{const {data,sha:s}=await ghGet(),x=data.licences.find(y=>y.id===id);if(!x)throw new Error('Licence introuvable');const now=Date.now();
+    if(all){x.reload=now;delete x.reloadDev}else{x.reloadDev={...(x.reloadDev||{})};sel.forEach(d=>x.reloadDev[d]=now)}
+    x.log=[{t:now,a:all?'Redémarrage (tous les appareils)':'Redémarrage ('+sel.length+' appareil'+(sel.length>1?'s':'')+')'},...(x.log||[])].slice(0,40);
+    await ghPut(data,s,'Redémarrage '+x.produit+' — '+x.email);LIC=data.licences;closeModal();openLic(id);toast('🔄 Redémarrage envoyé — effet en quelques secondes')}
+  catch(e){toast(e.message,'ko')}}
 function aSuspend(id){const l=LIC.find(x=>x.id===id);confirmAct({ic:'⏸',col:'#f97316',title:'Suspendre la licence',sub:l.produit+' · '+l.email,btn:'⏸ Suspendre',
   points:['Le logiciel se <b>bloque chez le client</b> en quelques secondes (écran de licence).','Ses données, appareils et réglages sont <b>conservés</b>.','Vous pourrez la <b>réactiver</b> à tout moment, avec la même clé.'],
   run:()=>licAct(id,'Suspension',(d,x)=>{x.actif=false},'⏸ Licence suspendue','ko')})}
@@ -1558,6 +1574,7 @@ function controlHTML(l){const k=lifeOf(l),[n,c,d]=ST[k],id=l.id,banned=k==='ban'
     <div class="steps">${SN.map((s,i)=>`<span class="${i===step?'on':''}">${s}</span>${i<3?'<b>›</b>':''}`).join('')}</div>
     <div class="acts">
       <button class="act-c" style="--ac:#6366f1" onclick="editLic('${id}')"><b>✏️ Modifier</b><small>Modules, onglets, appareils, durée</small></button>
+      <button class="act-c" style="--ac:#0ea5e9" onclick="aReload('${id}')"${banned?' disabled':''}><b>🔄 Redémarrer</b><small>Rafraîchit la page chez le client</small></button>
       ${l.actif?`<button class="act-c" style="--ac:#f97316" onclick="aSuspend('${id}')"${banned?' disabled':''}><b>⏸ Suspendre</b><small>Bloque l'accès, garde tout</small></button>`
                :`<button class="act-c" style="--ac:#10b981" onclick="aActivate('${id}')"><b>▶️ Réactiver</b><small>Rend l'accès immédiatement</small></button>`}
       <button class="act-c" style="--ac:#06b6d4" onclick="this.nextElementSibling.hidden=!this.nextElementSibling.hidden"><b>⏱ Prolonger</b><small>Ajouter du temps</small></button>

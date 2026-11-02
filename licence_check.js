@@ -57,6 +57,9 @@
       const wt=Math.max(+l.wipe||0,l.wipeDev?(+l.wipeDev[await devId()]||0):0);
       if(wt){const wk='licWiped_'+PRODUIT,done=+localStorage.getItem(wk)||0;l={...l,wipe:wt};
         if(l.wipe>done){if(get().mail){await wipeAll();try{localStorage.setItem(wk,String(l.wipe))}catch(e){}location.reload();return{ok:false,msg:'Données effacées par l\'administrateur'}}localStorage.setItem(wk,String(l.wipe))}}
+      {const rt=Math.max(+l.reload||0,l.reloadDev?(+l.reloadDev[await devId()]||0):0);
+       if(rt){const rk='licReload_'+PRODUIT,done=+localStorage.getItem(rk)||0;
+         if(rt>done){try{localStorage.setItem(rk,String(rt))}catch(e){}location.reload();return{ok:true,expire:l.expire||null,data:extra(l,d)}}}}
       if(!l.actif)return{ok:false,msg:'Licence révoquée'};
       if(!notExpired(l.expire))return{ok:false,msg:'Licence expirée'};
       l=pvFix(l);if(MODULE&&Array.isArray(l.modules)&&!l.modules.includes(MODULE))return{ok:false,msg:`Le module « ${MODULE} » n'est pas inclus dans votre licence`};
