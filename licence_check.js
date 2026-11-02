@@ -35,6 +35,17 @@
     if(!rt)return false;const rk='licReload_'+PRODUIT,done=+localStorage.getItem(rk)||0;
     if(rt>done){try{localStorage.setItem(rk,String(rt))}catch(e){}await hardReload();return true}return false}
   let CURLIC=null;
+  // ⛔ Déconnexion / coupure à distance par adresse IP (nœud Firebase « ipblock »)
+  let IPBLOCKED=false;
+  async function checkIpBlock(fb){fb=(fb||RLFB||'').replace(/\/+$/,'');if(!fb)return null;
+    try{const ni=await netInfo().catch(()=>({}));if(!ni.ip)return null;
+      const k='ip_'+String(ni.ip).replace(/[.:]/g,'_').replace(/[^\w]/g,'');
+      const b=await (await fetch(`${fb}/ipblock/${k}.json?t=${Date.now()}`,{cache:'no-store'})).json();
+      if(!b||(Array.isArray(b.prods)&&b.prods.length&&!b.prods.includes(PRODUIT)))return IPBLOCKED?(location.reload(),null):null;
+      if(b.mode==='block'){blocked(b.msg);return 'block'}
+      if(b.mode==='deco'){const kk='licKick_'+PRODUIT,done=+localStorage.getItem(kk)||0;
+        if(+b.t>done){KICKING=true;clearInterval(timer);try{localStorage.setItem(kk,String(b.t));localStorage.removeItem(KEY)}catch(e){}await hardReload();return 'deco'}}
+    }catch(e){}return null}
   // 👣 Suivi de navigation (activé par licence dans Licence Pro) : page + onglet ouverts, horodatés
   let NAV=null,navLast='',navT=0;
   function navCur(){const p=location.pathname.split('/').pop()||'accueil';
@@ -76,6 +87,7 @@
       {let rtLic=Math.max(+l.reload||0,l.reloadDev?(+l.reloadDev[await devId()]||0):0);
        if(l.reloadIp){const ni=await netInfo().catch(()=>({}));if(ni.ip&&l.reloadIp[ni.ip])rtLic=Math.max(rtLic,+l.reloadIp[ni.ip])}
        if(await maybeReload(rtLic,_fb))return{ok:true,expire:l.expire||null,data:extra(l,d)}}
+      {const ib=await checkIpBlock(_fb);if(ib==='block')return{ok:false,msg:'IPBLOCK',ipb:1};if(ib==='deco')return{ok:false,msg:''}}
       if(!l.actif)return{ok:false,msg:'Licence révoquée'};
       if(!notExpired(l.expire))return{ok:false,msg:'Licence expirée'};
       l=pvFix(l);if(MODULE&&Array.isArray(l.modules)&&!l.modules.includes(MODULE))return{ok:false,msg:`Le module « ${MODULE} » n'est pas inclus dans votre licence`};
@@ -141,7 +153,8 @@
     window.LICENCE_DATA=x;try{dispatchEvent(new CustomEvent('licence:data',{detail:x}))}catch(e){}savUI(x);tabLock(x)}
   try{const c=JSON.parse(localStorage.getItem('licData_'+PRODUIT)||'null');if(c){window.LICENCE_DATA=c;setTimeout(()=>tabLock(c),0)}}catch(e){}
 
-  function save(mail,key,expire){localStorage.setItem(KEY,JSON.stringify({mail:mail.trim().toLowerCase(),key:key.trim().toUpperCase(),expire,t:Date.now()}))}
+  let KICKING=false;
+  function save(mail,key,expire){if(KICKING)return;localStorage.setItem(KEY,JSON.stringify({mail:mail.trim().toLowerCase(),key:key.trim().toUpperCase(),expire,t:Date.now()}))}
 
   // Bloque l'app à l'expiration (contrôle chaque seconde) et revérifie la révocation toutes les 20 s
   let busy=false,last=0;
@@ -156,10 +169,10 @@
   function watch(expire){
     curExp=expire;clearInterval(timer);
     timer=setInterval(()=>{if(!notExpired(curExp))return lock('Votre période d\'essai / licence a expiré');recheck()},1000);
-    clearInterval(rlT);rlT=setInterval(()=>{if(!overlay&&document.visibilityState==='visible'&&RLFB)maybeReload(0,RLFB)},12000);
+    clearInterval(rlT);rlT=setInterval(()=>{if(document.visibilityState!=='visible'||!RLFB)return;if(IPBLOCKED)return checkIpBlock(RLFB);if(!overlay){maybeReload(0,RLFB);checkIpBlock(RLFB)}},12000);
   }
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){if(RLFB)maybeReload(0,RLFB);recheck(true)}});
-  addEventListener('focus',()=>{if(RLFB)maybeReload(0,RLFB);recheck(true)});
+  addEventListener('focus',()=>{if(RLFB){maybeReload(0,RLFB);checkIpBlock(RLFB)}recheck(true)});
   addEventListener('online',()=>recheck(true));
 
 
@@ -339,10 +352,20 @@
     const go=async()=>{const m=g('lm').value,k=g('lk').value,b=g('lb');if(!m.trim()||!k.trim())return g('le').textContent='Renseignez l\'e-mail et la clé';
       b.textContent='Vérification…';b.disabled=true;g('le').textContent='';Object.keys(localStorage).filter(x=>x.startsWith('licSlot_')).forEach(x=>localStorage.removeItem(x));const r=await verif(m,k);b.textContent='Activer la licence';b.disabled=false;
       if(r.ok){save(m,k,r.expire);applyData(r.data);overlay.remove();overlay=null;watch(r.expire);licToast('✅ Licence '+PRODUIT+' activée')}
-      else g('le').textContent=r.msg};
+      else if(!r.ipb&&g('le'))g('le').textContent=r.msg};
     g('lb').onclick=go;g('lk').addEventListener('keydown',e=>{if(e.key==='Enter')go()});
   }
   // Écran affiché si le logiciel est ouvert sur un domaine non autorisé (copie / piratage)
+  function blocked(msg){if(IPBLOCKED&&overlay)return;IPBLOCKED=true;clearInterval(timer);licCss();if(overlay){overlay.remove();overlay=null}
+    const o=document.createElement('div');o.id='lic-overlay';o.innerHTML=`<div class="lic-card" style="text-align:center">
+      <div class="lic-logo" style="margin:0 auto 14px;background:linear-gradient(135deg,#e11d48,#f97316)">⛔</div>
+      <h2 style="margin:0 0 6px">Accès suspendu</h2>
+      <p class="lic-lead" style="text-align:center">L'accès à <b>${esc(PRODUIT)}</b>${MODULE?' · '+esc(MODULE):''} a été coupé à distance par l'administrateur pour ce poste.</p>
+      ${msg?`<div class="lic-st ko" style="text-align:left"><p style="margin:0">${esc(msg)}</p></div>`:''}
+      <p class="lic-mini">L'accès sera rétabli automatiquement dès que l'administrateur le réactivera. <span id="ibChk"></span></p>
+      <div class="lic-ft">🔒 Contactez votre fournisseur si vous pensez qu'il s'agit d'une erreur</div></div>`;
+    (document.body||document.documentElement).appendChild(o);overlay=o;try{document.body.style.overflow='hidden'}catch(e){}
+    clearInterval(rlT);rlT=setInterval(()=>{if(RLFB)checkIpBlock(RLFB)},12000)}
   function pirate(){clearInterval(timer);licCss();if(overlay){overlay.remove();overlay=null}
     const o=document.createElement('div');o.id='lic-overlay';o.innerHTML=`<div class="lic-card" style="text-align:center">
       <div class="lic-logo" style="margin:0 auto 14px;background:linear-gradient(135deg,#e11d48,#f97316)">🛡️</div>
@@ -509,7 +532,7 @@
     const s=get();
     const chk=await (await fetch(SRC+'?t='+Date.now(),{cache:'no-store'}).catch(()=>({json:async()=>({})}))).json().catch(()=>({}));
     if(!hostOK(chk.domaines))return pirate();
-    if(s.mail){const r=await verif(s.mail,s.key);if(r.ok){save(s.mail,s.key,r.expire);applyData(r.data);return watch(r.expire)}if(r.dom)return pirate();lock(r.msg)}
+    if(s.mail){const r=await verif(s.mail,s.key);if(r.ok){save(s.mail,s.key,r.expire);applyData(r.data);return watch(r.expire)}if(r.dom)return pirate();if(r.ipb)return;lock(r.msg)}
     else lock();
   })();
 })();
