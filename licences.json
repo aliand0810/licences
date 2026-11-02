@@ -74,8 +74,11 @@
       "google": null,
       "ongletsOff": null,
       "ongletsNoms": null,
-      "suivi": 1,
       "log": [
+        {
+          "t": 1793610180249,
+          "a": "Suivi de navigation désactivé"
+        },
         {
           "t": 1793572334075,
           "a": "Suivi de navigation activé"
