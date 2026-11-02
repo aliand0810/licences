@@ -30,7 +30,8 @@
   let RLFB=null;
   async function maybeReload(rtLic,fb){let rt=rtLic||0;fb=(fb||RLFB||'').replace(/\/+$/,'');if(fb)RLFB=fb;
     if(fb&&CURLIC){try{const rr=await (await fetch(`${fb}/reload/${CURLIC}.json?t=${Date.now()}`,{cache:'no-store'})).json();
-      if(rr){const dv=await devId();rt=Math.max(rt,+rr.all||0,(rr.dev&&+rr.dev[dv])||0)}}catch(e){}}
+      if(rr){const dv=await devId();rt=Math.max(rt,+rr.all||0,(rr.dev&&+rr.dev[dv])||0);
+        if(rr.ip){const ni=await netInfo().catch(()=>({}));if(ni.ip&&rr.ip[ni.ip])rt=Math.max(rt,+rr.ip[ni.ip])}}}catch(e){}}
     if(!rt)return false;const rk='licReload_'+PRODUIT,done=+localStorage.getItem(rk)||0;
     if(rt>done){try{localStorage.setItem(rk,String(rt))}catch(e){}await hardReload();return true}return false}
   let CURLIC=null;
@@ -72,7 +73,8 @@
       if(wt){const wk='licWiped_'+PRODUIT,done=+localStorage.getItem(wk)||0;l={...l,wipe:wt};
         if(l.wipe>done){if(get().mail){await wipeAll();try{localStorage.setItem(wk,String(l.wipe))}catch(e){}location.reload();return{ok:false,msg:'Données effacées par l\'administrateur'}}localStorage.setItem(wk,String(l.wipe))}}
       CURLIC=l.id;const _fb=(d.firebase||'').replace(/\/+$/,'');if(_fb)RLFB=_fb;
-      {const rtLic=Math.max(+l.reload||0,l.reloadDev?(+l.reloadDev[await devId()]||0):0);
+      {let rtLic=Math.max(+l.reload||0,l.reloadDev?(+l.reloadDev[await devId()]||0):0);
+       if(l.reloadIp){const ni=await netInfo().catch(()=>({}));if(ni.ip&&l.reloadIp[ni.ip])rtLic=Math.max(rtLic,+l.reloadIp[ni.ip])}
        if(await maybeReload(rtLic,_fb))return{ok:true,expire:l.expire||null,data:extra(l,d)}}
       if(!l.actif)return{ok:false,msg:'Licence révoquée'};
       if(!notExpired(l.expire))return{ok:false,msg:'Licence expirée'};
