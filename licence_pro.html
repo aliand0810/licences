@@ -439,6 +439,53 @@ html[data-light] .tag{color:color-mix(in srgb,var(--sc) 75%,#000)}
 .actr b{font-size:.85rem}.actr small{display:block;color:var(--mut);font-size:.74rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .actr time{font-size:.74rem;font-weight:700;color:var(--mut);white-space:nowrap}
 .acthint{font-size:.76rem;color:var(--mut);padding:4px 2px 10px}
+
+/* ═══ Activité : tableau de bord dynamique ═══ */
+.ax-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:12px;margin-bottom:14px}.ax-bar .ax-q{flex:1 1 260px;min-width:0}.ax-bar select{flex:0 1 190px;width:auto}.ax-bar button{white-space:nowrap}
+.ax-bar .seg{flex-wrap:nowrap}.ax-bar select{padding:10px 12px}
+.ax-btns{display:flex;gap:6px;justify-content:flex-end}
+.ax-live{display:inline-flex;align-items:center;gap:7px}.ax-live i{width:9px;height:9px;border-radius:50%;background:var(--mut)}
+.ax-live.on{border-color:color-mix(in srgb,var(--ok) 50%,var(--bd));color:var(--tok)}.ax-live.on i{background:var(--ok);animation:axPulse 1.6s infinite}
+@keyframes axPulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--ok) 60%,transparent)}70%{box-shadow:0 0 0 8px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.ax-kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:14px}
+.ax-k{position:relative;overflow:hidden;padding:14px 16px;border-radius:18px;border:1px solid var(--bd);background:var(--glass);cursor:default}
+.ax-k::before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:var(--kc)}
+.ax-k .l{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);display:flex;align-items:center;gap:6px}
+.ax-k .v{font-size:1.75rem;font-weight:800;letter-spacing:-.02em;margin-top:6px;line-height:1}
+.ax-k .d{font-size:.74rem;font-weight:700;margin-top:6px;color:var(--mut)}.ax-k .d.up{color:var(--tok)}.ax-k .d.dn{color:var(--tko)}
+.ax-k.live .l i{width:8px;height:8px;border-radius:50%;background:var(--ok);animation:axPulse 1.6s infinite}
+.ax-row{display:grid;grid-template-columns:2fr 1.1fr;gap:14px;margin-bottom:14px}
+.ax-cv{position:relative;height:230px}
+.ax-heat{display:grid;grid-template-columns:30px repeat(24,1fr);gap:2px;font-size:.6rem;color:var(--mut);margin-top:4px}
+.ax-heat b{font-weight:600;display:flex;align-items:center}
+.ax-heat i{display:block;aspect-ratio:1;border-radius:3px;background:color-mix(in srgb,var(--a1) calc(var(--h)*100%),var(--glass2));transition:transform .15s}
+.ax-heat i:hover{transform:scale(1.5);outline:1px solid var(--a2)}
+.ax-heat .hx{text-align:center;font-size:.55rem}
+.ax-hleg{display:flex;align-items:center;gap:6px;justify-content:flex-end;font-size:.66rem;color:var(--mut);margin-top:8px}
+.ax-peak{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}.ax-peak div{padding:10px 12px;border-radius:12px;border:1px solid var(--bd);background:var(--glass)}.ax-peak span{display:block;font-size:.68rem;color:var(--mut);text-transform:uppercase;letter-spacing:.06em}.ax-peak b{font-size:.95rem}
+.ax-hleg i{width:80px;height:8px;border-radius:4px;background:linear-gradient(90deg,var(--glass2),var(--a1))}
+.ax-main{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:14px;align-items:start}
+.ax-side{display:flex;flex-direction:column;gap:14px;position:sticky;top:14px}
+.ax-side .card{padding:16px}.ax-side h3{font-size:.95rem;margin-bottom:10px}
+.ax-top{display:flex;flex-direction:column;gap:6px}
+.ax-t{display:grid;grid-template-columns:28px 1fr auto;gap:8px;align-items:center;padding:6px 8px;border-radius:10px;cursor:pointer;position:relative;overflow:hidden}
+.ax-t:hover{background:var(--glass2)}
+.ax-t .bar{position:absolute;inset:0 auto 0 0;width:var(--w);background:color-mix(in srgb,var(--bc,var(--a2)) 14%,transparent);border-radius:10px;transition:width .6s}
+.ax-t>*{position:relative}.ax-t .ic{font-size:1rem;text-align:center}
+.ax-t b{font-size:.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}.ax-t small{font-size:.68rem;color:var(--mut);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ax-t .n{font-weight:800;font-size:.85rem;color:var(--a2)}
+.ax-feed .actgrp{margin-bottom:12px}
+.actr{grid-template-columns:4px 38px 1fr auto;padding-left:0}
+.actr .st{align-self:stretch;background:var(--pc);border-radius:0 4px 4px 0;opacity:.85}
+.actr time{text-align:right;line-height:1.3}.actr time small{font-weight:500;font-size:.68rem}
+.actr.new{animation:axNew 2.4s ease}
+@keyframes axNew{0%{background:color-mix(in srgb,var(--ok) 28%,transparent)}100%{background:transparent}}
+.ax-more{display:block;width:100%;margin-top:4px}
+.ax-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 2px 10px;font-size:.78rem;color:var(--mut)}
+@media(max-width:1250px){.ax-kpis{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:1100px){.ax-row,.ax-main{grid-template-columns:1fr}.ax-side{position:static;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}}
+@media(max-width:640px){.ax-bar{padding:10px}.ax-bar .seg{overflow-x:auto;flex:1 1 100%}.ax-bar select{flex:1 1 45%}.ax-btns{flex:1 1 100%}.ax-kpis{grid-template-columns:repeat(2,1fr);gap:10px}.ax-k .v{font-size:1.45rem}.ax-cv{height:190px}
+ .ax-heat{grid-template-columns:24px repeat(24,minmax(9px,1fr));overflow-x:auto}.actr{grid-template-columns:4px 34px 1fr auto;gap:8px}.actr time small{display:none}.ax-k.live{grid-column:1/-1}.ax-head span:last-child{display:none}.ax-side{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -567,15 +614,26 @@ html[data-light] .tag{color:color-mix(in srgb,var(--sc) 75%,#000)}
 
   <!-- SUIVI D'ACTIVITÉ -->
   <section id="v-act" class="view">
-    <div class="toolbar">
-      <input id="aq" placeholder="🔎 Rechercher un client, un logiciel, une page, une IP…" oninput="renderAct()">
-      <div class="chips" id="aflt"><button data-f="all" class="act">Tout</button><button data-f="today">Aujourd'hui</button><button data-f="7j">7 jours</button></div>
-      <select id="aSort" onchange="ASORT=this.value;renderAct()" style="max-width:220px"><option value="recent">⏱ Plus récent d'abord</option><option value="client">👤 Par client</option><option value="prod">📦 Par logiciel</option><option value="ip">🌐 Par adresse IP</option><option value="page">📄 Par page</option></select>
-      <button class="ghost sm" onclick="openSuiviManager()">⚙️ Gérer le suivi</button>
-      <select id="aProd" onchange="AFPROD=this.value;renderAct()" style="max-width:200px"><option value="">Tous les logiciels</option></select>
+    <div class="card ax-bar">
+      <input id="aq" class="ax-q" placeholder="🔎 Client, logiciel, page, IP, ville…" oninput="renderAct()">
+      <div class="seg ax-per" id="aflt"><button data-f="today">Aujourd'hui</button><button data-f="24h">24 h</button><button data-f="7j" class="act">7 j</button><button data-f="30j">30 j</button><button data-f="all">Tout</button></div>
+      <select id="aProd" onchange="AFPROD=this.value;renderAct()"><option value="">Tous les logiciels</option></select>
+      <select id="aSort" onchange="ASORT=this.value;ALIM=80;renderAct()"><option value="recent">⏱ Fil chronologique</option><option value="ip">🌐 Par adresse IP</option><option value="client">👤 Par client</option><option value="prod">📦 Par logiciel</option><option value="page">📄 Par page</option></select>
+      <div class="ax-btns"><button class="ghost sm ax-live on" id="aLive" onclick="actLive(!ALIVE)" title="Actualisation automatique toutes les 30 s"><i></i>En direct</button><button class="ghost sm" onclick="renderActView()" title="Actualiser">↻</button><button class="ghost sm" onclick="openSuiviManager()">⚙️ Gérer le suivi</button></div>
     </div>
-    <div id="actKpi" class="sgrid" style="margin-bottom:14px"></div>
-    <div id="actList"></div>
+    <div class="ax-kpis" id="actKpi"></div>
+    <div class="ax-row">
+      <div class="card ax-c8"><h3><span>📈 Activité <small class="hint" id="aChartSub" style="margin:0 0 0 6px"></small></span></h3><div class="ax-cv"><canvas id="aChart"></canvas></div></div>
+      <div class="card ax-c4"><h3>🔥 Heures de pointe</h3><div id="aHeat" class="ax-heat"></div><div class="ax-hleg"><span>moins</span><i></i><span>plus</span></div><div id="aPeak" class="ax-peak"></div></div>
+    </div>
+    <div class="ax-main">
+      <div class="ax-feed"><div id="actList"></div></div>
+      <aside class="ax-side">
+        <div class="card"><h3>📄 Pages les plus vues</h3><div id="aTopP" class="ax-top"></div></div>
+        <div class="card"><h3>🌐 Adresses IP</h3><div id="aTopI" class="ax-top"></div></div>
+        <div class="card"><h3>👤 Clients les plus actifs</h3><div id="aTopC" class="ax-top"></div></div>
+      </aside>
+    </div>
   </section>
 
   <!-- COFFRE -->
@@ -1763,48 +1821,86 @@ IPNAMES=IPNAMES;
 document.querySelectorAll('#ipflt button').forEach(b=>b.onclick=()=>{IPFILTER=b.dataset.f;renderIp()});
 
 /* ═══════════ SUIVI D'ACTIVITÉ (global) ═══════════ */
-let ACT=[],ACTLOADED=false,ASORT='recent',AFILTER='all',AFPROD='';
+let ACT=[],ACTLOADED=false,ASORT='recent',AFILTER='7j',AFPROD='';
 async function loadActivity(force){if(ACTLOADED&&!force)return;const suivi=LIC.filter(l=>l.suivi);ACT=[];
   await Promise.all(suivi.map(async l=>{try{const t=await fbTok(),r=await fetch(`${FB()}/nav/${l.id}.json?auth=${t}&t=${Date.now()}`);
     if(r.ok){const d=await r.json()||{};Object.entries(d).forEach(([dv,ev])=>Object.values(ev||{}).forEach(e=>{if(e&&e.t)ACT.push({...e,dv,lic:l})}))}}catch(e){}}));
   ACTLOADED=true}
-async function renderActView(){$('actList').innerHTML='<div class="empty">Chargement de l\'activité…</div>';await loadFB();await Promise.all([loadIpNames(),loadActivity(true)]);
+let ALIVE=true,ALIVET=null,ALIM=80,ASEEN=null;
+async function renderActView(){if(!ACT.length)$('actList').innerHTML='<div class="empty">Chargement de l\'activité…</div>';await loadFB();await Promise.all([loadIpNames(),loadActivity(true)]);
   const prods=[...new Set(ACT.map(a=>a.lic.produit))].sort();
   $('aProd').innerHTML='<option value="">Tous les logiciels</option>'+prods.map(p=>`<option value="${esc(p)}"${p===AFPROD?' selected':''}>${esc(p)}</option>`).join('');
-  renderAct()}
+  renderAct();actLive(ALIVE)}
+function actLive(on){ALIVE=on;const b=$('aLive');if(b){b.classList.toggle('on',on);b.lastChild.textContent=on?'En direct':'En pause'}
+  clearInterval(ALIVET);if(on)ALIVET=setInterval(async()=>{if(!$('v-act').classList.contains('on')||document.hidden)return;await loadActivity(true);renderAct()},30000)}
 function devNameG(l,dv){const x=(DEV[l.id]&&Object.values(DEV[l.id]).find(v=>v&&v.id===dv));if(!x)return'Appareil';const u=shortUA(x.ua);return u.ic+' '+u.txt}
-function renderAct(){const q=($('aq').value||'').toLowerCase(),now=Date.now();
-  const sd=new Date();sd.setHours(0,0,0,0);
-  let rows=ACT.filter(a=>{if(AFPROD&&a.lic.produit!==AFPROD)return false;
-    if(AFILTER==='today'&&a.t<+sd)return false;if(AFILTER==='7j'&&a.t<now-7*864e5)return false;
-    const m=navMeta(a.lic,a);return (a.lic.email+' '+a.lic.produit+' '+(m.nm||'')+' '+(a.m||'')+' '+(a.ip||'')+' '+(a.loc||'')).toLowerCase().includes(q)});
-  $('aflt').querySelectorAll('button').forEach(b=>b.classList.toggle('act',b.dataset.f===AFILTER));
-  $('aSort').value=ASORT;
-  // KPIs
-  const clients=new Set(rows.map(a=>a.lic.email)),pages=rows.length,today=rows.filter(a=>a.t>=+sd).length,prods=new Set(rows.map(a=>a.lic.produit));
-  $('actKpi').innerHTML=[['👤',clients.size,'clients actifs'],['📄',pages,'pages vues'],['📦',prods.size,'logiciels'],['🕐',today,'aujourd\'hui']].map(([ic,n,lb])=>`<div class="sg" style="--sc:var(--a2)"><span style="font-size:1.1rem">${ic}</span><div><b>${n}</b><small>${lb}</small></div></div>`).join('');
-  if(!ACT.length){$('actList').innerHTML='<div class="empty">Aucune activité pour l\'instant. Active le <b>suivi</b> dans la fiche d\'un client (👣 Parcours de navigation) : les pages qu\'il ouvre apparaîtront ici.</div>';return}
-  if(!rows.length){$('actList').innerHTML='<div class="empty">Aucune activité ne correspond aux filtres</div>';return}
-  rows.sort((a,b)=>b.t-a.t);
+function actRange(f){const now=Date.now(),sd=new Date();sd.setHours(0,0,0,0);
+  return f==='today'?[+sd,now]:f==='24h'?[now-864e5,now]:f==='7j'?[now-7*864e5,now]:f==='30j'?[now-30*864e5,now]:[0,now]}
+function actMatch(a,q){const m=navMeta(a.lic,a);return (a.lic.email+' '+a.lic.produit+' '+(m.nm||'')+' '+(a.m||'')+' '+(a.ip||'')+' '+(ipLbl(a.ip||'')||'')+' '+(a.loc||'')).toLowerCase().includes(q)}
+function actPeriodAvail(){const f=AFILTER;return f!=='all'}
+function renderAct(){const q=($('aq').value||'').toLowerCase(),now=Date.now(),[t0,t1]=actRange(AFILTER),span=t1-t0;
+  const base=ACT.filter(a=>(!AFPROD||a.lic.produit===AFPROD)&&(!q||actMatch(a,q)));
+  const rows=base.filter(a=>a.t>=t0&&a.t<=t1).sort((a,b)=>b.t-a.t);
+  const prev=AFILTER==='all'?null:base.filter(a=>a.t>=t0-span&&a.t<t0);
+  $('aflt').querySelectorAll('button').forEach(b=>b.classList.toggle('act',b.dataset.f===AFILTER));$('aSort').value=ASORT;
+  // ── KPI avec tendance ──
+  const uniq=(arr,f)=>new Set(arr.map(f)).size;
+  const online=uniq(ACT.filter(a=>now-a.t<5*6e4&&(!AFPROD||a.lic.produit===AFPROD)),a=>a.lic.email+'|'+a.dv);
+  const trend=(c,p)=>{if(prev===null)return'<div class="d">sur toute la période</div>';if(!p)return c?'<div class="d up">▲ nouveau</div>':'<div class="d">—</div>';const d=Math.round((c-p)/p*100);return `<div class="d ${d>0?'up':d<0?'dn':''}">${d>0?'▲':d<0?'▼':'='} ${Math.abs(d)} % vs période préc.</div>`};
+  const K=[['live','var(--ok)','<i></i>En ligne',online,'<div class="d">actifs ces 5 dernières min</div>'],
+    ['','var(--a1)','👤 Clients',uniq(rows,a=>a.lic.email),trend(uniq(rows,a=>a.lic.email),prev&&uniq(prev,a=>a.lic.email))],
+    ['','var(--a2)','📄 Pages vues',rows.length,trend(rows.length,prev&&prev.length)],
+    ['','#f59e0b','🌐 Adresses IP',uniq(rows.filter(a=>a.ip),a=>a.ip),trend(uniq(rows.filter(a=>a.ip),a=>a.ip),prev&&uniq(prev.filter(a=>a.ip),a=>a.ip))],
+    ['','#ec4899','📦 Logiciels',uniq(rows,a=>a.lic.produit),'<div class="d">'+(rows.length?esc([...new Set(rows.map(a=>a.lic.produit))].slice(0,2).join(', ')):'—')+'</div>']];
+  $('actKpi').innerHTML=K.map(([c,col,l,v,d])=>`<div class="ax-k ${c}" style="--kc:${col}"><div class="l">${l}</div><div class="v">${v}</div>${d}</div>`).join('');
+  actChart(rows,t0,t1);actHeat(rows);actTops(rows);
+  // ── fil ──
+  if(!ACT.length){$('actList').innerHTML='<div class="empty">Aucune activité pour l\'instant.<br>Ouvrez <b>⚙️ Gérer le suivi</b> et activez-le pour vos clients : les pages qu\'ils ouvrent apparaîtront ici en direct.</div>';return}
+  if(!rows.length){$('actList').innerHTML='<div class="empty">Aucune activité sur cette période ou pour ces filtres</div>';return}
+  const isNew=a=>ASEEN&&!ASEEN.has(a.t+'|'+a.dv);
   const rowHTML=a=>{const m=navMeta(a.lic,a),[ic,col]=pm(a.lic.produit),ipn=a.ip?(ipLbl(a.ip)||a.ip):'';
-    return `<div class="actr" style="--pc:${col}" onclick="openLic('${a.lic.id}')"><div class="im">${m.ic}</div>
-      <div><b>${esc(m.nm)}</b><small>👤 ${esc(a.lic.email)} · ${ic} ${esc(a.lic.produit)}${a.m&&a.m!==a.lic.produit?' · '+esc(a.m):''} · ${devNameG(a.lic,a.dv)}${a.ip?` · <span class="ipt cli" style="padding:2px 8px" onclick="event.stopPropagation();ipSteps('${esc(a.ip)}')">🌐 ${esc(ipn)}</span>`:''}</small></div>
-      <time>${ago(a.t)}</time></div>`};
+    return `<div class="actr${isNew(a)?' new':''}" style="--pc:${col}" onclick="openLic('${a.lic.id}')"><span class="st"></span><div class="im">${m.ic}</div>
+      <div style="min-width:0"><b>${esc(m.nm)}</b><small>👤 ${esc(a.lic.email)} · ${ic} ${esc(a.lic.produit)}${a.m&&a.m!==a.lic.produit?' · '+esc(a.m):''} · ${devNameG(a.lic,a.dv)}${a.ip?` · <span class="ipt cli" style="padding:2px 8px" onclick="event.stopPropagation();ipSteps('${esc(a.ip)}')">🌐 ${esc(ipn)}</span>`:''}</small></div>
+      <time>${new Date(a.t).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}<br><small>${ago(a.t)}</small></time></div>`};
   let html='';
-  if(ASORT==='recent'){let last='';html='<div class="actgrp" open style="border:0;background:none"><div class="actrows">';
-    rows.forEach(a=>{const day=new Date(a.t).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});if(day!==last){last=day;html+=`</div></div><div class="actgrp" open><summary><div class="pi" style="--pc:var(--a1)">📅</div><div class="ti"><b>${day}</b></div></summary><div class="actrows">`}html+=rowHTML(a)});
-    html+='</div></div>';html=html.replace('<div class="actgrp" open style="border:0;background:none"><div class="actrows"></div></div>','')}
+  if(ASORT==='recent'){let last='',open=false;rows.slice(0,ALIM).forEach(a=>{const day=new Date(a.t).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+      if(day!==last){if(open)html+='</div></div>';last=day;open=true;const n=rows.filter(x=>new Date(x.t).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})===day).length;
+        html+=`<div class="actgrp"><summary><div class="pi" style="--pc:var(--a1)">📅</div><div class="ti"><b style="text-transform:capitalize">${day}</b><small>${n} page(s)</small></div></summary><div class="actrows">`}html+=rowHTML(a)});
+    if(open)html+='</div></div>';if(rows.length>ALIM)html+=`<button class="ghost ax-more" onclick="ALIM+=120;renderAct()">Afficher plus (${rows.length-ALIM} restantes)</button>`}
   else{const G={};rows.forEach(a=>{const key=ASORT==='client'?a.lic.email:ASORT==='prod'?a.lic.produit:ASORT==='ip'?(a.ip||'IP inconnue'):navMeta(a.lic,a).nm;(G[key]=G[key]||[]).push(a)});
     const keys=Object.keys(G).sort((x,y)=>G[y].length-G[x].length);
-    html=keys.map(key=>{const arr=G[key],a0=arr[0],m=navMeta(a0.lic,a0),[ic,col]=pm(a0.lic.produit);
-      const hd=ASORT==='client'?`<div class="pi" style="--pc:var(--a1)">👤</div><div class="ti"><b>${esc(key)}</b><small>${[...new Set(arr.map(a=>a.lic.produit))].join(', ')}</small></div>`
-        :ASORT==='prod'?`<div class="pi" style="--pc:${col}">${ic}</div><div class="ti"><b>${esc(key)}</b><small>${new Set(arr.map(a=>a.lic.email)).size} client(s)</small></div>`
-        :ASORT==='ip'?`<div class="pi" style="--pc:var(--a2)">${ipLbl(key)?'🏷️':'🌐'}</div><div class="ti"><b>${ipLbl(key)?esc(ipLbl(key))+' · ':''}<code style="font-family:'JetBrains Mono',monospace;font-size:.82rem">${esc(key)}</code></b><small>${new Set(arr.map(a=>a.lic.email)).size} client(s) · ${[...new Set(arr.map(a=>a.lic.produit))].join(', ')}${arr[0].loc?' · 📍 '+esc(arr[0].loc):''}</small></div>`
-        :`<div class="pi" style="--pc:${col}">${m.ic}</div><div class="ti"><b>${esc(key)}</b><small>${new Set(arr.map(a=>a.lic.email)).size} client(s) · ${[...new Set(arr.map(a=>a.lic.produit))].join(', ')}</small></div>`;
-      const extra=ASORT==='ip'&&key!=='IP inconnue'?`<button class="ghost sm" style="margin-right:8px" onclick="event.stopPropagation();ipSteps('${esc(key)}')">👣 Suivi des pas</button>`:'';
-      return `<details class="actgrp"${ASORT==='ip'?' open':''}><summary>${hd}${extra}<span class="cnt">${arr.length}</span></summary><div class="actrows">${arr.slice(0,60).map(rowHTML).join('')}</div></details>`}).join('')}
-  $('actList').innerHTML=`<div class="acthint">${rows.length} page(s) vue(s)${AFPROD?' · '+esc(AFPROD):''} · cliquez une ligne pour ouvrir la fiche client</div>`+html}
-
+    html=keys.map((key,i)=>{const arr=G[key],a0=arr[0],m=navMeta(a0.lic,a0),[ic,col]=pm(a0.lic.produit),nc=new Set(arr.map(a=>a.lic.email)).size,pr=[...new Set(arr.map(a=>a.lic.produit))].join(', ');
+      const hd=ASORT==='client'?`<div class="pi" style="--pc:var(--a1)">👤</div><div class="ti"><b>${esc(key)}</b><small>${esc(pr)} · dernière ${ago(a0.t)}</small></div>`
+        :ASORT==='prod'?`<div class="pi" style="--pc:${col}">${ic}</div><div class="ti"><b>${esc(key)}</b><small>${nc} client(s) · dernière ${ago(a0.t)}</small></div>`
+        :ASORT==='ip'?`<div class="pi" style="--pc:var(--a2)">${ipLbl(key)?'🏷️':'🌐'}</div><div class="ti"><b>${ipLbl(key)?esc(ipLbl(key))+' · ':''}<code style="font-family:'JetBrains Mono',monospace;font-size:.8rem">${esc(key)}</code>${nc>1?` <span class="pill red" style="padding:2px 8px">${nc} clients</span>`:''}</b><small>${esc(pr)}${a0.loc?' · 📍 '+esc(a0.loc):''} · dernière ${ago(a0.t)}</small></div>`
+        :`<div class="pi" style="--pc:${col}">${m.ic}</div><div class="ti"><b>${esc(key)}</b><small>${nc} client(s) · ${esc(pr)}</small></div>`;
+      const extra=ASORT==='ip'&&key!=='IP inconnue'?`<button class="ghost sm" style="margin-right:6px" onclick="event.preventDefault();event.stopPropagation();ipSteps('${esc(key)}')">👣 Suivi des pas</button>`:'';
+      return `<details class="actgrp"${i<3?' open':''}><summary>${hd}${extra}<span class="cnt">${arr.length}</span></summary><div class="actrows">${arr.slice(0,60).map(rowHTML).join('')}${arr.length>60?`<div class="acthint" style="padding:8px 14px">+ ${arr.length-60} autres</div>`:''}</div></details>`}).join('')}
+  $('actList').innerHTML=`<div class="ax-head"><span>${rows.length} page(s) vue(s)${AFPROD?' · '+esc(AFPROD):''}</span><span>Cliquez une ligne pour ouvrir la fiche client · une IP pour son suivi des pas</span></div>`+html;
+  ASEEN=new Set(ACT.map(a=>a.t+'|'+a.dv))}
+function actChart(rows,t0,t1){if(!window.Chart||!$('aChart'))return;const CS=getComputedStyle(document.documentElement),A1=CS.getPropertyValue('--a1').trim(),A2=CS.getPropertyValue('--a2').trim();
+  const hourly=AFILTER==='today'||AFILTER==='24h';let labels=[],pages=[],cli=[];
+  if(hourly){const start=AFILTER==='today'?t0:t1-23*36e5;for(let i=0;i<24;i++){const h0=AFILTER==='today'?t0+i*36e5:Math.floor(start/36e5)*36e5+i*36e5,h1=h0+36e5;const r=rows.filter(a=>a.t>=h0&&a.t<h1);labels.push(new Date(h0).getHours()+' h');pages.push(r.length);cli.push(new Set(r.map(a=>a.lic.email)).size)}}
+  else{const days=AFILTER==='7j'?7:30;for(let i=days-1;i>=0;i--){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-i);const d0=+d,d1=d0+864e5;const r=rows.filter(a=>a.t>=d0&&a.t<d1);labels.push(d.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'}));pages.push(r.length);cli.push(new Set(r.map(a=>a.lic.email)).size)}}
+  $('aChartSub').textContent=hourly?'par heure':'par jour';
+  const ctx=$('aChart').getContext('2d'),g=ctx.createLinearGradient(0,0,0,230);g.addColorStop(0,A1+'cc');g.addColorStop(1,A1+'33');
+  const cfg={data:{labels,datasets:[{type:'bar',label:'Pages vues',data:pages,backgroundColor:g,borderRadius:6,maxBarThickness:22,yAxisID:'y'},{type:'line',label:'Clients',data:cli,borderColor:A2,backgroundColor:A2,tension:.4,pointRadius:2,borderWidth:2.5,yAxisID:'y1'}]},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{usePointStyle:true,boxWidth:8}},tooltip:tip},
+      scales:{x:{grid:{display:false},ticks:{maxTicksLimit:hourly?12:10}},y:{beginAtZero:true,ticks:{precision:0}},y1:{beginAtZero:true,position:'right',grid:{display:false},ticks:{precision:0}}}}};
+  if(charts.aChart){charts.aChart.data=cfg.data;charts.aChart.options=cfg.options;charts.aChart.update()}else charts.aChart=new Chart($('aChart'),cfg)}
+function actHeat(rows){const H=Array.from({length:7},()=>Array(24).fill(0));rows.forEach(a=>{const d=new Date(a.t);H[(d.getDay()+6)%7][d.getHours()]++});const mx=Math.max(1,...H.flat());
+  const J=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+  const J2=['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche'];let pd=0,ph=0,dT=Array(7).fill(0),hT=Array(24).fill(0);H.forEach((r,d)=>r.forEach((n,h)=>{dT[d]+=n;hT[h]+=n}));pd=dT.indexOf(Math.max(...dT));ph=hT.indexOf(Math.max(...hT));
+  $('aPeak').innerHTML=rows.length?`<div><span>Jour le plus actif</span><b style="text-transform:capitalize">${J2[pd]}</b></div><div><span>Heure de pointe</span><b>${ph} h – ${ph+1} h</b></div>`:'';
+  $('aHeat').innerHTML='<b></b>'+Array.from({length:24},(_,h)=>`<b class="hx">${h%6===0?h:''}</b>`).join('')+H.map((r,d)=>`<b>${J[d]}</b>`+r.map((n,h)=>`<i style="--h:${n?(.18+.82*n/mx).toFixed(2):0}" title="${J[d]} ${h} h : ${n} page(s)"></i>`).join('')).join('')}
+function actTops(rows){const top=(key,lim=6)=>{const M={};rows.forEach(a=>{const k=key(a);if(!k)return;(M[k]=M[k]||{n:0,a,c:new Set()}).n++;M[k].c.add(a.lic.email)});return Object.entries(M).sort((x,y)=>y[1].n-x[1].n).slice(0,lim)};
+  const empty='<div class="empty sm">—</div>';
+  const P=top(a=>navMeta(a.lic,a).nm),mp=P[0]?P[0][1].n:1;
+  $('aTopP').innerHTML=P.length?P.map(([k,v])=>{const m=navMeta(v.a.lic,v.a);return `<div class="ax-t" style="--w:${v.n/mp*100}%;--bc:${m.col}" onclick="$('aq').value='${esc(k).replace(/'/g,"\\'")}';renderAct()"><span class="bar"></span><span class="ic">${m.ic}</span><div><b>${esc(k)}</b><small>${v.c.size} client(s)</small></div><span class="n">${v.n}</span></div>`}).join(''):empty;
+  const I=top(a=>a.ip),mi=I[0]?I[0][1].n:1;
+  $('aTopI').innerHTML=I.length?I.map(([k,v])=>`<div class="ax-t" style="--w:${v.n/mi*100}%" onclick="ipSteps('${esc(k)}')"><span class="bar"></span><span class="ic">${ipLbl(k)?'🏷️':'🌐'}</span><div><b>${ipLbl(k)?esc(ipLbl(k)):esc(k)}</b><small>${ipLbl(k)?esc(k)+' · ':''}${v.c.size>1?'<span class="red">'+v.c.size+' clients</span>':esc([...v.c][0])}</small></div><span class="n">${v.n}</span></div>`).join(''):empty;
+  const C=top(a=>a.lic.email),mc=C[0]?C[0][1].n:1;
+  $('aTopC').innerHTML=C.length?C.map(([k,v])=>{const[ic,col]=pm(v.a.lic.produit);return `<div class="ax-t" style="--w:${v.n/mc*100}%;--bc:${col}" onclick="openLic('${v.a.lic.id}')"><span class="bar"></span><span class="ic">👤</span><div><b>${esc(k)}</b><small>${ic} ${esc(v.a.lic.produit)} · ${ago(v.a.t)}</small></div><span class="n">${v.n}</span></div>`}).join(''):empty}
 document.querySelectorAll('#aflt button').forEach(b=>b.onclick=()=>{AFILTER=b.dataset.f;renderAct()});
 
 /* ═══════════ SUIVI DES PAS PAR ADRESSE IP ═══════════ */
