@@ -36,12 +36,12 @@
     if(rt>done){try{localStorage.setItem(rk,String(rt))}catch(e){}await hardReload();return true}return false}
   let CURLIC=null;
   // ⛔ Déconnexion / coupure à distance par adresse IP (nœud Firebase « ipblock »)
-  let IPBLOCKED=false;
+  let IPBLOCKED=false,lockPoll=null;
   const ipk=ip=>'ip_'+String(ip).replace(/[.:]/g,'_').replace(/[^\w]/g,'');
   // réseau IPv6 (/64) : stable pour une même box, alors que l'adresse IPv6 complète change plusieurs fois par jour
   function v6net(ip){ip=String(ip||'');if(!ip.includes(':'))return'';const p=ip.split('::'),A=p[0]?p[0].split(':'):[],B=p.length>1&&p[1]?p[1].split(':'):[];
     if(p.length<2&&A.length<8)return'';const H=[...A,...Array(Math.max(0,8-A.length-B.length)).fill('0'),...B].slice(0,4).map(x=>(x||'0').toLowerCase().replace(/^0+(?=.)/,''));return 'net6_'+H.join('_')}
-  async function checkIpBlock(fb){fb=(fb||RLFB||'').replace(/\/+$/,'');if(!fb)return null;
+  async function checkIpBlock(fb){fb=(fb||RLFB||'').replace(/\/+$/,'');if(!fb){try{fb=await fbUrl()}catch(e){}}if(!fb)return null;
     try{const ni=await netInfo().catch(()=>({})),dv=await devId(),keys=['dev_'+dv];
       if(ni.ip){keys.push(ipk(ni.ip));const n6=v6net(ni.ip);if(n6)keys.push(n6)}
       const res=await Promise.all(keys.map(k=>fetch(`${fb}/ipblock/${k}.json?t=${Date.now()}`,{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null)));
@@ -49,9 +49,13 @@
       const blk=hits.find(b=>b.mode==='block');
       if(blk){blocked(blk.msg);return 'block'}
       if(IPBLOCKED){location.reload();return null}
+      const kk='licKick_'+PRODUIT,done=+localStorage.getItem(kk)||0,bk='licBak_'+PRODUIT;
+      // 🔄 reconnexion à distance : restaure la session sauvegardée lors de la déconnexion
+      const reco=hits.filter(b=>b.mode==='reco').sort((x,y)=>(+y.t)-(+x.t))[0];
+      if(reco&&+reco.t>done&&!localStorage.getItem(KEY)&&localStorage.getItem(bk)){try{localStorage.setItem(KEY,localStorage.getItem(bk));localStorage.removeItem(bk);localStorage.setItem(kk,String(reco.t))}catch(e){}
+        clearInterval(lockPoll);await hardReload();return 'reco'}
       const deco=hits.filter(b=>b.mode==='deco').sort((x,y)=>(+y.t)-(+x.t))[0];
-      if(deco){const kk='licKick_'+PRODUIT,done=+localStorage.getItem(kk)||0;
-        if(+deco.t>done){KICKING=true;clearInterval(timer);try{localStorage.setItem(kk,String(deco.t));localStorage.removeItem(KEY)}catch(e){}await hardReload();return 'deco'}}
+      if(deco&&+deco.t>done){KICKING=true;clearInterval(timer);try{localStorage.setItem(kk,String(deco.t));const cur=localStorage.getItem(KEY);if(cur)localStorage.setItem(bk,cur);localStorage.removeItem(KEY)}catch(e){}await hardReload();return 'deco'}
     }catch(e){}return null}
   // 👣 Suivi de navigation (activé par licence dans Licence Pro) : page + onglet ouverts, horodatés
   let NAV=null,navLast='',navT=0;
@@ -375,7 +379,7 @@
     if(!canInscr())addEventListener('load',()=>{if(overlay&&canInscr()&&g('lk'))showKey(g('le')&&g('le').textContent)},{once:true});
     const go=async()=>{const m=g('lm').value,k=g('lk').value,b=g('lb');if(!m.trim()||!k.trim())return g('le').textContent='Renseignez l\'e-mail et la clé';
       b.textContent='Vérification…';b.disabled=true;g('le').textContent='';Object.keys(localStorage).filter(x=>x.startsWith('licSlot_')).forEach(x=>localStorage.removeItem(x));const r=await verif(m,k);b.textContent='Activer la licence';b.disabled=false;
-      if(r.ok){save(m,k,r.expire);applyData(r.data);overlay.remove();overlay=null;watch(r.expire);licToast('✅ Licence '+PRODUIT+' activée')}
+      if(r.ok){save(m,k,r.expire);try{localStorage.removeItem('licBak_'+PRODUIT)}catch(e){}clearInterval(lockPoll);applyData(r.data);overlay.remove();overlay=null;watch(r.expire);licToast('✅ Licence '+PRODUIT+' activée')}
       else if(!r.ipb&&g('le'))g('le').textContent=r.msg};
     g('lb').onclick=go;g('lk').addEventListener('keydown',e=>{if(e.key==='Enter')go()});
   }
@@ -399,7 +403,9 @@
     (document.body||document.documentElement).appendChild(o);overlay=o;
     try{document.body.style.overflow='hidden'}catch(e){}}
   function lock(msg,skipReq){
-    clearInterval(timer);if(overlay)return;shell();
+    clearInterval(timer);
+    if(localStorage.getItem('licBak_'+PRODUIT)){clearInterval(lockPoll);lockPoll=setInterval(()=>{if(document.visibilityState==='visible')checkIpBlock()},10000);setTimeout(()=>checkIpBlock(),1500)}
+    if(overlay)return;shell();
     if(!skipReq&&getReq())return showWaiting();
     showKey(msg);
   }

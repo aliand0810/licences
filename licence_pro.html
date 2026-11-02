@@ -508,6 +508,22 @@ html[data-light] .tag{color:color-mix(in srgb,var(--sc) 75%,#000)}
 .cut-opt input{width:20px;height:20px;margin-top:2px}.cut-opt div>b{display:block;font-size:.95rem}.cut-opt small b{color:var(--txt)}.cut-opt small{color:var(--mut);font-size:.78rem;line-height:1.45}
 .cutb{display:inline-block;font-size:.7rem;font-weight:800;padding:3px 9px;border-radius:99px;background:color-mix(in srgb,var(--ko) 18%,transparent);color:var(--tko);margin-left:6px}
 .ax-oth{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}.ax-oth span{font-size:.7rem;padding:2px 8px;border-radius:99px;border:1px dashed var(--bd);color:var(--mut)}
+
+.nc-hero{position:relative;text-align:center;padding:26px 22px 18px;background:radial-gradient(420px 160px at 50% 0,color-mix(in srgb,var(--nc) 28%,transparent),transparent 75%);border-bottom:1px solid var(--bd)}
+.nc-hero .x{position:absolute;top:14px;right:14px;width:36px;height:36px;border-radius:10px;border:1px solid var(--bd);background:var(--glass2);color:var(--txt);font-size:1rem;display:grid;place-items:center;padding:0}
+.nc-ic{width:64px;height:64px;margin:0 auto 12px;border-radius:20px;display:grid;place-items:center;font-size:1.9rem;background:linear-gradient(135deg,var(--nc),color-mix(in srgb,var(--nc) 55%,#000));box-shadow:0 12px 30px color-mix(in srgb,var(--nc) 45%,transparent);animation:ncPop .35s cubic-bezier(.2,1.4,.4,1)}
+@keyframes ncPop{from{transform:scale(.6);opacity:0}}
+.nc-hero h2{margin:0;font-size:1.25rem}.nc-hero p{margin:6px 0 0;color:var(--mut);font-size:.86rem}
+.nc-sum{display:flex;flex-direction:column;border:1px solid var(--bd);border-radius:14px;overflow:hidden;margin-bottom:12px}
+.nc-sum div{display:grid;grid-template-columns:130px 1fr;gap:10px;padding:10px 14px;border-bottom:1px solid var(--bd);font-size:.86rem}.nc-sum div:last-child{border-bottom:0}
+.nc-sum span{color:var(--mut);font-size:.74rem;text-transform:uppercase;letter-spacing:.06em;font-weight:700;padding-top:2px}.nc-sum b{font-weight:600}
+.nc-pts{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:7px}
+.nc-pts li{position:relative;padding-left:24px;font-size:.86rem;line-height:1.5}.nc-pts li::before{content:"›";position:absolute;left:8px;top:-1px;font-weight:800;color:var(--a2)}
+.nc-word{display:block;margin-top:14px;text-transform:none;letter-spacing:0;font-size:.86rem;color:var(--txt)}.nc-word input{margin-top:8px;text-align:center;font-weight:800;letter-spacing:.2em}
+.nc-f{display:flex;gap:10px}.nc-f button{flex:1}.nc-f .btn{flex:1.5}.nc-f .btn:disabled{opacity:.45}
+.nc-sp{display:inline-block;width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;animation:ncS .8s linear infinite;vertical-align:-2px}@keyframes ncS{to{transform:rotate(360deg)}}
+.ghost.ok{color:var(--tok);border-color:color-mix(in srgb,var(--ok) 45%,var(--bd))}
+@media(max-width:640px){.nc-sum div{grid-template-columns:1fr;gap:2px}}
 </style>
 </head>
 <body>
@@ -1820,7 +1836,7 @@ function renderIp(){const q=($('ipq').value||'').toLowerCase();let rows=ipAgg().
         <div class="mut" style="margin-top:3px">${x.hits} passage${x.hits>1?'s':''}${x.nav?' · 👣 '+x.nav+' nav':''}${x.refus?` · <span class="red">⚠ ${x.refus} refus</span>`:''}</div></div></div>
       <div class="ipb">${cl.map(([e,n])=>`<span class="ipt cli" onclick="ipFind('${esc(e)}')">👤 ${esc(e)}${n>1?' ·'+n:''}</span>`).join('')}</div>
       <div class="ipb">${pr.map(([p,n])=>{const[ic]=pm(p);return `<span class="ipt">${ic} ${esc(p)}</span>`}).join('')}</div>
-      <div class="ipx"><button class="ghost sm" onclick="ipRename('${esc(x.ip)}')">🏷️ ${nm?'Renommer':'Nommer'}</button><button class="ghost sm" onclick="copyTxt('${esc(x.ip)}')">📋 Copier</button>${nm?`<button class="ghost sm danger" onclick="ipRename('${esc(x.ip)}','')">Retirer le nom</button>`:''}${IPB[ipKey(x.ip)]?`<button class="ghost sm" style="color:var(--tok)" onclick="ipRestore('${esc(x.ip)}')">✅ Rétablir l'accès</button>`:`<button class="ghost sm danger" onclick="openIpCut('${esc(x.ip)}')">⛔ Déconnecter / couper</button>`}</div></div>`}).join('')+`</div>`
+      <div class="ipx"><button class="ghost sm" onclick="ipRename('${esc(x.ip)}')">🏷️ ${nm?'Renommer':'Nommer'}</button><button class="ghost sm" onclick="copyTxt('${esc(x.ip)}')">📋 Copier</button>${nm?`<button class="ghost sm danger" onclick="ipRename('${esc(x.ip)}','')">Retirer le nom</button>`:''}${ipCutBtns(x.ip)}</div></div>`}).join('')+`</div>`
     :'<div class="empty">Aucune adresse ne correspond à la recherche</div>')}
 function ipSel(ip,on){if(on)IPSEL[ip]=1;else delete IPSEL[ip];renderIp()}
 function ipSelAll(on){IPSEL={};if(on)IPROWS.forEach(x=>IPSEL[x.ip]=1);renderIp()}
@@ -1984,7 +2000,7 @@ async function ipSteps(ip){const nm=ipLbl(ip);
     <h4>Pages les plus vues</h4><div class="nvtop">${top.map(x=>`<div class="nvc" style="--pc:${x.m.col}"><div class="im">${x.m.ic}</div><div><b>${esc(x.m.nm)}</b><small>${x.n}× · ${ago(x.last)}</small></div></div>`).join('')}</div>
     <h4>Journal détaillé</h4><div class="nvl">${E.slice(0,120).map(a=>{const m=pageOf(a),[ic]=pm(a.lic.produit),day=new Date(a.t).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});const hd=day!==last?(last=day,`<div class="nvday">${day}</div>`):'';
       return hd+`<div class="nvi" style="--pc:${m.col}"><div class="im">${m.ic}</div><div><b>${esc(m.nm)}</b>${pathHTML(a)}<small>👤 ${esc(a.lic.email)}</small></div><time>${new Date(a.t).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</time></div>`}).join('')}</div>
-    <div class="row" style="gap:8px;margin-top:12px"><button class="ghost sm" onclick="ipRename('${esc(ip)}').then(()=>ipSteps('${esc(ip)}'))">🏷️ ${nm?'Renommer l\'IP':'Nommer cette IP'}</button><button class="ghost sm" onclick="copyTxt('${esc(ip)}')">📋 Copier l'IP</button>${IPB[ipKey(ip)]?`<button class="ghost sm" style="color:var(--tok)" onclick="ipRestore('${esc(ip)}').then(()=>ipSteps('${esc(ip)}'))">✅ Rétablir l'accès</button>`:`<button class="ghost sm danger" onclick="openIpCut('${esc(ip)}')">⛔ Déconnecter / couper</button>`}<button class="ghost sm${ipExcl(ip)?'':' danger'}" onclick="ipToggleExcl('${esc(ip)}',${!ipExcl(ip)}).then(()=>ipSteps('${esc(ip)}'))">${ipExcl(ip)?'✅ Réintégrer dans l\'activité':'🚫 Exclure de l\'activité'}</button></div>`}
+    <div class="row" style="gap:8px;margin-top:12px"><button class="ghost sm" onclick="ipRename('${esc(ip)}').then(()=>ipSteps('${esc(ip)}'))">🏷️ ${nm?'Renommer l\'IP':'Nommer cette IP'}</button><button class="ghost sm" onclick="copyTxt('${esc(ip)}')">📋 Copier l'IP</button>${ipCutBtns(ip)}<button class="ghost sm${ipExcl(ip)?'':' danger'}" onclick="ipToggleExcl('${esc(ip)}',${!ipExcl(ip)}).then(()=>ipSteps('${esc(ip)}'))">${ipExcl(ip)?'✅ Réintégrer dans l\'activité':'🚫 Exclure de l\'activité'}</button></div>`}
 
 /* ═══════════ GÉRER LE SUIVI (activer/désactiver par licence) ═══════════ */
 function openSuiviManager(){const rows=LIC.slice().sort((a,b)=>(b.suivi?1:0)-(a.suivi?1:0)||a.email.localeCompare(b.email));
@@ -2006,7 +2022,7 @@ function ipDevs(ip){const M={};const add=(id,ua,lab)=>{if(id&&!M[id])M[id]={id,u
   LIC.forEach(l=>Object.values(DEV[l.id]||{}).forEach(v=>{if(!v)return;if(v.lastIp===ip||v.ip===ip||(Array.isArray(v.hist)&&v.hist.some(h=>h.ip===ip)))add(v.id,v.ua,l.email)}));
   return Object.values(M)}
 async function loadIpBlocks(){try{const t=await fbTok(),r=await fetch(`${FB()}/ipblock.json?auth=${t}&t=${Date.now()}`);if(r.ok)IPB=await r.json()||{}}catch(e){}}
-function ipCutBadge(ip){const b=IPB[ipKey(ip)];if(!b)return'';return b.mode==='block'?`<span class="cutb" title="Coupé ${ago(b.t)}${b.prods?' · '+b.prods.join(', '):''}">⛔ Accès coupé</span>`:`<span class="cutb" style="background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--tw)" title="Déconnexion envoyée ${ago(b.t)}">🔌 Déconnecté ${ago(b.t)}</span>`}
+function ipCutBadge(ip){const b=IPB[ipKey(ip)];if(!b)return'';if(b.mode==='reco')return `<span class="cutb" style="background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--tok)">🔄 Reconnecté ${ago(b.t)}</span>`;return b.mode==='block'?`<span class="cutb" title="Coupé ${ago(b.t)}${b.prods?' · '+b.prods.join(', '):''}">⛔ Accès coupé</span>`:`<span class="cutb" style="background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--tw)" title="Déconnexion envoyée ${ago(b.t)}">🔌 Déconnecté ${ago(b.t)}</span>`}
 function ipKnown(){const M={};const add=(ip,email,prod)=>{if(!ip)return;const k=M[ip]=M[ip]||{ip,clients:new Set(),prods:new Set()};if(email)k.clients.add(email);if(prod)k.prods.add(prod)};
   try{ipAgg().forEach(x=>{Object.keys(x.clients).forEach(e=>add(x.ip,e));Object.keys(x.prods).forEach(p=>add(x.ip,null,p))})}catch(e){}
   (ACT||[]).forEach(a=>add(a.ip,a.lic.email,a.lic.produit));
@@ -2025,31 +2041,56 @@ function openIpCut(ip){const K=ipKnown();if(ip&&!K.find(x=>x.ip===ip))K.unshift(
     <label>Message affiché au poste <i style="text-transform:none;font-weight:500">(facultatif)</i></label>
     <textarea id="cutMsg" rows="2" maxlength="300" placeholder="Ex. Accès suspendu en attente de régularisation — contactez-nous."></textarea>
   </div>
-  <div class="md-f"><button class="ghost" onclick="closeModal()">Annuler</button><button class="btn" id="cutGo" style="background:var(--ko)" onclick="doIpCut()">Appliquer</button></div>`);
-  cutInfo()}
+  <div class="md-f"><button class="ghost" onclick="closeModal()">Annuler</button><button class="btn" id="cutGo" style="background:var(--ko)" onclick="doIpCut()">Continuer →</button></div>`);
+  cutInfo();const D=CUTDRAFT;if(D&&D.ip===ip){const r=document.querySelector(`input[name=cutMode][value=${D.mode}]`);if(r)r.checked=true;$('cutMsg').value=D.msg||'';if(!D.all){$('cutAll').checked=false;document.querySelectorAll('.cutP').forEach(c=>{c.disabled=false;c.checked=D.ps.includes(c.value)})}}}
 function cutInfo(){const sel=$('cutIp'),nw=sel.value==='__new';$('cutIpNew').hidden=!nw;const ip=nw?'':sel.value,x=ipKnown().find(k=>k.ip===ip);
   const prods=x&&x.prods.size?[...x.prods]:prods_all();
   const dv=ip?ipDevs(ip):[];
   $('cutInfo').innerHTML=ip?(x&&x.clients.size?`👤 Vu avec : <b>${[...x.clients].map(esc).join(', ')}</b>`:'Aucun client connu sur cette adresse pour l\'instant.')+`<br>📱 ${dv.length?`<b>${dv.length} appareil(s)</b> reconnu(s) sur ce poste (${dv.map(d=>{const u=shortUA(d.ua);return u.ic+' '+u.txt}).join(', ')}) : ils seront visés <b>même si leur adresse IP change</b>.`:'Aucun appareil reconnu : seule l\'adresse IP sera visée.'}${v6net(ip)?' · 🌐 IPv6 : tout le réseau de la box ('+esc(v6net(ip).replace('net6_','').replace(/_/g,':'))+'::/64) est visé.':''}`+(IPB[ipKey(ip)]?` · ${ipCutBadge(ip)}`:''):'Saisissez l\'adresse IP à viser.';
   $('cutProds').innerHTML=`<label style="grid-column:1/-1"><input type="checkbox" id="cutAll" checked onchange="document.querySelectorAll('.cutP').forEach(c=>{c.checked=false;c.disabled=this.checked})"> Tous les logiciels</label>`+prods.map(p=>{const[ic]=pm(p);return `<label><input type="checkbox" class="cutP" value="${esc(p)}" disabled> ${ic} ${esc(p)}</label>`}).join('')}
 function prods_all(){return prods()}
-async function doIpCut(){const sel=$('cutIp').value,ip=(sel==='__new'?$('cutIpNew').value:sel).trim();
+/* ── boîte de confirmation stylée ── */
+function niceConfirm({ic,col,title,sub,rows=[],points=[],btn,word,back,run}){window._ncRun=run;window._ncBack=back;
+  openModal(`<div class="nc-hero" style="--nc:${col}"><div class="nc-ic">${ic}</div><h2>${title}</h2>${sub?`<p>${sub}</p>`:''}<button class="x" onclick="closeModal()">✕</button></div>
+  <div class="md-b">${rows.length?`<div class="nc-sum">${rows.map(([k,v])=>`<div><span>${k}</span><b>${v}</b></div>`).join('')}</div>`:''}
+    ${points.length?`<ul class="nc-pts">${points.map(p=>`<li>${p}</li>`).join('')}</ul>`:''}
+    ${word?`<label class="nc-word">Pour confirmer, tapez <b style="color:${col}">${word}</b><input id="ncW" autocomplete="off" autocapitalize="characters" oninput="$('ncGo').disabled=this.value.trim().toUpperCase()!=='${word}'"></label>`:''}</div>
+  <div class="md-f nc-f">${back?'<button class="ghost" onclick="window._ncBack()">← Modifier</button>':'<button class="ghost" onclick="closeModal()">Annuler</button>'}<button id="ncGo" class="btn" style="background:${col};box-shadow:0 10px 26px color-mix(in srgb,${col} 40%,transparent)"${word?' disabled':''} onclick="this.disabled=true;this.innerHTML='<span class=nc-sp></span> Envoi…';window._ncRun()">${btn}</button></div>`);
+  setTimeout(()=>{const w=$('ncW');if(w)w.focus()},150)}
+const ipLab=ip=>ipLbl(ip)?`🏷️ ${esc(ipLbl(ip))} <small style="color:var(--mut);font-weight:500">(${esc(ip)})</small>`:`<code style="font-family:'JetBrains Mono',monospace">${esc(ip)}</code>`;
+const devTxt=ds=>ds.length?ds.map(d=>{const u=shortUA(d.ua);return u.ic+' '+esc(u.txt)}).join(', '):'aucun appareil reconnu';
+async function ipWrite(ip,mode,extra){const t=Date.now(),devs=ipDevs(ip).map(d=>d.id),n6=v6net(ip),links=[...(n6?[n6]:[]),...devs.map(d=>'dev_'+d)],old=IPB[ipKey(ip)];
+  const rec={ip,mode,t,prods:null,msg:null,nom:ipLbl(ip)||null,...(extra||{}),links:[...new Set([...links,...((mode==='reco'&&old&&old.links)||[])])]};
+  if(old&&Array.isArray(old.links))for(const k of old.links)if(!rec.links.includes(k))await fbPut('ipblock/'+k,null);
+  await fbPut('ipblock/'+ipKey(ip),rec);for(const k of rec.links)await fbPut('ipblock/'+k,{mode,t,prods:rec.prods,msg:rec.msg,ref:ipKey(ip)});IPB[ipKey(ip)]=rec;return rec}
+const ipRefresh=()=>{if($('v-ip').classList.contains('on'))renderIp();if($('v-act').classList.contains('on'))renderAct()};
+const ipErr=e=>toast(String(e.message).includes('401')?'Règles Firebase à republier (nœud « ipblock ») — voir Réglages':e.message,'ko');
+let CUTDRAFT=null;
+function doIpCut(){const sel=$('cutIp').value,ip=(sel==='__new'?$('cutIpNew').value:sel).trim();
   if(!/^[0-9a-f.:]{3,45}$/i.test(ip))return toast('Adresse IP invalide','ko');
   const mode=document.querySelector('input[name=cutMode]:checked').value,all=$('cutAll').checked,ps=[...document.querySelectorAll('.cutP:checked')].map(c=>c.value);
   if(!all&&!ps.length)return toast('Choisis au moins un logiciel','ko');
-  const nm=ipLbl(ip),lab=(nm?'« '+nm+' » ('+ip+')':ip);
-  if(mode==='block'&&!confirm(`Couper l'accès de ${lab} à ${all?'tous vos logiciels':ps.join(', ')} ?\n\nLe poste restera bloqué jusqu'à ce que vous rétablissiez l'accès.`))return;
-  const b=$('cutGo');b.disabled=true;b.textContent='Envoi…';
-  const t=Date.now(),devs=ipDevs(ip).map(d=>d.id),n6=v6net(ip),links=[...(n6?[n6]:[]),...devs.map(d=>'dev_'+d)];
-  const rec={ip,mode,t,prods:all?null:ps,msg:$('cutMsg').value.trim().slice(0,300)||null,nom:nm||null,links};
-  try{const old=IPB[ipKey(ip)];if(old&&Array.isArray(old.links))for(const k of old.links)if(!links.includes(k))await fbPut('ipblock/'+k,null);
-    await fbPut('ipblock/'+ipKey(ip),rec);for(const k of links)await fbPut('ipblock/'+k,{mode,t,prods:rec.prods,msg:rec.msg,ref:ipKey(ip)});
-    IPB[ipKey(ip)]=rec;closeModal();
-    toast(mode==='block'?'⛔ Accès coupé pour '+lab+' — effet en quelques secondes':'🔌 Déconnexion envoyée à '+lab,'ko');
-    if($('v-ip').classList.contains('on'))renderIp();if($('v-act').classList.contains('on'))renderAct()}
-  catch(e){b.disabled=false;b.textContent='Appliquer';toast(String(e.message).includes('401')?'Règles Firebase à republier (nœud « ipblock ») — voir Réglages':e.message,'ko')}}
-async function ipRestore(ip){const lab=ipLbl(ip)?'« '+ipLbl(ip)+' »':ip;if(!confirm('Rétablir l\'accès pour '+lab+' ?'))return;
-  try{const old=IPB[ipKey(ip)];if(old&&Array.isArray(old.links))for(const k of old.links)await fbPut('ipblock/'+k,null);await fbPut('ipblock/'+ipKey(ip),null);delete IPB[ipKey(ip)];toast('✅ Accès rétabli pour '+lab+' — le poste se débloque en quelques secondes');
-    if($('v-ip').classList.contains('on'))renderIp();if($('v-act').classList.contains('on'))renderAct()}catch(e){toast(e.message,'ko')}}
+  const msg=$('cutMsg').value.trim().slice(0,300),ds=ipDevs(ip),blk=mode==='block';CUTDRAFT={ip,mode,all,ps,msg};
+  niceConfirm({ic:blk?'⛔':'🔌',col:blk?'#e11d48':'#f59e0b',title:blk?'Couper l\'accès ?':'Déconnecter ce poste ?',sub:blk?'Le poste restera bloqué jusqu\'à ce que vous rétablissiez l\'accès':'L\'utilisateur devra ressaisir sa clé — ou être reconnecté par vous',
+    rows:[['Poste',ipLab(ip)],['Appareils visés',devTxt(ds)+(v6net(ip)?' + réseau IPv6 de la box':'')],['Logiciels',all?'Tous':ps.map(esc).join(', ')],...(msg?[['Message affiché',esc(msg)]]:[])],
+    points:blk?['Le logiciel affiche <b>« Accès suspendu »</b> en quelques secondes, même après rechargement.','Les données du poste ne sont pas effacées.','Bouton <b>« Rétablir l\'accès »</b> pour le débloquer.']
+      :['La page se recharge et revient à l\'<b>écran de licence</b>.','Sa session est mise de côté sur l\'appareil : vous pourrez le <b>🔄 reconnecter à distance</b> sans qu\'il ressaisisse sa clé.'],
+    btn:blk?'⛔ Couper l\'accès':'🔌 Déconnecter',word:blk?'COUPER':null,back:()=>openIpCut(ip),
+    run:async()=>{try{await ipWrite(ip,mode,{prods:all?null:ps,msg:msg||null});CUTDRAFT=null;closeModal();toast(blk?'⛔ Accès coupé — effet en quelques secondes':'🔌 Déconnexion envoyée — effet en quelques secondes','ko');ipRefresh()}catch(e){closeModal();ipErr(e)}}})}
+function ipReco(ip){const b=IPB[ipKey(ip)],ds=ipDevs(ip);
+  niceConfirm({ic:'🔄',col:'#10b981',title:'Reconnecter ce poste ?',sub:'Sa session est restaurée à distance, sans ressaisie de la clé',
+    rows:[['Poste',ipLab(ip)],['Appareils',devTxt(ds)],['Déconnecté',b?ago(b.t):'—']],
+    points:['Le logiciel se recharge et <b>rouvre la session</b> d\'avant la déconnexion (sur l\'écran de licence, effet en quelques secondes).','Un appareil dont la clé a été ressaisie entre-temps est déjà reconnecté : rien ne change pour lui.'],
+    btn:'🔄 Reconnecter',run:async()=>{try{await ipWrite(ip,'reco',{prods:b&&b.prods||null});closeModal();toast('🔄 Reconnexion envoyée — le poste rouvre sa session en quelques secondes');ipRefresh()}catch(e){closeModal();ipErr(e)}}})}
+function ipRestore(ip){const b=IPB[ipKey(ip)]||{},blk=b.mode==='block';
+  niceConfirm({ic:blk?'✅':'🧹',col:blk?'#10b981':'#64748b',title:blk?'Rétablir l\'accès ?':'Clore cet ordre ?',sub:blk?'Le poste se débloque tout seul, sans action de sa part':'L\'ordre est retiré de la liste',
+    rows:[['Poste',ipLab(ip)],['État',ipCutBadge(ip)||'—'],['Depuis',b.t?ago(b.t):'—']],
+    points:blk?['L\'écran « Accès suspendu » disparaît en quelques secondes et le logiciel redevient utilisable.']:['Un poste encore déconnecté reste sur l\'écran de licence (il pourra ressaisir sa clé).','Pour lui rouvrir sa session, utilisez plutôt <b>🔄 Reconnecter</b>.'],
+    btn:blk?'✅ Rétablir l\'accès':'🧹 Clore',run:async()=>{try{if(Array.isArray(b.links))for(const k of b.links)await fbPut('ipblock/'+k,null);await fbPut('ipblock/'+ipKey(ip),null);delete IPB[ipKey(ip)];closeModal();toast(blk?'✅ Accès rétabli — le poste se débloque en quelques secondes':'Ordre clos');ipRefresh()}catch(e){closeModal();ipErr(e)}}})}
+// boutons selon l'état de l'IP
+function ipCutBtns(ip){const b=IPB[ipKey(ip)],q=esc(ip);if(!b)return `<button class="ghost sm danger" onclick="openIpCut('${q}')">⛔ Déconnecter / couper</button>`;
+  if(b.mode==='block')return `<button class="ghost sm ok" onclick="ipRestore('${q}')">✅ Rétablir l'accès</button>`;
+  if(b.mode==='deco')return `<button class="ghost sm ok" onclick="ipReco('${q}')">🔄 Reconnecter</button><button class="ghost sm" onclick="ipRestore('${q}')">🧹 Clore</button>`;
+  return `<button class="ghost sm" onclick="ipRestore('${q}')">🧹 Clore</button><button class="ghost sm danger" onclick="openIpCut('${q}')">⛔ Déconnecter / couper</button>`}
 </script>
 </body></html>
