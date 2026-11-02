@@ -55,7 +55,7 @@
       if(reco&&+reco.t>done&&!localStorage.getItem(KEY)&&localStorage.getItem(bk)){try{localStorage.setItem(KEY,localStorage.getItem(bk));localStorage.removeItem(bk);localStorage.setItem(kk,String(reco.t))}catch(e){}
         clearInterval(lockPoll);await hardReload();return 'reco'}
       const deco=hits.filter(b=>b.mode==='deco').sort((x,y)=>(+y.t)-(+x.t))[0];
-      if(deco&&+deco.t>done){KICKING=true;clearInterval(timer);try{localStorage.setItem(kk,String(deco.t));const cur=localStorage.getItem(KEY);if(cur)localStorage.setItem(bk,cur);localStorage.removeItem(KEY)}catch(e){}await hardReload();return 'deco'}
+      if(deco&&+deco.t>done){navOff('deco');KICKING=true;clearInterval(timer);try{localStorage.setItem(kk,String(deco.t));const cur=localStorage.getItem(KEY);if(cur)localStorage.setItem(bk,cur);localStorage.removeItem(KEY)}catch(e){}await hardReload();return 'deco'}
     }catch(e){}return null}
   // 👣 Suivi de navigation (activé par licence dans Licence Pro) : page + onglet ouverts, horodatés
   let NAV=null,navLast='',navT=0;
@@ -79,14 +79,18 @@
   let bgT=0;
   function navBg(){if(!NAV||Date.now()-bgT<3000)return;bgT=Date.now();navLast='';
     devId().then(dv=>fetch(`${NAV.fb}/nav/${NAV.id}/${dv}.json`,{method:'POST',keepalive:true,body:JSON.stringify({t:Date.now(),p:(location.pathname.split('/').pop()||'accueil').slice(0,60),ev:'bg',m:MODULE||PRODUIT,v:CURTAB?CURTAB.v:'',n:CURTAB?CURTAB.n:''})})).catch(()=>{})}
-  function navTrack(cfg){if(!cfg||!cfg.fb||NAV)return;NAV=cfg;
+  const FRAMED=(()=>{try{return window.self!==window.top}catch(e){return true}})()||/[?&]bg=1\b/.test(location.search);
+  let offT=0;
+  function navOff(r){if(!NAV||Date.now()-offT<3000)return;offT=Date.now();navLast='';const dvp=devId();
+    dvp.then(dv=>fetch(`${NAV.fb}/nav/${NAV.id}/${dv}.json`,{method:'POST',keepalive:true,body:JSON.stringify({t:Date.now(),p:(location.pathname.split('/').pop()||'accueil').slice(0,60),ev:'off',r:r||'close',m:MODULE||PRODUIT,v:CURTAB?CURTAB.v:'',n:CURTAB?CURTAB.n:''})})).catch(()=>{})}
+  function navTrack(cfg){if(!cfg||!cfg.fb||NAV||FRAMED)return;NAV=cfg;
     if(!localStorage.getItem('licNavInfo_'+PRODUIT)){localStorage.setItem('licNavInfo_'+PRODUIT,'1');try{licToast('ℹ️ Les pages consultées sont enregistrées pour l\'assistance')}catch(e){}}
     document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[onclick],[data-tab],[data-view],a[href^="#"]');if(!b)return;
       const m=TABRX.exec(b.getAttribute('onclick')||'');const id=(m&&m[1])||b.dataset.tab||b.dataset.view||'';
       if(id)setTimeout(()=>navRec(id,(b.innerText||'').trim()),50);else setTimeout(()=>navRec(),400)},true);
     addEventListener('hashchange',()=>navRec());addEventListener('popstate',()=>navRec());
     document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){navLast='';navRec()}else navBg()});
-    addEventListener('pagehide',navBg);
+    addEventListener('pagehide',()=>navOff('close'));
     // suit aussi les changements d'onglet déclenchés par le code (switchTab('products'), etc.)
     const wrap=()=>['switchTab','showTab','openTab','setTab','switchView','showView','showPage','showSection'].forEach(f=>{const o=window[f];if(typeof o!=='function'||o.__licNav)return;
       const w=function(x){const r=o.apply(this,arguments);try{if(typeof x==='string')setTimeout(()=>navRec(x),60)}catch(e){}return r};w.__licNav=1;window[f]=w});
@@ -384,7 +388,7 @@
     g('lb').onclick=go;g('lk').addEventListener('keydown',e=>{if(e.key==='Enter')go()});
   }
   // Écran affiché si le logiciel est ouvert sur un domaine non autorisé (copie / piratage)
-  function blocked(msg){if(IPBLOCKED&&overlay)return;IPBLOCKED=true;clearInterval(timer);licCss();if(overlay){overlay.remove();overlay=null}
+  function blocked(msg){if(IPBLOCKED&&overlay)return;navOff('block');IPBLOCKED=true;clearInterval(timer);licCss();if(overlay){overlay.remove();overlay=null}
     const o=document.createElement('div');o.id='lic-overlay';o.innerHTML=`<div class="lic-card" style="text-align:center">
       <div class="lic-logo" style="margin:0 auto 14px;background:linear-gradient(135deg,#e11d48,#f97316)">⛔</div>
       <h2 style="margin:0 0 6px">Accès suspendu</h2>
@@ -403,7 +407,7 @@
     (document.body||document.documentElement).appendChild(o);overlay=o;
     try{document.body.style.overflow='hidden'}catch(e){}}
   function lock(msg,skipReq){
-    clearInterval(timer);
+    clearInterval(timer);navOff('lock');
     if(localStorage.getItem('licBak_'+PRODUIT)){clearInterval(lockPoll);lockPoll=setInterval(()=>{if(document.visibilityState==='visible')checkIpBlock()},10000);setTimeout(()=>checkIpBlock(),1500)}
     if(overlay)return;shell();
     if(!skipReq&&getReq())return showWaiting();

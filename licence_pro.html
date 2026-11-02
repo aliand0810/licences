@@ -536,6 +536,16 @@ html[data-light] .tag{color:color-mix(in srgb,var(--sc) 75%,#000)}
 .ax-path .ax-ap.main{background:color-mix(in srgb,var(--ok) 14%,transparent);border-color:color-mix(in srgb,var(--ok) 40%,var(--bd));color:var(--tok)}
 .ax-path .ax-ap .cdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ok);margin-right:6px;vertical-align:1px;animation:axPulse 1.6s infinite}
 .ax-st{font-size:.78rem;font-weight:800;color:var(--tok);margin:3px 0 1px}.ax-st.sat{color:var(--ta)}
+
+.ax-nwl,.ax-nowl{align-items:start}
+.ax-cnt{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap}.ax-cnt span{font-size:.78rem;font-weight:700;padding:5px 11px;border-radius:99px;background:color-mix(in srgb,var(--c) 14%,transparent);border:1px solid color-mix(in srgb,var(--c) 40%,transparent)}
+.ax-nw{border-left:4px solid var(--sc)}.ax-nw .dot{display:none}
+.ax-nw.st-off,.ax-nw.st-cut{background:color-mix(in srgb,var(--sc) 6%,var(--glass))}
+.ax-nw.st-off .im,.ax-nw.st-cut .im{background:color-mix(in srgb,var(--sc) 18%,transparent)}
+.ax-nwh{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.ax-nwh b{padding-right:0!important}
+.ax-pill{font-size:.72rem;font-weight:800;padding:3px 10px;border-radius:99px;background:color-mix(in srgb,var(--sc) 16%,transparent);color:var(--sc);border:1px solid color-mix(in srgb,var(--sc) 40%,transparent);white-space:nowrap}
+html[data-light] .ax-pill{color:color-mix(in srgb,var(--sc) 75%,#000)}
+.ax-last{font-size:.78rem;color:var(--mut);margin:4px 0 2px}
 </style>
 </head>
 <body>
@@ -674,7 +684,7 @@ html[data-light] .tag{color:color-mix(in srgb,var(--sc) 75%,#000)}
     </div>
     <div class="ax-kpis" id="actKpi"></div>
     <div id="aOrders"></div>
-    <div class="card ax-now"><h3><span>🟢 En ce moment <small class="hint" style="margin:0 0 0 6px">où se trouve chaque client connecté</small></span></h3><div id="aNow" class="ax-nowl"></div></div>
+    <div class="card ax-now"><h3><span>🟢 En ce moment <small class="hint" style="margin:0 0 0 6px">état et position de chaque appareil (30 dernières minutes)</small></span></h3><div id="aNow" class="ax-nowl"></div></div>
     <div class="ax-row">
       <div class="card ax-c8"><h3><span>📈 Activité <small class="hint" id="aChartSub" style="margin:0 0 0 6px"></small></span></h3><div class="ax-cv"><canvas id="aChart"></canvas></div></div>
       <div class="card ax-c4"><h3>🔥 Heures de pointe</h3><div id="aHeat" class="ax-heat"></div><div class="ax-hleg"><span>moins</span><i></i><span>plus</span></div><div id="aPeak" class="ax-peak"></div></div>
@@ -1880,7 +1890,7 @@ document.querySelectorAll('#ipflt button').forEach(b=>b.onclick=()=>{IPFILTER=b.
 let ACTBG=[],ACT=[],ACTLOADED=false,ASORT='recent',AFILTER='7j',AFPROD='';
 async function loadActivity(force){if(ACTLOADED&&!force)return;const suivi=LIC.filter(l=>l.suivi);const A=[],BG=[];
   await Promise.all(suivi.map(async l=>{try{const t=await fbTok(),r=await fetch(`${FB()}/nav/${l.id}.json?auth=${t}&t=${Date.now()}`);
-    if(r.ok){const d=await r.json()||{};Object.entries(d).forEach(([dv,ev])=>Object.values(ev||{}).forEach(e=>{if(e&&e.t)(e.ev==='bg'?BG:A).push({...e,dv,lic:l})}))}}catch(e){}}));
+    if(r.ok){const d=await r.json()||{};Object.entries(d).forEach(([dv,ev])=>Object.values(ev||{}).forEach(e=>{if(e&&e.t)(e.ev?BG:A).push({...e,dv,lic:l})}))}}catch(e){}}));
   ACT=A;ACTBG=BG;ACTLOADED=true}
 let ALIVE=true,ALIVET=null,ALIM=80,ASEEN=null;
 async function renderActView(){if(!ACT.length)$('actList').innerHTML='<div class="empty">Chargement de l\'activité…</div>';await loadFB();await Promise.all([loadIpNames(),loadIpx(),loadActivity(true),loadIpBlocks()]);
@@ -1908,18 +1918,32 @@ function pathHTML(a,live){const[ic]=pm(a.lic.produit),st=satOf(a),p=pageOf(a);
   return st?`<span class="ax-path"><span class="ax-ap">${ic} ${esc(a.lic.produit)}</span><i>›</i><span class="sat">Satellite ${satIc(st)} ${esc(st)}</span><i>›</i><span class="pg">${p.ic} ${esc(p.nm)}</span></span>`
     :`<span class="ax-path"><span class="ax-ap${live?' main':''}">${live?'<i class="cdot"></i>Connecté à ':''}${ic} ${esc(a.lic.produit)}</span><i>›</i><span class="pg">${p.ic} ${esc(p.nm)}</span></span>`}
 const placeTxt=a=>{const st=satOf(a),p=pageOf(a);return st?`${esc(a.lic.produit)} › Satellite ${satIc(st)} ${esc(st)} › ${esc(p.nm)}`:`${esc(a.lic.produit)} › ${esc(p.nm)}`};
-function actNow(){const now=Date.now(),W=20*6e4,G={};
+// états d'un appareil : 🟢 connecté · 🟠 inactif (arrière-plan / sans action) · 🔴 déconnecté (fermé, déconnecté à distance, écran de licence) · ⛔ accès coupé
+const OFFR={close:'application fermée',deco:'déconnecté à distance',lock:'sur l\'écran de licence',block:'accès coupé'};
+function devState(d,now){const ord=IPB['dev_'+d.dv]||(d.ip&&IPB[ipKey(d.ip)]);
+  if(ord&&ord.mode==='block'&&(!ord.prods||ord.prods.includes(d.lic.produit)))return{k:'cut',lb:'⛔ Accès coupé',col:'#e11d48',why:'coupé à distance '+ago(ord.t)};
+  const live=d.list.filter(x=>x.last.ev!=='off'),fg=live.find(x=>!x.bg);
+  if(!live.length){const o=d.list[0].last;return{k:'off',lb:'🔴 Déconnecté',col:'#ef4444',why:(OFFR[o.r]||'déconnecté')+' '+ago(o.t)}}
+  if(fg&&now-fg.last.t<5*6e4)return{k:'on',lb:'🟢 Connecté',col:'#10b981',why:'actif '+ago(fg.last.t)};
+  const x=fg||live[0];return{k:'idle',lb:'🟠 Inactif',col:'#f59e0b',why:(x.bg?'en arrière-plan':'aucune action')+' depuis '+ago(x.last.t).replace('il y a ','')}}
+function actNow(){const now=Date.now(),W=30*6e4,G={};
   ACT.concat(ACTBG).forEach(a=>{if(ipExcl(a.ip)||(AFPROD&&a.lic.produit!==AFPROD)||now-a.t>W)return;const dk=a.lic.id+'|'+a.dv,ak=a.m||a.lic.produit;
     const d=G[dk]=G[dk]||{apps:{},lic:a.lic,dv:a.dv,ip:''};if(a.ip&&!d.ip)d.ip=a.ip;const x=d.apps[ak];if(!x||x.t<a.t)d.apps[ak]=a;
-    if(a.ev!=='bg'){const lp=d.apps[ak]._lp;if(!lp||lp.t<a.t)d.apps[ak]._lp=a}});
-  const L=Object.values(G).map(d=>{const apps=Object.values(d.apps).map(x=>({last:x,page:x.ev==='bg'?(x._lp||x):x,bg:x.ev==='bg'})).filter(x=>x.page);
-      apps.sort((x,y)=>(x.bg-y.bg)||(y.last.t-x.last.t));d.list=apps;d.t=Math.max(...apps.map(x=>x.last.t));d.fg=apps.find(x=>!x.bg);return d}).filter(d=>d.list.length).sort((x,y)=>(!!y.fg-!!x.fg)||(y.t-x.t));
-  $('aNow').innerHTML=L.length?L.map(d=>{const main=d.fg||d.list[0],a=main.page,p=pageOf(a),[,col]=pm(d.lic.produit),on=!!d.fg&&now-main.last.t<5*6e4,ipn=d.ip?(ipLbl(d.ip)||d.ip):'';
-    const others=d.list.filter(x=>x!==main);
-    return `<div class="ax-nw" style="--pc:${col}" onclick="openLic('${d.lic.id}')"><span class="dot${on?' on':''}" title="${on?'Au premier plan':'En arrière-plan ou inactif'}"></span><div class="im">${p.ic}</div>
-      <div style="min-width:0;flex:1"><b>${esc(d.lic.email)}</b>${main.bg?'<div class="ax-st" style="color:var(--mut)">💤 Inactif — dernière page :</div>':''}${pathHTML(a,!main.bg)}<small>${main.bg?'💤 en arrière-plan · ':'👁 au premier plan · '}${devNameG(d.lic,d.dv)}${ipn?' · 🌐 '+esc(ipn):''} · ${ago(main.last.t)}</small>
-      ${others.length?`<div class="ax-oth">${others.map(o=>{const st=satOf(o.page);return `<span>${o.bg?'💤':'👁'} ${placeTxt(o.page)}</span>`}).join('')}</div>`:''}</div></div>`}).join('')
-    :'<div class="empty sm" style="grid-column:1/-1">Personne n\'est connecté en ce moment (aucune page ouverte ces 20 dernières minutes)</div>'}
+    if(!a.ev){const lp=d.apps[ak]._lp;if(!lp||lp.t<a.t)d.apps[ak]._lp=a}});
+  const RK={on:0,idle:1,off:2,cut:3};
+  const L=Object.values(G).map(d=>{d.list=Object.values(d.apps).map(x=>({last:x,page:x.ev?(x._lp||x):x,bg:x.ev==='bg',off:x.ev==='off'}))
+      .sort((x,y)=>(x.off-y.off)||(x.bg-y.bg)||(y.last.t-x.last.t));d.t=Math.max(...d.list.map(x=>x.last.t));d.st=devState(d,now);return d})
+    .sort((x,y)=>RK[x.st.k]-RK[y.st.k]||(y.t-x.t));
+  const cnt={on:0,idle:0,off:0,cut:0};L.forEach(d=>cnt[d.st.k]++);
+  const sum=L.length?`<div class="ax-cnt">${cnt.on?`<span style="--c:#10b981">🟢 ${cnt.on} connecté(s)</span>`:''}${cnt.idle?`<span style="--c:#f59e0b">🟠 ${cnt.idle} inactif(s)</span>`:''}${cnt.off?`<span style="--c:#ef4444">🔴 ${cnt.off} déconnecté(s)</span>`:''}${cnt.cut?`<span style="--c:#e11d48">⛔ ${cnt.cut} coupé(s)</span>`:''}</div>`:'';
+  $('aNow').innerHTML=L.length?sum+L.map(d=>{const st=d.st,main=d.list.find(x=>!x.off&&!x.bg)||d.list.find(x=>!x.off)||d.list[0],a=main.page,p=pageOf(a),[,col]=pm(d.lic.produit),ipn=d.ip?(ipLbl(d.ip)||d.ip):'';
+    const others=d.list.filter(x=>x!==main&&!x.off);
+    return `<div class="ax-nw st-${st.k}" style="--pc:${col};--sc:${st.col}" onclick="openLic('${d.lic.id}')"><div class="im">${st.k==='on'?p.ic:st.k==='idle'?'💤':st.k==='cut'?'⛔':'🔴'}</div>
+      <div style="min-width:0;flex:1"><div class="ax-nwh"><b>${esc(d.lic.email)}</b><span class="ax-pill">${st.lb}</span></div>
+      ${st.k==='on'?pathHTML(a,true):`<div class="ax-last">${st.k==='off'||st.k==='cut'?'Dernière page :':'Page ouverte :'} ${placeTxt(a)}</div>`}
+      <small>${esc(st.why)} · ${devNameG(d.lic,d.dv)}${ipn?' · 🌐 '+esc(ipn):''}</small>
+      ${others.length&&st.k!=='off'?`<div class="ax-oth">${others.map(o=>`<span>${o.bg?'💤':'👁'} ${placeTxt(o.page)}</span>`).join('')}</div>`:''}</div></div>`}).join('')
+    :'<div class="empty sm" style="grid-column:1/-1">Aucun appareil actif ces 30 dernières minutes</div>'}
 async function ipToggleExcl(ip,on){const k=ipKey(ip);try{await fbPut('crm/ipx/'+k,on?{ip,t:Date.now()}:null);if(on)IPX[k]={ip,t:Date.now()};else delete IPX[k];
     toast(on?'🚫 '+(ipLbl(ip)||ip)+' exclue du suivi d\'activité':'✅ '+(ipLbl(ip)||ip)+' réintégrée');renderAct();if($('ipxList'))openIpx()}
   catch(e){toast(String(e.message).includes('401')?'Règles Firebase à republier (nœud « crm ») — voir Réglages':e.message,'ko')}}
