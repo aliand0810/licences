@@ -79,5 +79,8 @@
       "appId": "1:1016752950033:web:9029b2c808fd482b92dab0"
     }
   },
-  "google": {}
+  "google": {},
+  "domaines": [
+    "aliand0810.github.io"
+  ]
 }
