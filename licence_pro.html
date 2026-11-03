@@ -547,6 +547,71 @@ html[data-light] .tag{color:color-mix(in srgb,var(--sc) 75%,#000)}
 html[data-light] .ax-pill{color:color-mix(in srgb,var(--sc) 75%,#000)}
 .ax-last{font-size:.78rem;color:var(--mut);margin:4px 0 2px}
 .ax-sus{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between;padding:12px 16px;margin-bottom:14px;font-size:.84rem;border-color:color-mix(in srgb,#8b5cf6 40%,var(--bd))}
+
+/* ═══ Activité v2 : visites ═══ */
+#v-act .ax-kpis{grid-template-columns:repeat(8,minmax(0,1fr));gap:10px}
+#v-act .ax-k{padding:11px 13px}#v-act .ax-k .v{font-size:1.45rem}#v-act .ax-k .l{font-size:.62rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#v-act .ax-k .d{font-size:.68rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ax-r3{display:grid;grid-template-columns:minmax(0,1.8fr) minmax(0,1.1fr) minmax(0,1fr);gap:14px;margin-bottom:14px}.ax-r3.b{grid-template-columns:repeat(3,minmax(0,1fr))}
+.ax-r3 .card{padding:16px;min-width:0}.ax-r3 h3{font-size:.95rem;margin-bottom:2px}
+.sub2{font-size:.72rem;color:var(--mut);margin-bottom:10px}
+.ax-hr{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 8px;font-size:.8rem;margin-bottom:8px}
+.ax-hr .n{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ax-hr .v{font-weight:800;font-variant-numeric:tabular-nums}.ax-hr .v small{color:var(--mut);font-weight:600;margin-left:5px}
+.ax-hr .tr{grid-column:1/-1;height:6px;border-radius:3px;background:var(--glass2);overflow:hidden}.ax-hr .tr i{display:block;height:100%;border-radius:3px;background:var(--c);transition:width .6s}
+.ax-stack{display:flex;height:14px;gap:2px;border-radius:7px;overflow:hidden;margin:4px 0 12px}.ax-stack i{display:block;height:100%}
+.ax-tabs{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 12px;margin-bottom:12px}
+.ax-tabg{display:flex;gap:4px;padding:3px;border-radius:12px;background:var(--glass2)}
+.ax-tabg button{border:0;background:transparent;color:var(--mut);font-weight:700;font-size:.82rem;padding:8px 12px;border-radius:9px;display:inline-flex;gap:6px;align-items:center}
+.ax-tabg button.on{background:var(--txt);color:var(--bg)}.ax-tabg em{font-style:normal;font-size:.68rem;padding:1px 7px;border-radius:9px;background:var(--glass2)}.ax-tabg button.on em{background:color-mix(in srgb,var(--bg) 25%,transparent)}
+.ax-tabs .ax-q{flex:1 1 220px;min-width:0}
+.ax-day{display:flex;justify-content:space-between;font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);margin:14px 4px 7px}
+.ax-day span:first-child{text-transform:capitalize;letter-spacing:.02em;font-size:.78rem;color:var(--txt)}
+.ax-vis{display:grid;grid-template-columns:52px 40px minmax(0,1.3fr) minmax(0,1fr) minmax(0,1.3fr) auto;gap:12px;align-items:center;padding:10px 14px;margin-bottom:6px;border-radius:14px;border:1px solid var(--bd);background:var(--glass);cursor:pointer;transition:border-color .12s,transform .12s}
+.ax-vis:hover{border-color:var(--a2);transform:translateX(2px)}.ax-vis.sel{border-color:var(--a2);box-shadow:0 0 0 2px var(--a2) inset}
+.ax-vis.live{border-left:4px solid var(--ok)}
+.ax-vis .tm{font-weight:800;font-size:.9rem;font-variant-numeric:tabular-nums}
+.ax-vis .dv{width:40px;height:40px;border-radius:12px;background:var(--glass2);display:grid;place-items:center;font-size:1.2rem}
+.ax-vis .cl,.ax-vis .lo,.ax-vis .pg{font-size:.82rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.ax-vis small{display:block;font-size:.7rem;color:var(--mut);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ax-vis .rt{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.ax-vp{font-size:.68rem;font-weight:800;padding:3px 9px;border-radius:99px;background:var(--glass2);color:var(--mut);white-space:nowrap}
+.ax-vp.on{background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--tok)}.ax-vp.off{background:color-mix(in srgb,var(--ko) 14%,transparent);color:var(--tko)}.ax-vp.rv{background:color-mix(in srgb,#0f766e 18%,transparent);color:#2dd4bf}
+html[data-light] .ax-vp.rv{color:#0f766e}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:.92em}
+.ax-tbl{overflow:auto;border:1px solid var(--bd);border-radius:14px;background:var(--glass)}
+.ax-tbl table{width:100%;border-collapse:separate;border-spacing:0;font-size:.8rem}
+.ax-tbl th{position:sticky;top:0;background:var(--panel);text-align:left;font-size:.64rem;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);padding:10px 12px;white-space:nowrap;border-bottom:1px solid var(--bd)}
+.ax-tbl td{padding:9px 12px;border-bottom:1px solid var(--bd);vertical-align:top}.ax-tbl td small{display:block;color:var(--mut);font-size:.68rem}
+.ax-tbl tbody tr{cursor:pointer}.ax-tbl tbody tr:hover{background:var(--glass2)}
+.ax-empty{padding:44px 16px;text-align:center;color:var(--mut);border:1px dashed var(--bd);border-radius:16px;background:var(--glass)}.ax-empty b{display:block;font-size:2rem;margin-bottom:8px}
+.ax-drwbg{position:fixed;inset:0;background:rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:.2s;z-index:80}.ax-drwbg.on{opacity:1;pointer-events:auto}
+.ax-drw{position:fixed;top:0;right:0;bottom:0;width:min(460px,100%);background:var(--panel);border-left:1px solid var(--bd);box-shadow:-24px 0 60px rgba(0,0,0,.3);transform:translateX(105%);transition:transform .28s cubic-bezier(.2,.9,.3,1);display:flex;flex-direction:column;z-index:81}
+.ax-drw.open{transform:none}
+.ax-drw .dh{padding:16px 18px;border-bottom:1px solid var(--bd);display:flex;gap:10px;align-items:flex-start}
+.ax-drw .dh h3{margin:0;font-size:1rem;word-break:break-all}.ax-drw .dh p{margin:3px 0 6px;font-size:.76rem;color:var(--mut)}
+.ax-drw .x{margin-left:auto;width:34px;height:34px;border-radius:10px;border:1px solid var(--bd);background:var(--glass2);color:var(--txt);flex-shrink:0}
+.ax-drw .db{flex:1;overflow-y:auto;padding:14px 18px 22px}
+.ax-kv{display:grid;grid-template-columns:120px minmax(0,1fr);gap:7px 12px;font-size:.8rem;margin-bottom:14px}.ax-kv span{color:var(--mut);font-weight:700}.ax-kv b{font-weight:700;word-break:break-word}
+.ax-act{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+.ax-h5{font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin:8px 0 10px}
+.ax-path2{list-style:none;margin:0 0 16px;padding:0}
+.ax-path2 li{position:relative;padding:0 0 12px 26px;font-size:.84rem}
+.ax-path2 li::before{content:"";position:absolute;left:5px;top:5px;width:11px;height:11px;border-radius:50%;background:var(--a2);box-shadow:0 0 0 4px color-mix(in srgb,var(--a2) 20%,transparent)}
+.ax-path2 li::after{content:"";position:absolute;left:10px;top:19px;bottom:0;width:2px;background:var(--bd)}.ax-path2 li:last-child::after{display:none}
+.ax-path2 li.bg::before{background:var(--warn);box-shadow:0 0 0 4px color-mix(in srgb,var(--warn) 20%,transparent)}.ax-path2 li.off::before{background:var(--ko);box-shadow:0 0 0 4px color-mix(in srgb,var(--ko) 20%,transparent)}
+.ax-path2 li.bg b,.ax-path2 li.off b{color:var(--mut);font-weight:600}
+.ax-path2 .where{display:block;font-size:.72rem;color:var(--ta);font-weight:600;margin-top:1px}.ax-path2 small{display:block;font-size:.7rem;color:var(--mut);font-family:'JetBrains Mono',monospace}
+.ax-other{display:flex;justify-content:space-between;gap:8px;font-size:.78rem;padding:8px 10px;border-radius:10px;background:var(--glass2);margin-bottom:6px;cursor:pointer}.ax-other:hover{background:color-mix(in srgb,var(--a2) 16%,transparent)}
+@media(max-width:1300px){#v-act .ax-kpis{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:1100px){.ax-r3,.ax-r3.b{grid-template-columns:1fr}}
+@media(max-width:760px){.ax-vis{grid-template-columns:44px 36px minmax(0,1fr) auto;gap:8px;padding:9px 10px}.ax-vis .lo,.ax-vis .pg{display:none}#v-act .ax-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.ax-kv{grid-template-columns:1fr;gap:2px}.ax-kv b{margin-bottom:6px}.ax-tabg{width:100%;overflow-x:auto}}
+#v-act .ax-kpis{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(min-width:1700px){#v-act .ax-kpis{grid-template-columns:repeat(8,minmax(0,1fr))}}
+@media(max-width:760px){#v-act .ax-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.ax-r3 .ax-heat{grid-template-columns:24px repeat(24,minmax(0,1fr));gap:2px;overflow:hidden}
+.ax-r3 .ax-heat i{min-width:0}
+.ax-r3 .ax-peak{grid-template-columns:1fr 1fr}
+.ax-drwbg.on{background:rgba(0,0,0,.45);backdrop-filter:blur(2px)}
+#v-act{max-width:100%;overflow-x:clip}
 </style>
 </head>
 <body>
@@ -676,29 +741,30 @@ html[data-light] .ax-pill{color:color-mix(in srgb,var(--sc) 75%,#000)}
   <!-- SUIVI D'ACTIVITÉ -->
   <section id="v-act" class="view">
     <div class="card ax-bar">
-      <input id="aq" class="ax-q" placeholder="🔎 Client, logiciel, page, IP, ville…" oninput="renderAct()">
-      <div class="seg ax-per" id="aflt"><button data-f="today">Aujourd'hui</button><button data-f="24h">24 h</button><button data-f="7j" class="act">7 j</button><button data-f="30j">30 j</button><button data-f="all">Tout</button></div>
+      <div class="seg ax-per" id="aflt"><button data-f="today">Aujourd'hui</button><button data-f="7">7 j</button><button data-f="30">30 j</button><button data-f="90">90 j</button><button data-f="365">12 mois</button><button data-f="all">Tout</button></div>
       <select id="aProd" onchange="AFPROD=this.value;renderAct()"><option value="">Tous les logiciels</option></select>
       <select id="aSat" onchange="ASAT=this.value;renderAct()"><option value="">Tous les satellites</option></select>
-      <select id="aSort" onchange="ASORT=this.value;ALIM=80;renderAct()"><option value="recent">⏱ Fil chronologique</option><option value="sat">🧩 Par satellite</option><option value="ip">🌐 Par adresse IP</option><option value="client">👤 Par client</option><option value="prod">📦 Par logiciel</option><option value="page">📄 Par page</option></select>
-      <div class="ax-btns"><button class="ghost sm ax-live on" id="aLive" onclick="actLive(!ALIVE)" title="Actualisation automatique toutes les 15 s"><i></i>En direct</button><button class="ghost sm" onclick="renderActView()" title="Actualiser">↻</button><button class="ghost sm" id="aIpx" onclick="openIpx()">🚫 IP exclues</button><button class="ghost sm" onclick="openIpCut()">⛔ Déconnexion à distance</button><button class="ghost sm" onclick="openSuiviManager()">⚙️ Gérer le suivi</button></div>
+      <div class="ax-btns"><button class="ghost sm ax-live on" id="aLive" onclick="actLive(!ALIVE)" title="Actualisation automatique toutes les 15 s"><i></i>En direct</button><button class="ghost sm" onclick="renderActView()" title="Actualiser">🔄</button><button class="ghost sm" onclick="actCsv()" title="Exporter les visites affichées">⬇️ CSV</button><button class="ghost sm" id="aIpx" onclick="openIpx()">🚫 IP exclues</button><button class="ghost sm" onclick="openIpCut()">⛔ Déconnexion</button><button class="ghost sm" onclick="openSuiviManager()">⚙️ Gérer le suivi</button></div>
     </div>
-    <div class="ax-kpis" id="actKpi"></div>
     <div id="aSus"></div>
     <div id="aOrders"></div>
+    <div class="ax-kpis" id="actKpi"></div>
     <div class="card ax-now"><h3><span>🟢 En ce moment <small class="hint" style="margin:0 0 0 6px">état et position de chaque appareil (30 dernières minutes)</small></span></h3><div id="aNow" class="ax-nowl"></div></div>
-    <div class="ax-row">
-      <div class="card ax-c8"><h3><span>📈 Activité <small class="hint" id="aChartSub" style="margin:0 0 0 6px"></small></span></h3><div class="ax-cv"><canvas id="aChart"></canvas></div></div>
-      <div class="card ax-c4"><h3>🔥 Heures de pointe</h3><div id="aHeat" class="ax-heat"></div><div class="ax-hleg"><span>moins</span><i></i><span>plus</span></div><div id="aPeak" class="ax-peak"></div></div>
+    <div class="ax-r3">
+      <div class="card"><h3><span>📈 <span id="aChartT">Visites par jour</span> <small class="hint" id="aChartSub" style="margin:0 0 0 6px"></small></span></h3><div class="ax-cv"><canvas id="aChart"></canvas></div></div>
+      <div class="card"><h3>🕐 Heures d'affluence</h3><div class="sub2">Pages vues par jour et par heure</div><div id="aHeat" class="ax-heat"></div><div id="aPeak" class="ax-peak"></div></div>
+      <div class="card"><h3>📱 Appareils</h3><div class="sub2">Type d'appareil des visites</div><div id="aDev"></div></div>
     </div>
-    <div class="ax-main">
-      <div class="ax-feed"><div id="actList"></div></div>
-      <aside class="ax-side">
-        <div class="card"><h3>📄 Pages les plus vues</h3><div id="aTopP" class="ax-top"></div></div>
-        <div class="card"><h3>🌐 Adresses IP</h3><div id="aTopI" class="ax-top"></div></div>
-        <div class="card"><h3>👤 Clients les plus actifs</h3><div id="aTopC" class="ax-top"></div></div>
-      </aside>
+    <div class="ax-r3 b">
+      <div class="card"><h3>📄 Pages les plus vues</h3><div class="sub2">Toutes visites confondues</div><div id="aTopP"></div></div>
+      <div class="card"><h3>🧩 Logiciels &amp; satellites</h3><div class="sub2">Où se passent les visites</div><div id="aTopS"></div></div>
+      <div class="card"><h3>📍 Lieux</h3><div class="sub2">Ville · pays (selon l'adresse IP)</div><div id="aTopL"></div></div>
     </div>
+    <div class="card ax-tabs"><div class="ax-tabg" id="aTabs"><button data-t="visits">🧭 Visites <em id="tcV">0</em></button><button data-t="ip">🌐 Adresses IP <em id="tcI">0</em></button><button data-t="cl">👤 Clients <em id="tcC">0</em></button></div>
+      <input id="aq" class="ax-q" type="search" placeholder="🔎 Client, IP, ville, appareil, page…" oninput="clearTimeout(window._aqT);window._aqT=setTimeout(renderActList,120)">
+      <div class="chips" id="aChips"><button data-c="">Tous</button><button data-c="mobile">📱 Mobile</button><button data-c="pc">💻 Ordinateur</button><button data-c="sat">🧩 Avec satellite</button><button data-c="deep">📄 3 pages et +</button><button data-c="live">🟢 En cours</button></div></div>
+    <div id="actList"></div>
+    <div id="aDrwBg" class="ax-drwbg" onclick="actDrwClose()"></div><aside id="aDrw" class="ax-drw" aria-label="Détail de la visite"></aside>
   </section>
 
   <!-- COFFRE -->
@@ -1889,7 +1955,7 @@ IPNAMES=IPNAMES;
 document.querySelectorAll('#ipflt button').forEach(b=>b.onclick=()=>{IPFILTER=b.dataset.f;renderIp()});
 
 /* ═══════════ SUIVI D'ACTIVITÉ (global) ═══════════ */
-let ACTSUS=[],ACTBG=[],ACT=[],ACTLOADED=false,ASORT='recent',AFILTER='7j',AFPROD='';
+let ACTSUS=[],ACTBG=[],ACT=[],ACTLOADED=false,ASORT='recent',AFILTER='30',AFPROD='';
 async function loadActivity(force){if(ACTLOADED&&!force)return;const suivi=LIC.filter(l=>l.suivi);const A=[],BG=[],SUS=[];
   await Promise.all(suivi.map(async l=>{try{const t=await fbTok(),r=await fetch(`${FB()}/nav/${l.id}.json?auth=${t}&t=${Date.now()}`);
     if(r.ok){const d=await r.json()||{};Object.entries(d).forEach(([dv,ev])=>Object.entries(ev||{}).forEach(([key,e])=>{if(!e||!e.t)return;const x={...e,dv,lic:l,_k:`nav/${l.id}/${dv}/${key}`};
@@ -1912,7 +1978,7 @@ async function renderActView(){if(!ACT.length)$('actList').innerHTML='<div class
   renderAct();actLive(ALIVE)}
 function actLive(on){ALIVE=on;const b=$('aLive');if(b){b.classList.toggle('on',on);b.lastChild.textContent=on?'En direct':'En pause'}
   clearInterval(ALIVET);if(on)ALIVET=setInterval(async()=>{if(!$('v-act').classList.contains('on')||document.hidden)return;await loadActivity(true);renderAct()},15000)}
-function devNameG(l,dv){const x=(DEV[l.id]&&Object.values(DEV[l.id]).find(v=>v&&v.id===dv));if(!x)return'Appareil';const u=shortUA(x.ua);return u.ic+' '+u.txt}
+function devNameG(l,dv){const x=(DEV[l.id]&&Object.values(DEV[l.id]).find(v=>v&&v.id===dv));if(!x){const e=(ACT||[]).find(a=>a.lic.id===l.id&&a.dv===dv&&a.d);if(e){const k=e.d.split(' · ');return({Mobile:'📱',Tablette:'📲',Ordinateur:'💻'}[k[0]]||'❔')+' '+k.slice(1).join(' · ')}return'Appareil'}const u=shortUA(x.ua);return u.ic+' '+u.txt}
 let IPX={},ASAT='';
 const ipExcl=ip=>!!(ip&&IPX[ipKey(ip)]);
 async function loadIpx(){try{const t=await fbTok(),r=await fetch(`${FB()}/crm/ipx.json?auth=${t}&t=${Date.now()}`);if(r.ok)IPX=await r.json()||{}}catch(e){}}
@@ -1967,79 +2033,141 @@ function openIpx(){const L=Object.values(IPX).filter(x=>x&&x.ip).sort((a,b)=>b.t
     <button class="ghost sm" onclick="myIpExcl(this)">📍 Exclure mon adresse IP actuelle</button>
     <h4>Liste (${L.length})</h4><div id="ipxList">${L.length?L.map(x=>`<div class="dev"><span class="di">🚫</span><div><b>${ipLbl(x.ip)?esc(ipLbl(x.ip))+' · ':''}<code style="font-family:'JetBrains Mono',monospace">${esc(x.ip)}</code></b><small>exclue ${ago(x.t)} · ${ACT.filter(a=>a.ip===x.ip).length} page(s) masquée(s)</small></div><button class="ghost sm" onclick="ipToggleExcl('${esc(x.ip)}',false)">Réintégrer</button></div>`).join(''):'<div class="empty sm">Aucune IP exclue</div>'}</div></div>`)}
 async function myIpExcl(b){b.disabled=true;b.textContent='Recherche de votre IP…';try{const j=await (await fetch('https://get.geojs.io/v1/ip.json',{cache:'no-store'})).json();if(!j.ip)throw 0;await ipToggleExcl(j.ip,true)}catch(e){toast('Impossible de détecter votre IP (bloqueur ?) — saisissez-la à la main','ko');b.disabled=false;b.textContent='📍 Exclure mon adresse IP actuelle'}}
-function actRange(f){const now=Date.now(),sd=new Date();sd.setHours(0,0,0,0);
-  return f==='today'?[+sd,now]:f==='24h'?[now-864e5,now]:f==='7j'?[now-7*864e5,now]:f==='30j'?[now-30*864e5,now]:[0,now]}
-function actMatch(a,q){const m=pageOf(a);return (a.lic.email+' '+a.lic.produit+' '+(m.nm||'')+' '+(a.m||'')+' '+(a.ip||'')+' '+(ipLbl(a.ip||'')||'')+' '+(a.loc||'')).toLowerCase().includes(q)}
-function actPeriodAvail(){const f=AFILTER;return f!=='all'}
-function renderAct(){const q=($('aq').value||'').toLowerCase(),now=Date.now(),[t0,t1]=actRange(AFILTER),span=t1-t0;
-  const hidden=ACT.filter(a=>ipExcl(a.ip)).length;
-  const base=ACT.filter(a=>!ipExcl(a.ip)&&(!AFPROD||a.lic.produit===AFPROD)&&(!ASAT||(ASAT==='__main'?!satOf(a):satOf(a)===ASAT))&&(!q||actMatch(a,q)));
+/* ═══ ACTIVITÉ — modèle « Visites du site web » de COVO Pro : visites, indicateurs, parcours ═══ */
+let ATAB='visits',ACHIP='',ALIM2=300,AVIS=[],AVMAP={},ASELV=null;
+try{const u=JSON.parse(localStorage.getItem('lpActUi')||'null');if(u){AFILTER=u.p||AFILTER;ATAB=u.t||ATAB}}catch(e){}
+const actSaveUi=()=>{try{localStorage.setItem('lpActUi',JSON.stringify({p:AFILTER,t:ATAB}))}catch(e){}};
+const VGAP=30*6e4,DEVI={Mobile:'📱',Tablette:'📲',Ordinateur:'💻',Inconnu:'❔'};
+const hm=t=>new Date(t).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+const fmtDT2=t=>t?new Date(t).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'2-digit'})+' '+hm(t):'—';
+const dur=ms=>{const s=Math.max(0,Math.round(ms/1000));if(s<60)return s+' s';const m=Math.round(s/60);return m<60?m+' min':Math.floor(m/60)+' h '+String(m%60).padStart(2,'0')};
+const nrm=s=>String(s==null?'':s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+function actRange(f){const now=Date.now(),d0=new Date();d0.setHours(0,0,0,0);
+  if(f==='today')return{from:+d0,to:now,prevFrom:+d0-864e5,prevTo:now-864e5,label:'aujourd\'hui',hours:true};
+  if(f==='all'||!+f)return{from:0,to:now,label:'tout l\'historique'};
+  const n=+f;return{from:+d0-(n-1)*864e5,to:now,prevFrom:+d0-(2*n-1)*864e5,prevTo:+d0-(n-1)*864e5,label:n+' derniers jours',days:n}}
+// regroupe les pages en visites : même client + même appareil, sans pause de plus de 30 min ; une fermeture termine la visite
+function buildVisits(){const E=ACT.concat(ACTBG).filter(a=>!ipExcl(a.ip)).sort((a,b)=>a.t-b.t),cur={},V=[];
+  E.forEach(e=>{const k=e.lic.id+'|'+e.dv;let v=cur[k];const fresh=!v||v.closed||e.t-v.tl>VGAP;
+    if(fresh){if(e.ev)return;v=cur[k]={id:k+'|'+e.t,lic:e.lic,dv:e.dv,t:e.t,tl:e.t,steps:[],ips:[],loc:'',isp:'',d:'',scr:'',lang:'',src:'',sats:new Set(),end:''};V.push(v)}
+    v.tl=Math.max(v.tl,e.t);
+    if(e.ev==='off'){v.closed=true;v.end=e.r||'close';v.steps.push({...e,kind:'off'});return}
+    if(e.ev==='bg'){v.steps.push({...e,kind:'bg'});return}
+    v.steps.push({...e,kind:'page'});if(e.ip&&!v.ips.includes(e.ip))v.ips.push(e.ip);
+    ['loc','isp','d','scr','lang','src'].forEach(f=>{if(e[f]&&!v[f])v[f]=e[f]});const st=satOf(e);if(st)v.sats.add(st)});
+  const now=Date.now(),nv={};
+  V.forEach(v=>{v.pages=v.steps.filter(x=>x.kind==='page');v.np=v.pages.length;v.ip=v.ips[0]||'';
+    if(!v.d){const x=DEV[v.lic.id]&&Object.values(DEV[v.lic.id]).find(y=>y&&y.id===v.dv);if(x){const u=shortUA(x.ua);v.d=(u.ic==='📱'?'Mobile':u.ic==='📲'?'Tablette':'Ordinateur')+' · '+u.txt}}
+    v.kind=(/^(Mobile|Tablette|Ordinateur)/.exec(v.d||'')||[,'Inconnu'])[1];
+    const ls=v.steps[v.steps.length-1];v.live=!v.closed&&now-v.tl<5*6e4&&ls&&ls.kind==='page';
+    if(!v.closed&&!v.live)v.end=ls&&ls.kind==='bg'?'bg':'quiet';
+    if(v.np)nv[v.lic.email]=(nv[v.lic.email]||0)+1});
+  const R=V.filter(v=>v.np).sort((a,b)=>b.t-a.t);R.forEach(v=>v.nTot=nv[v.lic.email]);return R}
+const vSatOk=v=>!ASAT||(ASAT==='__main'?!v.sats.size:v.sats.has(ASAT));
+function vMatch(v){if(ACHIP==='mobile'&&v.kind!=='Mobile'&&v.kind!=='Tablette')return false;if(ACHIP==='pc'&&v.kind!=='Ordinateur')return false;
+  if(ACHIP==='sat'&&!v.sats.size)return false;if(ACHIP==='deep'&&v.np<3)return false;if(ACHIP==='live'&&!v.live)return false;
+  const q=nrm(($('aq')||{}).value||'').trim();if(!q)return true;
+  return nrm([v.lic.email,v.lic.produit,...v.ips,...v.ips.map(ipLbl),v.loc,v.isp,v.d,...v.sats,...v.pages.map(p=>pageOf(p).nm)].join(' ')).includes(q)}
+const vEnd=v=>v.live?'🟢 en cours':v.end==='bg'?'💤 en arrière-plan':v.end==='quiet'?'⏸ sans activité':'🔴 '+(OFFR[v.end]||'terminée');
+function renderAct(){const R=actRange(AFILTER);
+  $('aflt').querySelectorAll('button').forEach(b=>b.classList.toggle('act',b.dataset.f===AFILTER));
   {const b=$('aIpx'),n=Object.keys(IPX).length;if(b)b.textContent='🚫 IP exclues'+(n?' ('+n+')':'')}
-  const rows=base.filter(a=>a.t>=t0&&a.t<=t1).sort((a,b)=>b.t-a.t);
-  const prev=AFILTER==='all'?null:base.filter(a=>a.t>=t0-span&&a.t<t0);
-  $('aflt').querySelectorAll('button').forEach(b=>b.classList.toggle('act',b.dataset.f===AFILTER));$('aSort').value=ASORT;
-  // ── KPI avec tendance ──
-  const uniq=(arr,f)=>new Set(arr.map(f)).size;
-  const online=uniq(ACT.filter(a=>!ipExcl(a.ip)&&now-a.t<5*6e4&&(!AFPROD||a.lic.produit===AFPROD)),a=>a.lic.email+'|'+a.dv);
-  const trend=(c,p)=>{if(prev===null)return'<div class="d">sur toute la période</div>';if(!p)return c?'<div class="d up">▲ nouveau</div>':'<div class="d">—</div>';const d=Math.round((c-p)/p*100);return `<div class="d ${d>0?'up':d<0?'dn':''}">${d>0?'▲':d<0?'▼':'='} ${Math.abs(d)} % vs période préc.</div>`};
-  const K=[['live','var(--ok)','<i></i>En ligne',online,'<div class="d">actifs ces 5 dernières min</div>'],
-    ['','var(--a1)','👤 Clients',uniq(rows,a=>a.lic.email),trend(uniq(rows,a=>a.lic.email),prev&&uniq(prev,a=>a.lic.email))],
-    ['','var(--a2)','📄 Pages vues',rows.length,trend(rows.length,prev&&prev.length)],
-    ['','#f59e0b','🌐 Adresses IP',uniq(rows.filter(a=>a.ip),a=>a.ip),trend(uniq(rows.filter(a=>a.ip),a=>a.ip),prev&&uniq(prev.filter(a=>a.ip),a=>a.ip))],
-    ['','#ec4899','🧩 Satellites',uniq(rows,a=>a.lic.produit+'|'+satOf(a)),'<div class="d">'+(rows.length?esc([...new Set(rows.map(a=>satOf(a)||a.lic.produit))].slice(0,3).join(', ')):'—')+'</div>']];
-  $('actKpi').innerHTML=K.map(([c,col,l,v,d])=>`<div class="ax-k ${c}" style="--kc:${col}"><div class="l">${l}</div><div class="v">${v}</div>${d}</div>`).join('');
   if($('aSus'))$('aSus').innerHTML=ACTSUS.length?`<div class="card ax-sus"><span>🧹 <b>${ACTSUS.length} activité(s) « ${[...new Set(ACTSUS.map(a=>esc(a.m)))].join(', ')} » masquée(s)</b> — enregistrées à tort par l'ancienne version depuis la fenêtre cachée que COVO Pro ouvre en arrière-plan.</span><button class="ghost sm" onclick="purgeSuspects()">🧹 Nettoyer</button></div>`:'';
-  renderOrders();actNow();actChart(rows,t0,t1);actHeat(rows);actTops(rows);
-  // ── fil ──
-  if(!ACT.length){$('actList').innerHTML='<div class="empty">Aucune activité pour l\'instant.<br>Ouvrez <b>⚙️ Gérer le suivi</b> et activez-le pour vos clients : les pages qu\'ils ouvrent apparaîtront ici en direct.</div>';return}
-  if(!rows.length){$('actList').innerHTML='<div class="empty">Aucune activité sur cette période ou pour ces filtres</div>';return}
-  const isNew=a=>ASEEN&&!ASEEN.has(a.t+'|'+a.dv);
-  const rowHTML=a=>{const m=pageOf(a),[ic,col]=pm(a.lic.produit),ipn=a.ip?(ipLbl(a.ip)||a.ip):'';
-    return `<div class="actr${isNew(a)?' new':''}" style="--pc:${col}" onclick="openLic('${a.lic.id}')"><span class="st"></span><div class="im">${m.ic}</div>
-      <div style="min-width:0"><b>${esc(m.nm)}</b>${pathHTML(a)}<small>👤 ${esc(a.lic.email)} · ${devNameG(a.lic,a.dv)}${a.ip?` · <span class="ipt cli" style="padding:2px 8px" onclick="event.stopPropagation();ipSteps('${esc(a.ip)}')">🌐 ${esc(ipn)}</span>`:''}</small></div>
-      <time>${new Date(a.t).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}<br><small>${ago(a.t)}</small></time></div>`};
-  let html='';
-  if(ASORT==='recent'){let last='',open=false;rows.slice(0,ALIM).forEach(a=>{const day=new Date(a.t).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
-      if(day!==last){if(open)html+='</div></div>';last=day;open=true;const n=rows.filter(x=>new Date(x.t).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})===day).length;
-        html+=`<div class="actgrp"><summary><div class="pi" style="--pc:var(--a1)">📅</div><div class="ti"><b style="text-transform:capitalize">${day}</b><small>${n} page(s)</small></div></summary><div class="actrows">`}html+=rowHTML(a)});
-    if(open)html+='</div></div>';if(rows.length>ALIM)html+=`<button class="ghost ax-more" onclick="ALIM+=120;renderAct()">Afficher plus (${rows.length-ALIM} restantes)</button>`}
-  else{const G={};rows.forEach(a=>{const key=ASORT==='client'?a.lic.email:ASORT==='prod'?a.lic.produit:ASORT==='ip'?(a.ip||'IP inconnue'):ASORT==='sat'?(satOf(a)?a.lic.produit+' › Satellite '+satOf(a):a.lic.produit+' (application principale)'):pageOf(a).nm;(G[key]=G[key]||[]).push(a)});
-    const keys=Object.keys(G).sort((x,y)=>G[y].length-G[x].length);
-    html=keys.map((key,i)=>{const arr=G[key],a0=arr[0],m=pageOf(a0),[ic,col]=pm(a0.lic.produit),nc=new Set(arr.map(a=>a.lic.email)).size,pr=[...new Set(arr.map(a=>a.lic.produit))].join(', ');
-      const hd=ASORT==='sat'?`<div class="pi" style="--pc:${col}">${satOf(a0)?satIc(satOf(a0)):ic}</div><div class="ti"><b>${esc(key)}</b><small>${nc} client(s) · ${new Set(arr.map(a=>pageOf(a).nm)).size} page(s) différente(s) · dernière ${ago(a0.t)}</small></div>`
-        :ASORT==='client'?`<div class="pi" style="--pc:var(--a1)">👤</div><div class="ti"><b>${esc(key)}</b><small>${esc(pr)} · dernière ${ago(a0.t)}</small></div>`
-        :ASORT==='prod'?`<div class="pi" style="--pc:${col}">${ic}</div><div class="ti"><b>${esc(key)}</b><small>${nc} client(s) · dernière ${ago(a0.t)}</small></div>`
-        :ASORT==='ip'?`<div class="pi" style="--pc:var(--a2)">${ipLbl(key)?'🏷️':'🌐'}</div><div class="ti"><b>${ipLbl(key)?esc(ipLbl(key))+' · ':''}<code style="font-family:'JetBrains Mono',monospace;font-size:.8rem">${esc(key)}</code>${nc>1?` <span class="pill red" style="padding:2px 8px">${nc} clients</span>`:''}</b><small>${esc(pr)}${a0.loc?' · 📍 '+esc(a0.loc):''} · dernière ${ago(a0.t)}</small></div>`
-        :`<div class="pi" style="--pc:${col}">${m.ic}</div><div class="ti"><b>${esc(key)}</b><small>${nc} client(s) · ${esc(pr)}</small></div>`;
-      const extra=ASORT==='ip'&&key!=='IP inconnue'?`<button class="ghost sm" style="margin-right:6px" onclick="event.preventDefault();event.stopPropagation();ipSteps('${esc(key)}')">👣 Suivi des pas</button><button class="ghost sm" style="margin-right:6px" onclick="event.preventDefault();event.stopPropagation();ipToggleExcl('${esc(key)}',true)">🚫 Exclure</button>`:'';
-      return `<details class="actgrp"${i<3?' open':''}><summary>${hd}${extra}<span class="cnt">${arr.length}</span></summary><div class="actrows">${arr.slice(0,60).map(rowHTML).join('')}${arr.length>60?`<div class="acthint" style="padding:8px 14px">+ ${arr.length-60} autres</div>`:''}</div></details>`}).join('')}
-  $('actList').innerHTML=`<div class="ax-head"><span>${rows.length} page(s) vue(s)${AFPROD?' · '+esc(AFPROD):''}${hidden?` · <a href="#" onclick="event.preventDefault();openIpx()">${hidden} masquée(s) par exclusion d'IP</a>`:''}</span><span>Cliquez une ligne pour ouvrir la fiche client · une IP pour son suivi des pas</span></div>`+html;
-  ASEEN=new Set(ACT.map(a=>a.t+'|'+a.dv))}
-function actChart(rows,t0,t1){if(!window.Chart||!$('aChart'))return;const CS=getComputedStyle(document.documentElement),A1=CS.getPropertyValue('--a1').trim(),A2=CS.getPropertyValue('--a2').trim();
-  const hourly=AFILTER==='today'||AFILTER==='24h';let labels=[],pages=[],cli=[];
-  if(hourly){const start=AFILTER==='today'?t0:t1-23*36e5;for(let i=0;i<24;i++){const h0=AFILTER==='today'?t0+i*36e5:Math.floor(start/36e5)*36e5+i*36e5,h1=h0+36e5;const r=rows.filter(a=>a.t>=h0&&a.t<h1);labels.push(new Date(h0).getHours()+' h');pages.push(r.length);cli.push(new Set(r.map(a=>a.lic.email)).size)}}
-  else{const days=AFILTER==='7j'?7:30;for(let i=days-1;i>=0;i--){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-i);const d0=+d,d1=d0+864e5;const r=rows.filter(a=>a.t>=d0&&a.t<d1);labels.push(d.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'}));pages.push(r.length);cli.push(new Set(r.map(a=>a.lic.email)).size)}}
-  $('aChartSub').textContent=hourly?'par heure':'par jour';
-  const ctx=$('aChart').getContext('2d'),g=ctx.createLinearGradient(0,0,0,230);g.addColorStop(0,A1+'cc');g.addColorStop(1,A1+'33');
-  const cfg={data:{labels,datasets:[{type:'bar',label:'Pages vues',data:pages,backgroundColor:g,borderRadius:6,maxBarThickness:22,yAxisID:'y'},{type:'line',label:'Clients',data:cli,borderColor:A2,backgroundColor:A2,tension:.4,pointRadius:2,borderWidth:2.5,yAxisID:'y1'}]},
-    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{usePointStyle:true,boxWidth:8}},tooltip:tip},
-      scales:{x:{grid:{display:false},ticks:{maxTicksLimit:hourly?12:10}},y:{beginAtZero:true,ticks:{precision:0}},y1:{beginAtZero:true,position:'right',grid:{display:false},ticks:{precision:0}}}}};
+  renderOrders();actNow();
+  AVIS=buildVisits().filter(v=>(!AFPROD||v.lic.produit===AFPROD)&&vSatOk(v));AVMAP={};AVIS.forEach(v=>AVMAP[v.id]=v);
+  const L=AVIS.filter(v=>v.t>=R.from&&v.t<=R.to),P=R.prevFrom!=null?AVIS.filter(v=>v.t>=R.prevFrom&&v.t<R.prevTo):null;
+  const uq=(A,f)=>new Set(A.map(f)).size,pv=A=>A.reduce((s,v)=>s+v.np,0);
+  const dl=(c,p)=>{if(p==null)return'<div class="d">sur toute la période</div>';if(!p)return c?'<div class="d up">▲ nouveau</div>':'<div class="d">—</div>';const r=(c-p)/p;return `<div class="d ${Math.abs(r)<.005?'':r>0?'up':'dn'}">${r>0?'▲ +':r<0?'▼ ':'= '}${Math.round(Math.abs(r)*100)} %</div>`};
+  const durs=L.filter(v=>v.tl>v.t),bounce=L.filter(v=>v.np<=1).length,mob=L.filter(v=>v.kind==='Mobile'||v.kind==='Tablette').length,withSat=L.filter(v=>v.sats.size).length;
+  const cv={};L.forEach(v=>cv[v.lic.email]=(cv[v.lic.email]||0)+1);const back=Object.values(cv).filter(n=>n>1).length;
+  const K=[['🧭 Visites',L.length,dl(L.length,P&&P.length),'var(--a1)'],['👤 Clients actifs',uq(L,v=>v.lic.email),dl(uq(L,v=>v.lic.email),P&&uq(P,v=>v.lic.email)),'#6250d6'],
+    ['📄 Pages vues',pv(L),dl(pv(L),P&&pv(P)),'#1baf7a'],['📑 Pages / visite',L.length?(pv(L)/L.length).toLocaleString('fr-FR',{maximumFractionDigits:1}):'0',`<div class="d">${L.length?Math.round(100*bounce/L.length):0} % n'ouvrent qu'1 page</div>`,'#eda100'],
+    ['⏱️ Durée moyenne',durs.length?dur(durs.reduce((s,v)=>s+v.tl-v.t,0)/durs.length):'—',`<div class="d">sur ${durs.length} visite(s)</div>`,'#eb6834'],['↩︎ Revenants',back,'<div class="d">clients venus plusieurs fois</div>','#0f766e'],
+    ['📱 Sur mobile',L.length?Math.round(100*mob/L.length)+' %':'—',`<div class="d">${mob} visite(s)</div>`,'#e87ba4'],['🧩 Avec satellite',L.length?Math.round(100*withSat/L.length)+' %':'—',`<div class="d">${esc([...new Set(L.flatMap(v=>[...v.sats]))].slice(0,3).join(', ')||'aucun')}</div>`,'#7c3aed']];
+  $('actKpi').innerHTML=K.map(([l,v,d,c])=>`<div class="ax-k" style="--kc:${c}"><div class="l">${l}</div><div class="v">${v}</div>${d}</div>`).join('');
+  actChart2(L,R);actHeat(L.flatMap(v=>v.pages));actDevices(L);
+  const cnt=(A,f)=>{const m={};A.forEach(x=>{const k=f(x);if(k)m[k]=(m[k]||0)+1});return Object.entries(m).sort((a,b)=>b[1]-a[1])};
+  $('aTopP').innerHTML=axBars(cnt(L.flatMap(v=>v.pages),p=>{const g=pageOf(p),st=satOf(p);return (st?satIc(st)+' '+st+' › ':'')+g.ic+' '+g.nm}),'var(--a1)',7);
+  $('aTopS').innerHTML=axBars(cnt(L.flatMap(v=>v.pages),p=>{const[ic]=pm(p.lic.produit),st=satOf(p);return ic+' '+p.lic.produit+(st?' › Satellite '+satIc(st)+' '+st:'')}),'#7c3aed',7);
+  $('aTopL').innerHTML=axBars(cnt(L,v=>v.loc||'Inconnu'),'#eb6834',6);
+  renderActList()}
+function axBars(A,col,n){if(!A.length)return'<div class="sub2">Aucune donnée</div>';const tot=A.reduce((s,x)=>s+x[1],0),mx=A[0][1],rest=A.slice(n).reduce((s,x)=>s+x[1],0),B=A.slice(0,n);if(rest)B.push([`Autres (${A.length-n})`,rest]);
+  return B.map(([k,v])=>`<div class="ax-hr" style="--c:${col}"><span class="n" title="${esc(k)}">${esc(k)}</span><span class="v">${v}<small>${Math.round(100*v/tot)} %</small></span><span class="tr"><i style="width:${100*Math.min(v,mx)/mx}%"></i></span></div>`).join('')}
+function actDevices(L){const A={},C={Mobile:'#2a78d6',Tablette:'#6250d6',Ordinateur:'#1baf7a',Inconnu:'#9a9990'};L.forEach(v=>A[v.kind]=(A[v.kind]||0)+1);const E=Object.entries(A).sort((a,b)=>b[1]-a[1]),tot=L.length||1;
+  if(!E.length){$('aDev').innerHTML='<div class="sub2">Aucune donnée</div>';return}
+  const br={};L.forEach(v=>{const p=String(v.d||'').split(' · ');const k=[p[1],p[2]].filter(Boolean).join(' · ');if(k)br[k]=(br[k]||0)+1});const B=Object.entries(br).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  $('aDev').innerHTML=`<div class="ax-stack">${E.map(([k,n])=>`<i style="flex-grow:${n};background:${C[k]}" title="${k} : ${n}"></i>`).join('')}</div>`+E.map(([k,n])=>`<div class="ax-hr" style="--c:${C[k]}"><span class="n">${DEVI[k]} ${k}</span><span class="v">${n}<small>${Math.round(100*n/tot)} %</small></span></div>`).join('')
+    +(B.length?`<div class="sub2" style="margin-top:8px">Systèmes / navigateurs : ${B.map(([k,n])=>esc(k)+' ('+n+')').join(' · ')}</div>`:'')}
+function actChart2(L,R){if(!window.Chart||!$('aChart'))return;const CS=getComputedStyle(document.documentElement),A1=CS.getPropertyValue('--a1').trim(),A2=CS.getPropertyValue('--a2').trim();const B=[];
+  if(R.hours){for(let i=0;i<24;i++)B.push({l:i+' h',s:R.from+i*36e5,e:R.from+(i+1)*36e5})}
+  else{const n=R.days||Math.max(1,Math.min(400,Math.ceil((Date.now()-(L.length?L[L.length-1].t:Date.now()))/864e5)+1)),d0=new Date();d0.setHours(0,0,0,0);
+    if(n>120){const w=Math.ceil(n/7);for(let i=w-1;i>=0;i--){const s=+d0-(i*7+6)*864e5;B.push({l:new Date(s).toLocaleDateString('fr-FR',{day:'2-digit',month:'short'}),s,e:s+7*864e5})}}
+    else for(let i=n-1;i>=0;i--){const s=+d0-i*864e5,d=new Date(s);B.push({l:n<=14?d.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric'}):d.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'}),s,e:s+864e5})}}
+  B.forEach(b=>{const r=L.filter(v=>v.t>=b.s&&v.t<b.e);b.v=r.length;b.u=new Set(r.map(v=>v.lic.email)).size});
+  $('aChartT').textContent=R.hours?'Visites par heure':B.length&&B[0].e-B[0].s>864e5?'Visites par semaine':'Visites par jour';$('aChartSub').textContent=R.label+' · barres = visites, trait = clients';
+  const ctx=$('aChart').getContext('2d'),g=ctx.createLinearGradient(0,0,0,230);g.addColorStop(0,A1+'dd');g.addColorStop(1,A1+'44');
+  const cfg={data:{labels:B.map(b=>b.l),datasets:[{type:'bar',label:'Visites',data:B.map(b=>b.v),backgroundColor:g,borderRadius:6,maxBarThickness:24,yAxisID:'y'},{type:'line',label:'Clients',data:B.map(b=>b.u),borderColor:A2,backgroundColor:A2,tension:.4,pointRadius:2,borderWidth:2.5,yAxisID:'y'}]},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{usePointStyle:true,boxWidth:8}},tooltip:tip},scales:{x:{grid:{display:false},ticks:{maxTicksLimit:R.hours?12:10}},y:{beginAtZero:true,ticks:{precision:0}}}}};
   if(charts.aChart){charts.aChart.data=cfg.data;charts.aChart.options=cfg.options;charts.aChart.update()}else charts.aChart=new Chart($('aChart'),cfg)}
 function actHeat(rows){const H=Array.from({length:7},()=>Array(24).fill(0));rows.forEach(a=>{const d=new Date(a.t);H[(d.getDay()+6)%7][d.getHours()]++});const mx=Math.max(1,...H.flat());
-  const J=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
-  const J2=['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche'];let pd=0,ph=0,dT=Array(7).fill(0),hT=Array(24).fill(0);H.forEach((r,d)=>r.forEach((n,h)=>{dT[d]+=n;hT[h]+=n}));pd=dT.indexOf(Math.max(...dT));ph=hT.indexOf(Math.max(...hT));
-  $('aPeak').innerHTML=rows.length?`<div><span>Jour le plus actif</span><b style="text-transform:capitalize">${J2[pd]}</b></div><div><span>Heure de pointe</span><b>${ph} h – ${ph+1} h</b></div>`:'';
+  const J=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'],J2=['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche'],dT=H.map(r=>r.reduce((a,b)=>a+b,0)),hT=Array.from({length:24},(_,h)=>H.reduce((s,r)=>s+r[h],0)),ph=hT.indexOf(Math.max(...hT));
+  $('aPeak').innerHTML=rows.length?`<div><span>Jour le plus actif</span><b style="text-transform:capitalize">${J2[dT.indexOf(Math.max(...dT))]}</b></div><div><span>Heure de pointe</span><b>${ph} h – ${ph+1} h</b></div>`:'';
   $('aHeat').innerHTML='<b></b>'+Array.from({length:24},(_,h)=>`<b class="hx">${h%6===0?h:''}</b>`).join('')+H.map((r,d)=>`<b>${J[d]}</b>`+r.map((n,h)=>`<i style="--h:${n?(.18+.82*n/mx).toFixed(2):0}" title="${J[d]} ${h} h : ${n} page(s)"></i>`).join('')).join('')}
-function actTops(rows){const top=(key,lim=6)=>{const M={};rows.forEach(a=>{const k=key(a);if(!k)return;(M[k]=M[k]||{n:0,a,c:new Set()}).n++;M[k].c.add(a.lic.email)});return Object.entries(M).sort((x,y)=>y[1].n-x[1].n).slice(0,lim)};
-  const empty='<div class="empty sm">—</div>';
-  const P=top(a=>pageOf(a).nm),mp=P[0]?P[0][1].n:1;
-  $('aTopP').innerHTML=P.length?P.map(([k,v])=>{const m=pageOf(v.a);return `<div class="ax-t" style="--w:${v.n/mp*100}%;--bc:${m.col}" onclick="$('aq').value='${esc(k).replace(/'/g,"\\'")}';renderAct()"><span class="bar"></span><span class="ic">${m.ic}</span><div><b>${esc(k)}</b><small>${esc(satOf(v.a)||v.a.lic.produit)} · ${v.c.size} client(s)</small></div><span class="n">${v.n}</span><span></span></div>`}).join(''):empty;
-  const I=top(a=>a.ip),mi=I[0]?I[0][1].n:1;
-  $('aTopI').innerHTML=I.length?I.map(([k,v])=>`<div class="ax-t" style="--w:${v.n/mi*100}%" onclick="ipSteps('${esc(k)}')"><span class="bar"></span><span class="ic">${ipLbl(k)?'🏷️':'🌐'}</span><div><b>${ipLbl(k)?esc(ipLbl(k)):esc(k)}</b><small>${ipLbl(k)?esc(k)+' · ':''}${v.c.size>1?'<span class="red">'+v.c.size+' clients</span>':esc([...v.c][0])}</small></div><span class="n">${v.n}</span><button class="ax-x" title="Exclure cette IP du suivi" onclick="event.stopPropagation();ipToggleExcl('${esc(k)}',true)">🚫</button></div>`).join(''):empty;
-  const C=top(a=>a.lic.email),mc=C[0]?C[0][1].n:1;
-  $('aTopC').innerHTML=C.length?C.map(([k,v])=>{const[ic,col]=pm(v.a.lic.produit);return `<div class="ax-t" style="--w:${v.n/mc*100}%;--bc:${col}" onclick="openLic('${v.a.lic.id}')"><span class="bar"></span><span class="ic">👤</span><div><b>${esc(k)}</b><small>${ic} ${esc(v.a.lic.produit)} · ${ago(v.a.t)}</small></div><span class="n">${v.n}</span><span></span></div>`}).join(''):empty}
-document.querySelectorAll('#aflt button').forEach(b=>b.onclick=()=>{AFILTER=b.dataset.f;renderAct()});
-
+function renderActList(){const host=$('actList');if(!host)return;const R=actRange(AFILTER),all=AVIS.filter(v=>v.t>=R.from&&v.t<=R.to),L=all.filter(vMatch);
+  $('aTabs').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.t===ATAB));$('aChips').querySelectorAll('button').forEach(b=>b.classList.toggle('act',b.dataset.c===ACHIP));
+  const byIp={},byCl={};L.forEach(v=>{v.ips.forEach(ip=>{const g=byIp[ip]=byIp[ip]||{ip,n:0,pv:0,first:v.t,last:v.tl,loc:v.loc,isp:v.isp,cl:new Set(),dv:new Set()};g.n++;g.pv+=v.np;g.first=Math.min(g.first,v.t);g.last=Math.max(g.last,v.tl);g.cl.add(v.lic.email);g.dv.add(v.kind)});
+    const c=byCl[v.lic.email]=byCl[v.lic.email]||{c:v.lic.email,n:0,pv:0,du:0,last:0,ips:new Set(),pr:new Set()};c.n++;c.pv+=v.np;c.du+=Math.max(0,v.tl-v.t);v.ips.forEach(i=>c.ips.add(i));c.pr.add(v.lic.produit);c.last=Math.max(c.last,v.tl)});
+  $('tcV').textContent=L.length;$('tcI').textContent=Object.keys(byIp).length;$('tcC').textContent=Object.keys(byCl).length;
+  if(!ACT.length){host.innerHTML='<div class="ax-empty"><b>🧭</b>Aucune activité pour l\'instant.<br>Ouvrez <b>⚙️ Gérer le suivi</b> et activez-le pour vos clients : leurs visites apparaîtront ici.</div>';return}
+  if(!L.length){host.innerHTML=`<div class="ax-empty"><b>🔍</b>${all.length?'Aucune visite ne correspond à la recherche ou au filtre.':'Aucune visite sur la période choisie.'}</div>`;return}
+  const ipCell=ip=>ip?(ipLbl(ip)?`🏷️ ${esc(ipLbl(ip))}<small class="mono">${esc(ip)}</small>`:`<span class="mono">${esc(ip)}</span>`):'—';
+  if(ATAB==='ip'){const A=Object.values(byIp).sort((a,b)=>b.last-a.last);
+    host.innerHTML=`<div class="ax-tbl"><table><thead><tr><th>Adresse IP</th><th>Lieu</th><th>Visites</th><th>Pages</th><th>Clients</th><th>Appareils</th><th>Première</th><th>Dernière</th></tr></thead><tbody>${A.slice(0,600).map(g=>`<tr onclick="actOpenIp('${esc(g.ip)}')"><td>${ipCell(g.ip)}${ipCutBadge(g.ip)}</td><td>${esc(g.loc||'—')}<small>${esc(g.isp||'')}</small></td><td><b>${g.n}</b></td><td>${g.pv}</td><td>${[...g.cl].map(esc).join('<br>')}${g.cl.size>1?'<small class="red">⚠ adresse partagée</small>':''}</td><td>${[...g.dv].map(k=>DEVI[k]+' '+k).join('<br>')}</td><td>${fmtDT2(g.first)}</td><td>${fmtDT2(g.last)}</td></tr>`).join('')}</tbody></table></div>`;return}
+  if(ATAB==='cl'){const C=Object.values(byCl).sort((a,b)=>b.last-a.last);
+    host.innerHTML=`<div class="ax-tbl"><table><thead><tr><th>Client</th><th>Logiciels</th><th>Visites</th><th>Pages vues</th><th>Temps total</th><th>Adresses IP</th><th>Dernière visite</th></tr></thead><tbody>${C.map(g=>`<tr onclick="actOpenCl('${esc(g.c)}')"><td><b>👤 ${esc(g.c)}</b></td><td>${[...g.pr].map(p=>pm(p)[0]+' '+esc(p)).join('<br>')}</td><td><b>${g.n}</b></td><td>${g.pv}</td><td>${dur(g.du)}</td><td>${[...g.ips].map(ipCell).join('<br>')}</td><td>${fmtDT2(g.last)}</td></tr>`).join('')}</tbody></table></div>`;return}
+  let out='',lastDay='';const d00=new Date().setHours(0,0,0,0);
+  L.slice(0,ALIM2).forEach(v=>{const d=new Date(v.t),dk=d.toDateString();
+    if(dk!==lastDay){lastDay=dk;const n=Math.round((d00-new Date(d.getFullYear(),d.getMonth(),d.getDate()))/864e5),c=L.filter(x=>new Date(x.t).toDateString()===dk).length;
+      out+=`<div class="ax-day"><span>${n===0?'Aujourd\'hui':n===1?'Hier':d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})}</span><span>${c} visite${c>1?'s':''}</span></div>`}
+    const last=v.pages[v.pages.length-1],lp=pageOf(last),[pic]=pm(v.lic.produit),ipn=v.ip?(ipLbl(v.ip)||v.ip):'';
+    out+=`<div class="ax-vis${ASELV===v.id?' sel':''}${v.live?' live':''}" data-vid="${esc(v.id)}" onclick="actVisit(this.dataset.vid)"><div class="tm">${hm(v.t)}</div><div class="dv" title="${esc(v.d||'Appareil inconnu')}">${DEVI[v.kind]}</div>
+      <div class="cl">${esc(v.lic.email)}<small>${pic} ${esc(v.lic.produit)}${v.sats.size?' · 🧩 '+[...v.sats].map(esc).join(', '):''}</small></div>
+      <div class="lo">🌐 ${esc(ipn||'IP inconnue')}<small>📍 ${esc(v.loc||'Lieu inconnu')}</small></div>
+      <div class="pg">📄 ${v.np} page${v.np>1?'s':''}${v.tl>v.t?' · ⏱️ '+dur(v.tl-v.t):''}<small>dernière : ${satOf(last)?satIc(satOf(last))+' ':''}${lp.ic} ${esc(lp.nm)}</small></div>
+      <div class="rt"><span class="ax-vp ${v.live?'on':v.closed?'off':''}">${vEnd(v)}</span>${v.nTot>1?`<span class="ax-vp rv">↩︎ revenant · ${v.nTot}</span>`:'<span class="ax-vp">nouveau</span>'}</div></div>`});
+  if(L.length>ALIM2)out+=`<button class="ghost ax-more" onclick="ALIM2+=300;renderActList()">Afficher plus (${L.length-ALIM2} visites)</button>`;
+  host.innerHTML=out}
+function actOpenIp(ip){$('aq').value=ip;ATAB='visits';actSaveUi();renderActList();const v=AVIS.find(x=>x.ips.includes(ip));if(v)actVisit(v.id)}
+function actOpenCl(c){$('aq').value=c;ATAB='visits';actSaveUi();renderActList();const v=AVIS.find(x=>x.lic.email===c);if(v)actVisit(v.id)}
+function actVisit(id){const v=AVMAP[id];if(!v)return;ASELV=id;document.querySelectorAll('.ax-vis').forEach(x=>x.classList.toggle('sel',x.dataset.vid===id));
+  const others=AVIS.filter(x=>x!==v&&(x.lic.email===v.lic.email||x.ips.some(i=>v.ips.includes(i)))).slice(0,30),[pic]=pm(v.lic.produit);
+  const steps=v.steps.map((x,i)=>{const nx=v.steps[i+1],stay=nx?nx.t-x.t:0;
+    if(x.kind==='bg')return `<li class="bg"><b>💤 Passé en arrière-plan</b><small>${new Date(x.t).toLocaleTimeString('fr-FR')}</small></li>`;
+    if(x.kind==='off')return `<li class="off"><b>🔴 ${esc((OFFR[x.r]||'fermé').replace(/^./,c=>c.toUpperCase()))}</b><small>${new Date(x.t).toLocaleTimeString('fr-FR')}</small></li>`;
+    const g=pageOf(x),st=satOf(x);return `<li><b>${g.ic} ${esc(g.nm)}</b><span class="where">${pic} ${esc(x.lic.produit)}${st?' › Satellite '+satIc(st)+' '+esc(st):''}</span><small>${new Date(x.t).toLocaleTimeString('fr-FR')}${stay>0?' · resté '+dur(stay):''}</small></li>`}).join('');
+  $('aDrw').innerHTML=`<div class="dh"><div style="min-width:0;flex:1"><h3>👤 ${esc(v.lic.email)}</h3><p>${fmtDT2(v.t)}${v.tl>v.t?' → '+hm(v.tl)+' · '+dur(v.tl-v.t):''}</p><span class="ax-vp ${v.live?'on':v.closed?'off':''}">${vEnd(v)}</span></div><button class="x" onclick="actDrwClose()">✕</button></div>
+    <div class="db"><div class="ax-kv">
+      <span>${pic} Logiciel</span><b>${esc(v.lic.produit)}</b>
+      <span>🧩 Satellites</span><b>${v.sats.size?[...v.sats].map(x=>satIc(x)+' '+esc(x)).join(', '):'aucun (application principale)'}</b>
+      <span>🌐 Adresse IP</span><b>${v.ips.map(ip=>(ipLbl(ip)?'🏷️ '+esc(ipLbl(ip))+' · ':'')+`<span class="mono">${esc(ip)}</span>`).join('<br>')||'—'}</b>
+      <span>📍 Lieu</span><b>${esc(v.loc||'—')}</b>
+      <span>🛰️ Fournisseur</span><b>${esc(v.isp||'—')}</b>
+      <span>${DEVI[v.kind]} Appareil</span><b>${esc(v.d||'—')}</b>
+      <span>🖥️ Écran</span><b>${esc(v.scr||'—')}</b>
+      <span>🌍 Langue</span><b>${esc(v.lang||'—')}</b>
+      <span>🪟 Fenêtre</span><b>${esc(SRCL[v.src]||'—')}</b>
+    </div>
+    <div class="ax-act"><button class="ghost sm" onclick="openLic('${v.lic.id}')">👤 Fiche client</button>${v.ip?`<button class="ghost sm" onclick="ipSteps('${esc(v.ip)}')">👣 Suivi des pas de l'IP</button>${ipCutBtns(v.ip)}`:''}</div>
+    <div class="ax-h5">🧭 Parcours · ${v.np} page${v.np>1?'s':''}</div><ol class="ax-path2">${steps}</ol>
+    <div class="ax-h5">↩︎ Autres visites du client ou de la même IP · ${others.length}</div>
+    ${others.length?others.map(x=>`<div class="ax-other" data-vid="${esc(x.id)}" onclick="actVisit(this.dataset.vid)"><span>${fmtDT2(x.t)} · ${DEVI[x.kind]} ${x.np} page${x.np>1?'s':''}${x.tl>x.t?' · '+dur(x.tl-x.t):''}</span><b>${x.lic.email===v.lic.email?'':esc(x.lic.email)}</b></div>`).join(''):'<div class="sub2">Première visite connue</div>'}</div>`;
+  $('aDrw').classList.add('open');$('aDrwBg').classList.add('on')}
+function actDrwClose(){ASELV=null;$('aDrw').classList.remove('open');$('aDrwBg').classList.remove('on');document.querySelectorAll('.ax-vis.sel').forEach(x=>x.classList.remove('sel'))}
+function actCsv(){const R=actRange(AFILTER),L=AVIS.filter(v=>v.t>=R.from&&v.t<=R.to).filter(vMatch);if(!L.length)return toast('Aucune visite à exporter','ko');
+  const rows=[['Début','Fin','Durée','Client','Logiciel','Satellites','Adresse IP','Nom IP','Lieu','Fournisseur','Appareil','Écran','Langue','État','Nb pages','Parcours']];
+  L.forEach(v=>rows.push([fmtDT2(v.t),fmtDT2(v.tl),v.tl>v.t?dur(v.tl-v.t):'',v.lic.email,v.lic.produit,[...v.sats].join(', '),v.ips.join(' / '),v.ips.map(ipLbl).filter(Boolean).join(' / '),v.loc,v.isp,v.d,v.scr,v.lang,vEnd(v).replace(/^\S+\s/,''),v.np,v.pages.map(p=>hm(p.t)+' '+(satOf(p)?satOf(p)+' › ':'')+pageOf(p).nm).join(' | ')]));
+  const txt='﻿'+rows.map(r=>r.map(c=>{c=String(c==null?'':c);return /[;"\n]/.test(c)?'"'+c.replace(/"/g,'""')+'"':c}).join(';')).join('\r\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type:'text/csv;charset=utf-8'}));a.download='visites_licences_'+new Date().toISOString().slice(0,10)+'.csv';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
 /* ═══════════ SUIVI DES PAS PAR ADRESSE IP ═══════════ */
 async function ipSteps(ip){const nm=ipLbl(ip);
   openModal(`<div class="md-h"><div class="pi" style="--pc:var(--a2)">👣</div><div><h2>Suivi des pas${nm?' · '+esc(nm):''}</h2><span><code style="font-family:'JetBrains Mono',monospace">${esc(ip)}</code> — tout ce qui a été fait depuis cette adresse</span></div><button class="x" onclick="closeModal()">✕</button></div>
@@ -2158,5 +2286,10 @@ function ipOrdersHTML(){const L=Object.values(IPB||{}).filter(b=>b&&b.ip&&!b.ref
       <small><span style="color:${col};font-weight:700">${lb}</span> ${ago(b.t)} · ${n} appareil(s) · ${b.prods?esc(b.prods.join(', ')):'tous les logiciels'}${b.msg?' · « '+esc(b.msg)+' »':''}</small></div>
       <div class="ipo-b">${ipCutBtns(b.ip)}</div></div>`}).join('')}</div></div>`}
 function renderOrders(){const h=ipOrdersHTML();if($('ipOrders'))$('ipOrders').innerHTML=h;if($('aOrders'))$('aOrders').innerHTML=h}
+
+document.querySelectorAll('#aflt button').forEach(b=>b.onclick=()=>{AFILTER=b.dataset.f;actSaveUi();renderAct()});
+document.querySelectorAll('#aTabs button').forEach(b=>b.onclick=()=>{ATAB=b.dataset.t;actSaveUi();renderActList()});
+document.querySelectorAll('#aChips button').forEach(b=>b.onclick=()=>{ACHIP=b.dataset.c;renderActList()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('aDrw')&&$('aDrw').classList.contains('open'))actDrwClose()});
 </script>
 </body></html>
