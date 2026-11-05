@@ -620,6 +620,12 @@ html[data-light] .ax-vp.rv{color:#0f766e}
 .att-shot{border-color:color-mix(in srgb,var(--a2) 50%,var(--bd));font-weight:800}
 .att-l{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.att-l:empty{display:none}
 .att-i{position:relative;width:92px;height:68px;border-radius:10px;overflow:hidden;border:1px solid var(--bd)}
+.att-f{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:10px;border:1px solid var(--bd);background:var(--s2,rgba(255,255,255,.04));max-width:240px;font-size:.8rem}
+.att-f button{border:0;background:none;color:#f87171;cursor:pointer;padding:0 2px}
+.fch-l{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.fch{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:11px;background:rgba(0,0,0,.18);border:1px solid var(--bd);color:inherit;text-decoration:none;font-size:.82rem;max-width:300px}
+.fch:hover{border-color:var(--ac,#6366f1)}.fch-i{font-size:1.3rem}.fch-t{min-width:0;flex:1;display:flex;flex-direction:column}
+.fch-t b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fch-t small{opacity:.7;font-size:.72rem}
 .att-i img{width:100%;height:100%;object-fit:cover;cursor:zoom-in}
 .att-i button{position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;border:0;background:rgba(0,0,0,.65);color:#fff;font-size:.7rem;padding:0}
 .att-th{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.att-th img{width:74px;height:54px;object-fit:cover;border-radius:8px;border:1px solid var(--bd);cursor:zoom-in}
@@ -1406,7 +1412,7 @@ function noteCard(n,i=0){const ic=NTYPES[n.type]||'📝',pc={Haute:'#f59e0b',Urg
   const due=n.due&&n.status!=='done'?`<span class="badge ${isDue(n)?'b-ko':'b-w'}">📌 ${isDue(n)?'À relancer depuis le':'Rappel le'} ${dfr(n.due)}</span>`:'';
   return `<article class="note${n.status==='done'?' done':''}" style="--nc:${pc};animation-delay:${Math.min(i,10)*.03}s">
     <div class="nh"><span class="nic">${ic}</span><div class="nm"><b>${esc(n.title||n.type)}</b><small>${esc(n.type)}${n.client||n.email?' · 👤 '+esc(n.client||n.email):''}${n.prod?' · '+pi+' '+esc(n.prod):''} · ${fmtD(new Date(n.t))}${n.u&&n.u-n.t>6e4?' · modifiée':''}</small></div></div>
-    ${n.body?`<div class="nb2" onclick="this.classList.toggle('open')">${esc(n.body)}</div>`:''}${thumbs(n.att)}
+    ${n.body?`<div class="nb2" onclick="this.classList.toggle('open')">${esc(n.body)}</div>`:''}${thumbs(n.att)}${fileChips(n.attf)}
     <div class="nf">${n.prio&&n.prio!=='Normale'?`<span class="badge" style="background:color-mix(in srgb,${pc} 20%,transparent);color:${pc}">${n.prio==='Urgente'?'🔴':'🟠'} ${n.prio}</span>`:''}${due}${n.motif?`<span class="badge b-ko">${esc(n.motif)}</span>`:''}${n.status==='done'?'<span class="badge b-ok">✓ Traitée</span>':''}
       <span class="nact"><button class="ghost sm" title="${n.status==='done'?'Rouvrir':'Marquer comme traitée'}" onclick="toggleNote('${n.id}')">${n.status==='done'?'↺':'✓'}</button><button class="ghost sm" title="Modifier" onclick="openNote('${n.id}')">✏️</button><button class="ghost sm" title="Exporter en PDF / imprimer" onclick="printNote('${n.id}')">🖨</button><button class="ghost sm" title="Supprimer" onclick="delNote('${n.id}')">🗑</button></span></div></article>`}
 function renderNotes(){const due=NOTES.filter(isDue).length;if($('nbNotes'))$('nbNotes').textContent=due||'';
@@ -1435,7 +1441,7 @@ function openNote(id,preset={}){const n=id?NOTES.find(x=>x.id===id):{type:'Appel
     <label>Objet</label><input id="nTitle" value="${esc(n.title||'')}" placeholder="Ex. : Appel de suivi — installation sur 2 postes">
     <label class="lrow">Compte rendu <a href="#" onclick="insertTpl();return false">📋 Modèle « <span id="nTplName">${esc(n.type)}</span> »</a></label>
     <textarea id="nBody" rows="10" placeholder="Rédige ta note…">${esc(n.body||'')}</textarea>
-    <label>📎 Pièces jointes / captures d'écran</label>${attBox('note',n.att||n._att)}
+    <label>📎 Pièces jointes / captures d'écran</label>${attBox('note',n.att||n._att,n.attf)}
     <div class="g2"><div><label>Priorité</label><div class="seg" id="nPrio">${['Normale','Haute','Urgente'].map(p=>`<button type="button" data-p="${p}" class="${p===(n.prio||'Normale')?'act':''}">${{Normale:'⚪',Haute:'🟠',Urgente:'🔴'}[p]} ${p}</button>`).join('')}</div></div>
       <div><label>Rappel / date de suivi</label><div class="dueRow"><input id="nDue" type="date" value="${n.due||''}"><button type="button" class="ghost sm" onclick="dueIn(1)">Demain</button><button type="button" class="ghost sm" onclick="dueIn(7)">+7 j</button><button type="button" class="ghost sm" title="Sans rappel" onclick="$('nDue').value=''">✕</button></div></div></div>
     <label class="chk"><input type="checkbox" id="nDone" ${n.status==='done'?'checked':''}> ✓ Note traitée (archivée)</label>
@@ -1448,9 +1454,9 @@ function openNote(id,preset={}){const n=id?NOTES.find(x=>x.id===id):{type:'Appel
 async function saveNoteForm(){const title=$('nTitle').value.trim(),body=$('nBody').value.trim(),email=norm($('nMail').value);
   if(!title&&!body)return toast('Ajoute au moins un objet ou un compte rendu','ko');
   if(email&&!/^\S+@\S+\.\S+$/.test(email))return toast('E-mail du client invalide','ko');
-  const now=Date.now(),n={...NE,att:(ATT.note||[]).length?ATT.note.slice():null,id:NE.id||uid(),t:NE.t||now,u:now,email,client:$('nClient').value.trim(),prod:$('nProd').value,title:title||NE.type,body,prio:NE.prio||'Normale',due:$('nDue').value||'',status:$('nDone').checked?'done':'open'};
+  const now=Date.now(),n={...NE,att:(ATT.note||[]).length?ATT.note.slice():null,attf:(ATTF.note||[]).length?ATTF.note.slice():null,id:NE.id||uid(),t:NE.t||now,u:now,email,client:$('nClient').value.trim(),prod:$('nProd').value,title:title||NE.type,body,prio:NE.prio||'Normale',due:$('nDue').value||'',status:$('nDone').checked?'done':'open'};
   const b=$('nSave');b.classList.add('load');
-  delete n._att;if(!n.att)delete n.att;
+  delete n._att;if(!n.att)delete n.att;if(!n.attf)delete n.attf;
   try{await fbPut('crm/notes/'+n.id,n);closeModal();toast('📝 Note enregistrée');await loadNotes();renderAcc()}catch(e){toast(e.message.includes('401')?'Règles Firebase à republier (nœud « crm ») — voir Réglages':e.message,'ko')}
   b.classList.remove('load')}
 async function toggleNote(id){const n=NOTES.find(x=>x.id===id);if(!n)return;try{await fbPut('crm/notes/'+id,{...n,status:n.status==='done'?'open':'done',u:Date.now()});await loadNotes();toast(n.status==='done'?'↺ Note rouverte':'✓ Note traitée')}catch(e){toast(e.message,'ko')}}
@@ -1554,7 +1560,7 @@ function renderSup(){const n=SUP.filter(x=>x.statut!=='traite'&&supUnread(x)).le
       <b>${esc(x.sujet||'Demande SAV')} · ${esc(x.produit)}${x.module?' · '+esc(x.module):''}<span class="rqst ${x.statut==='traite'?'accordee':x.statut==='repondu'?'':'attente'}">${x.statut==='traite'?'Traitée':x.statut==='repondu'?'Répondu':supUnread(x)?'Nouveau message':'En attente'}</span></b>
       <small>✉️ ${esc(x.email||'—')}${x.tel?' · 📞 '+esc(x.tel):''} · ${fmtD(new Date(x.t))} · ${u.ic} ${esc(u.txt)}</small>
       ${l&&!savActive(l)?'<small style="color:#fbbf24">⚠️ Le SAV de ce client n\'est plus actif</small>':''}
-      <div class="rqm">${esc((supMsgs(x).slice(-1)[0]||{}).text||x.message||'')}</div><small>${supMsgs(x).length} message${supMsgs(x).length>1?'s':''} · dernier ${fmtD(new Date((supMsgs(x).slice(-1)[0]||x).t))}</small>
+      <div class="rqm">${esc((supMsgs(x).slice(-1)[0]||{}).text||x.message||'')}</div><small>${supMsgs(x).length} message${supMsgs(x).length>1?'s':''}${(()=>{const n=supMsgs(x).reduce((a,m)=>a+(Array.isArray(m.img)?m.img.length:0)+(Array.isArray(m.files)?m.files.length:0),0);return n?` · 📎 ${n} pièce${n>1?'s':''} jointe${n>1?'s':''}`:''})()} · dernier ${fmtD(new Date((supMsgs(x).slice(-1)[0]||x).t))}</small>
       <div class="acts2"><button class="btn sm" onclick="openSup('${x.tid}')">💬 Ouvrir l'échange${supUnread(x)?' · '+supUnread(x)+' nouveau'+(supUnread(x)>1?'x':''):''}</button>${x.statut!=='traite'?`<button class="ghost sm" onclick="doneSup('${x.tid}')">✓ Traitée</button>`:''}<button class="ghost sm" onclick="noteSup('${x.tid}')">📝 Note</button><button class="ghost sm" onclick="delSup('${x.tid}')">🗑️</button></div></div></div>`}).join(''):'<div class="empty sm">📭 Aucune demande SAV</div>'}
 function replySup(tid){const x=SUP.find(k=>k.tid===tid);if(!x)return;const sign=localStorage.getItem('licSign')||'ALIANDpro';
   mailTo(x.email,'Re : '+(x.sujet||'Votre demande SAV')+' — '+x.produit,`Bonjour,\n\nNous avons bien reçu votre demande concernant ${x.produit} et nous vous en remercions.\n\n[Votre réponse]\n\nNous restons à votre disposition pour toute question complémentaire.\n\nCordialement,\n${sign}\n\n— Votre message du ${fmtD(new Date(x.t))} —\n${x.message||''}`)}
@@ -1598,27 +1604,27 @@ async function doImport(){const parts=$('iCode').value.trim().replace(/\s+/g,'')
 
 
 /* ── Conversation SAV (dans l'application + WhatsApp / e-mail) ── */
-const supMsgs=x=>[{from:'client',text:x.message,t:x.t},...Object.values(x.msgs||{})].filter(m=>m&&m.text).sort((a,b)=>a.t-b.t);
+const supMsgs=x=>[{from:'client',text:x.message,t:x.t,img:x.img,files:x.files},...Object.values(x.msgs||{})].filter(m=>m&&m.text).sort((a,b)=>a.t-b.t);
 const supUnread=x=>supMsgs(x).filter(m=>m.from==='client'&&m.t>(x.seenAdmin||0)).length;
 const waNum=v=>{let d=String(v||'').replace(/[^\d]/g,'');if(/^0\d{9}$/.test(d))d='33'+d.slice(1);return d};
 let SUPT=null,supPoll=null;
-async function openSup(tid){SUPT=tid;await refreshSup(true);clearInterval(supPoll);supPoll=setInterval(()=>{if(!$('mdl').classList.contains('on')||!$('supTh'))return clearInterval(supPoll);if(!$('supRep').value&&!(ATT.sup||[]).length)refreshSup(false)},10000)}
+async function openSup(tid){SUPT=tid;await refreshSup(true);clearInterval(supPoll);supPoll=setInterval(()=>{if(!$('mdl').classList.contains('on')||!$('supTh'))return clearInterval(supPoll);if(!$('supRep').value&&!(ATT.sup||[]).length&&!(ATTF.sup||[]).length)refreshSup(false)},10000)}
 async function refreshSup(first){try{const t=await fbTok(),r=await fetch(`${FB()}/support/${SUPT}.json?auth=${t}&t=${Date.now()}`),x=await r.json();if(!x)return;x.tid=SUPT;
   const i=SUP.findIndex(k=>k.tid===SUPT);if(i>=0)SUP[i]=x;
   const m=supMsgs(x),wa=waNum(x.tel),l=LIC.find(k=>k.email===x.email&&k.produit===x.produit);
   const html=`<div class="md-h"><div class="pi" style="--pc:${pm(x.produit)[1]}">${pm(x.produit)[0]}</div><div><h2>${esc(x.sujet||'Demande SAV')}</h2><span>${esc(x.email||'—')}${x.tel?' · 📞 '+esc(x.tel):''} · ${esc(x.produit)}${x.module?' · '+esc(x.module):''}</span></div><button class="x" onclick="closeModal()">✕</button></div>
-    <div class="md-b chatB" id="supTh">${m.map(k=>{const me=k.from==='sav';return `<div class="bub ${me?'me':''}"><div>${esc(k.text)}${thumbs(k.img,'att-th bub-img')}</div><small>${me?'🛟 Toi':'👤 Client'}${k.via&&k.via!=='app'?' · via '+({whatsapp:'WhatsApp','e-mail':'e-mail'}[k.via]||esc(k.via)):''} · ${fmtD(new Date(k.t))}</small></div>`}).join('')}
+    <div class="md-b chatB" id="supTh">${m.map(k=>{const me=k.from==='sav';return `<div class="bub ${me?'me':''}"><div>${esc(k.text)}${thumbs(k.img,'att-th bub-img')}${fileChips(k.files)}</div><small>${me?'🛟 Toi':'👤 Client'}${k.via&&k.via!=='app'?' · via '+({whatsapp:'WhatsApp','e-mail':'e-mail'}[k.via]||esc(k.via)):''} · ${fmtD(new Date(k.t))}</small></div>`}).join('')}
       ${l&&!savActive(l)?'<p class="hint" style="color:#fbbf24;text-align:center">⚠️ Le SAV de ce client n\'est plus actif</p>':''}</div>
     <div class="chatF"><textarea id="supRep" rows="3" placeholder="Ta réponse au client…"></textarea>${attBox('sup')}
       <div class="chatA"><button class="btn" onclick="sendSup('app')">📨 Envoyer dans l'app</button>${wa?`<button class="ghost" onclick="sendSup('whatsapp')">💬 + WhatsApp</button>`:''}${x.email?`<button class="ghost" onclick="sendSup('e-mail')">✉️ + E-mail</button>`:''}
         <span style="flex:1"></span>${wa?`<a class="ghost sm" style="text-decoration:none" target="_blank" href="https://wa.me/${wa}">Ouvrir WhatsApp</a>`:''}${x.tel?`<a class="ghost sm" style="text-decoration:none" href="tel:${esc(x.tel.replace(/\s/g,''))}">📞 Appeler</a>`:''}
         <button class="ghost sm" onclick="${x.statut==='traite'?`setSupSt('nouveau')">↺ Rouvrir`:`setSupSt('traite')">✓ Marquer résolue`}</button></div></div>`;
-  const keep=ATT.sup;if(first||!$('supTh'))openModal(html);else{$('md').innerHTML=html}if(!first&&keep)ATT.sup=keep;attRender('sup');
+  const keep=ATT.sup,keepF=ATTF.sup;if(first||!$('supTh'))openModal(html);else{$('md').innerHTML=html}if(!first&&keep)ATT.sup=keep;if(!first&&keepF)ATTF.sup=keepF;attRender('sup');
   const th=$('supTh');th.scrollTop=th.scrollHeight;
   if(supUnread(x))fbPut(`support/${SUPT}/seenAdmin`,Date.now()).then(()=>{x.seenAdmin=Date.now();renderSup()}).catch(()=>{})}catch(e){toast(e.message,'ko')}}
-async function sendSup(via){const imgs=(ATT.sup||[]).slice(),v=$('supRep').value.trim()||(imgs.length?'📷 Capture d\'écran jointe':'');if(!v)return toast('Écris ta réponse','ko');const x=SUP.find(k=>k.tid===SUPT)||{};
+async function sendSup(via){const imgs=(ATT.sup||[]).slice(),fls=(ATTF.sup||[]).slice(),v=$('supRep').value.trim()||(imgs.length||fls.length?'📎 Pièce jointe':'');if(!v)return toast('Écris ta réponse','ko');const x=SUP.find(k=>k.tid===SUPT)||{};
   const mid='m'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),sign=localStorage.getItem('licSign')||'ALIANDpro';
-  try{await fbPut(`support/${SUPT}/msgs/${mid}`,{from:'sav',text:v.slice(0,2000),t:Date.now(),via,...(imgs.length?{img:imgs}:{})});ATT.sup=[];await fbPut(`support/${SUPT}/statut`,'repondu');await fbPut(`support/${SUPT}/seenAdmin`,Date.now());
+  try{await fbPut(`support/${SUPT}/msgs/${mid}`,{from:'sav',text:v.slice(0,2000),t:Date.now(),via,...(imgs.length?{img:imgs}:{}),...(fls.length?{files:fls}:{})});ATT.sup=[];ATTF.sup=[];await fbPut(`support/${SUPT}/statut`,'repondu');await fbPut(`support/${SUPT}/seenAdmin`,Date.now());
     const full=`Bonjour,\n\n${v}\n\nCordialement,\n${sign}\n\n(Réponse à votre demande SAV « ${x.sujet||''} » — ${x.produit||''}. Vous pouvez aussi répondre depuis le bouton 🛟 SAV de votre logiciel.)`;
     if(via==='whatsapp')window.open('https://wa.me/'+waNum(x.tel)+'?text='+encodeURIComponent(full),'_blank');
     if(via==='e-mail')mailTo(x.email,'Re : '+(x.sujet||'Votre demande SAV')+' — '+(x.produit||''),full);
@@ -2322,20 +2328,33 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('aDrw')&&$('aDrw'
 /* ═══════════ PIÈCES JOINTES & CAPTURES D'ÉCRAN ═══════════ */
 let ATT={};const ATT_MAX=6,IMGRX=/^data:image\/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=]+$/;
 const isImg=u=>typeof u==='string'&&IMGRX.test(u);
+// fichiers joints (PDF, Word, Excel…) : {n:nom,t:type,s:taille,d:dataURL} — 2 Mo max chacun
+let ATTF={};const FMAX=2*1024*1024,FILERX=/^data:[\w.+-]+\/[\w.+-]+;base64,[A-Za-z0-9+/=]+$/;
+const fIcon=(n,t)=>{const x=(t||'')+' '+(n||'');return /pdf/i.test(x)?'📕':/(word|\.docx?\b|opendocument\.text|\.odt)/i.test(x)?'📘':/(sheet|excel|\.xlsx?\b|\.csv|\.ods)/i.test(x)?'📗':/(zip|rar|7z)/i.test(x)?'🗜️':/^video/.test(t)?'🎬':/^audio/.test(t)?'🎵':/^text/.test(t)?'📄':'📎'};
+const fSize=b=>b<1024?b+' o':b<1048576?Math.round(b/1024)+' Ko':(b/1048576).toFixed(1)+' Mo';
+const fSafe=f=>f&&typeof f.d==='string'&&FILERX.test(f.d)?{n:String(f.n||'fichier').replace(/[\\/:*?"<>|]/g,'_').slice(0,80),t:String(f.t||''),s:+f.s||0,d:/^data:(text\/html|image\/svg|application\/(x-)?javascript)/i.test(f.d)?f.d.replace(/^data:[^;]+/,'data:application/octet-stream'):f.d}:null;
+const fileChips=F=>{F=(Array.isArray(F)?F:[]).map(fSafe).filter(Boolean);return F.length?`<div class="fch-l">${F.map(x=>`<a class="fch" href="${x.d}" download="${esc(x.n)}" onclick="event.stopPropagation()" title="Télécharger ${esc(x.n)}"><span class="fch-i">${fIcon(x.n,x.t)}</span><span class="fch-t"><b>${esc(x.n)}</b><small>${fSize(x.s)} · télécharger</small></span>⬇️</a>`).join('')}</div>`:''};
+async function attAddFile(key,f){if(/^image\//.test(f.type)&&!/svg/.test(f.type))return attAdd(key,await fileToData(f));
+  if(!ATTF[key])ATTF[key]=[];if((ATT[key]||[]).length+ATTF[key].length>=ATT_MAX)return toast('Maximum '+ATT_MAX+' pièces jointes','ko');
+  if(f.size>FMAX)return toast('« '+f.name+' » dépasse 2 Mo','ko');
+  ATTF[key].push({n:f.name,t:f.type||'application/octet-stream',s:f.size,d:await fileToData(f)});attRender(key);toast('📎 Fichier ajouté')}
 // réduit l'image (1600 px max, JPEG) pour qu'elle tienne dans Firebase
 function attCompress(src){return new Promise((ok,ko)=>{const im=new Image();im.onload=()=>{const k=Math.min(1,1600/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
   const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);let q=.8,u=c.toDataURL('image/jpeg',q);while(u.length>700000&&q>.4){q-=.1;u=c.toDataURL('image/jpeg',q)}ok(u)};im.onerror=()=>ko(new Error('Image illisible'));im.src=src})}
 const fileToData=f=>new Promise((ok,ko)=>{const r=new FileReader();r.onload=()=>ok(r.result);r.onerror=ko;r.readAsDataURL(f)});
-function attBox(key,init){ATT[key]=(init||[]).filter(isImg);return `<div class="att" data-k="${key}" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="attDrop(event,'${key}')">
-  <div class="att-b"><button type="button" class="ghost sm att-shot" onclick="attShot('${key}')" title="Capturer l'écran (Ctrl+Alt+S)">📸 Capture d'écran</button><button type="button" class="ghost sm" onclick="attPick('${key}')">📎 Joindre une image</button>
+function attBox(key,init,initF){ATT[key]=(init||[]).filter(isImg);ATTF[key]=(initF||[]).map(fSafe).filter(Boolean);return `<div class="att" data-k="${key}" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="attDrop(event,'${key}')">
+  <div class="att-b"><button type="button" class="ghost sm att-shot" onclick="attShot('${key}')" title="Capturer l'écran (Ctrl+Alt+S)">📸 Capture d'écran</button><button type="button" class="ghost sm" onclick="attPick('${key}')">📎 Joindre un fichier</button>
     <span class="hint" style="margin:0">ou <b>Ctrl+V</b> pour coller · glisser-déposer</span><button type="button" class="ghost sm" style="margin-left:auto" title="Comment faire une capture d'écran" onclick="openShotHelp()">❔</button></div>
   <div class="att-l" id="attL_${key}"></div></div>`}
 function attRender(key){const el=$('attL_'+key);if(!el)return;const A=ATT[key]||[];
-  el.innerHTML=A.map((u,i)=>`<div class="att-i"><img src="${u}" alt="Pièce jointe ${i+1}" onclick="imgView('${key}',${i})"><button type="button" title="Retirer" onclick="ATT['${key}'].splice(${i},1);attRender('${key}')">✕</button></div>`).join('')+(A.length?`<span class="hint" style="margin:0;align-self:center">${A.length}/${ATT_MAX} image(s)</span>`:'')}
-async function attAdd(key,src){if(!ATT[key])ATT[key]=[];if(ATT[key].length>=ATT_MAX)return toast('Maximum '+ATT_MAX+' images','ko');
+  const F=ATTF[key]||[];
+  el.innerHTML=A.map((u,i)=>`<div class="att-i"><img src="${u}" alt="Pièce jointe ${i+1}" onclick="imgView('${key}',${i})"><button type="button" title="Retirer" onclick="ATT['${key}'].splice(${i},1);attRender('${key}')">✕</button></div>`).join('')
+   +F.map((x,i)=>`<div class="att-f"><span class="fch-i">${fIcon(x.n,x.t)}</span><span class="fch-t"><b>${esc(x.n)}</b><small>${fSize(x.s)}</small></span><button type="button" title="Retirer" onclick="ATTF['${key}'].splice(${i},1);attRender('${key}')">✕</button></div>`).join('')
+   +(A.length+F.length?`<span class="hint" style="margin:0;align-self:center">${A.length+F.length}/${ATT_MAX} pièce(s) jointe(s)</span>`:'')}
+async function attAdd(key,src){if(!ATT[key])ATT[key]=[];if(ATT[key].length+(ATTF[key]||[]).length>=ATT_MAX)return toast('Maximum '+ATT_MAX+' pièces jointes','ko');
   try{ATT[key].push(await attCompress(src));attRender(key);toast('📎 Image ajoutée')}catch(e){toast(e.message,'ko')}}
-function attPick(key){const i=document.createElement('input');i.type='file';i.accept='image/*';i.multiple=true;i.onchange=async()=>{for(const f of i.files)await attAdd(key,await fileToData(f))};i.click()}
-async function attDrop(e,key){e.preventDefault();e.currentTarget.classList.remove('drag');for(const f of e.dataTransfer.files)if(/^image\//.test(f.type))await attAdd(key,await fileToData(f))}
+function attPick(key){const i=document.createElement('input');i.type='file';i.accept='image/*,.pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.odt,.ods,.zip';i.multiple=true;i.onchange=async()=>{for(const f of i.files)await attAddFile(key,f)};i.click()}
+async function attDrop(e,key){e.preventDefault();e.currentTarget.classList.remove('drag');for(const f of e.dataTransfer.files)await attAddFile(key,f)}
 // capture d'écran directe (ordinateur : Chrome, Edge, Firefox, Safari récent)
 const canShot=()=>!!(navigator.mediaDevices&&navigator.mediaDevices.getDisplayMedia);
 async function grabScreen(){if(!canShot())throw new Error('NOSHOT');document.body.classList.add('shooting');
@@ -2347,7 +2366,7 @@ async function attShot(key){try{await attAdd(key,await grabScreen())}catch(e){sh
 function shotErr(e){if(e&&e.message==='NOSHOT'){toast('Capture directe impossible sur cet appareil — utilisez le raccourci du téléphone puis 📎','ko');openShotHelp()}else if(e&&e.name==='NotAllowedError')toast('Capture annulée');else toast('Capture impossible : '+((e&&e.message)||e),'ko')}
 // coller une image (Ctrl+V) dans le formulaire ouvert
 document.addEventListener('paste',async e=>{const box=document.querySelector('#mdl.on .att')||document.querySelector('.att');if(!box||!$('mdl').classList.contains('on'))return;
-  const its=[...(e.clipboardData||{}).items||[]].filter(i=>/^image\//.test(i.type));if(!its.length)return;e.preventDefault();for(const it of its)await attAdd(box.dataset.k,await fileToData(it.getAsFile()))});
+  const its=[...(e.clipboardData||{}).items||[]].filter(i=>i.kind==='file');if(!its.length)return;e.preventDefault();for(const it of its)await attAddFile(box.dataset.k,it.getAsFile())});
 // visionneuse plein écran
 function imgView(key,i,list){const A=list||ATT[key]||[];let k=i;const o=document.createElement('div');o.className='imgv';
   const draw=()=>{o.innerHTML=`<img src="${A[k]}" alt=""><div class="imgv-b">${A.length>1?`<button data-a="p">‹</button><span>${k+1} / ${A.length}</span><button data-a="n">›</button>`:''}<a download="capture-${k+1}.jpg" href="${A[k]}">💾 Télécharger</a><button data-a="x">✕ Fermer</button></div>`};
