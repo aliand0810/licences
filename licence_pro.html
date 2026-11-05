@@ -612,6 +612,31 @@ html[data-light] .ax-vp.rv{color:#0f766e}
 .ax-r3 .ax-peak{grid-template-columns:1fr 1fr}
 .ax-drwbg.on{background:rgba(0,0,0,.45);backdrop-filter:blur(2px)}
 #v-act{max-width:100%;overflow-x:clip}
+
+/* ═══ Pièces jointes / captures ═══ */
+.att{border:1.5px dashed var(--bd);border-radius:14px;padding:10px;background:var(--glass);transition:.15s}
+.att.drag{border-color:var(--a2);background:color-mix(in srgb,var(--a2) 10%,transparent)}
+.att-b{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.att-shot{border-color:color-mix(in srgb,var(--a2) 50%,var(--bd));font-weight:800}
+.att-l{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.att-l:empty{display:none}
+.att-i{position:relative;width:92px;height:68px;border-radius:10px;overflow:hidden;border:1px solid var(--bd)}
+.att-i img{width:100%;height:100%;object-fit:cover;cursor:zoom-in}
+.att-i button{position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;border:0;background:rgba(0,0,0,.65);color:#fff;font-size:.7rem;padding:0}
+.att-th{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.att-th img{width:74px;height:54px;object-fit:cover;border-radius:8px;border:1px solid var(--bd);cursor:zoom-in}
+.bub-img img{width:160px;height:auto;max-height:200px;object-fit:contain;background:#000}
+.chatF .att{margin:8px 0}
+.imgv{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px}
+.imgv img{max-width:100%;max-height:calc(100% - 70px);border-radius:10px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.imgv-b{display:flex;gap:8px;align-items:center;color:#fff}.imgv-b button,.imgv-b a{background:rgba(255,255,255,.14);color:#fff;border:0;border-radius:10px;padding:9px 14px;font-weight:700;text-decoration:none;font-size:.85rem}
+body.shooting #mdl{opacity:0!important;pointer-events:none}
+.qs-img{width:100%;max-height:52vh;object-fit:contain;border-radius:12px;border:1px solid var(--bd);background:#000;cursor:zoom-in}
+.qs-a{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.qs-a .btn{grid-column:1/-1}
+kbd{display:inline-block;padding:2px 7px;border-radius:6px;border:1px solid var(--bd);border-bottom-width:2px;background:var(--glass2);font:700 .78rem 'JetBrains Mono',monospace}
+.sh-hero{padding:14px;border-radius:14px;background:color-mix(in srgb,var(--a2) 10%,transparent);border:1px solid color-mix(in srgb,var(--a2) 35%,var(--bd));margin-bottom:12px;font-size:.86rem}.sh-hero p{margin:6px 0 0;line-height:1.5}
+.sh-g{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sh-c{padding:12px;border-radius:14px;border:1px solid var(--bd);background:var(--glass);font-size:.82rem}.sh-c.me{border-color:var(--a1);box-shadow:0 0 0 3px color-mix(in srgb,var(--a1) 20%,transparent)}
+.sh-t{font-weight:800;margin-bottom:6px}.sh-k{margin-bottom:6px}.sh-c p{margin:0 0 4px;line-height:1.45}.sh-c small{color:var(--mut)}
+@media(max-width:640px){.sh-g,.qs-a{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -636,7 +661,7 @@ html[data-light] .ax-vp.rv{color:#0f766e}
 <main>
   <header class="top">
     <div><h1 id="vTitle">Vue d'ensemble</h1><p id="vSub">Tes licences et tes clients en un coup d'œil</p></div>
-    <div class="topR"><button class="ghost" title="Thème de couleur" onclick="openTheme()">🎨</button><button class="ghost" title="Injecter un code du coffre" onclick="VAULT.length?openInject():loadVault().then(()=>openInject())">💉</button><button class="ghost" title="Actualiser" onclick="load(true)">↻</button><button class="btn hideM" onclick="newLic()">+ Licence</button></div>
+    <div class="topR"><button class="ghost" title="Capture d'écran (Ctrl+Alt+S)" onclick="quickShot()">📸</button><button class="ghost" title="Thème de couleur" onclick="openTheme()">🎨</button><button class="ghost" title="Injecter un code du coffre" onclick="VAULT.length?openInject():loadVault().then(()=>openInject())">💉</button><button class="ghost" title="Actualiser" onclick="load(true)">↻</button><button class="btn hideM" onclick="newLic()">+ Licence</button></div>
   </header>
 
   <!-- VUE D'ENSEMBLE -->
@@ -1381,7 +1406,7 @@ function noteCard(n,i=0){const ic=NTYPES[n.type]||'📝',pc={Haute:'#f59e0b',Urg
   const due=n.due&&n.status!=='done'?`<span class="badge ${isDue(n)?'b-ko':'b-w'}">📌 ${isDue(n)?'À relancer depuis le':'Rappel le'} ${dfr(n.due)}</span>`:'';
   return `<article class="note${n.status==='done'?' done':''}" style="--nc:${pc};animation-delay:${Math.min(i,10)*.03}s">
     <div class="nh"><span class="nic">${ic}</span><div class="nm"><b>${esc(n.title||n.type)}</b><small>${esc(n.type)}${n.client||n.email?' · 👤 '+esc(n.client||n.email):''}${n.prod?' · '+pi+' '+esc(n.prod):''} · ${fmtD(new Date(n.t))}${n.u&&n.u-n.t>6e4?' · modifiée':''}</small></div></div>
-    ${n.body?`<div class="nb2" onclick="this.classList.toggle('open')">${esc(n.body)}</div>`:''}
+    ${n.body?`<div class="nb2" onclick="this.classList.toggle('open')">${esc(n.body)}</div>`:''}${thumbs(n.att)}
     <div class="nf">${n.prio&&n.prio!=='Normale'?`<span class="badge" style="background:color-mix(in srgb,${pc} 20%,transparent);color:${pc}">${n.prio==='Urgente'?'🔴':'🟠'} ${n.prio}</span>`:''}${due}${n.motif?`<span class="badge b-ko">${esc(n.motif)}</span>`:''}${n.status==='done'?'<span class="badge b-ok">✓ Traitée</span>':''}
       <span class="nact"><button class="ghost sm" title="${n.status==='done'?'Rouvrir':'Marquer comme traitée'}" onclick="toggleNote('${n.id}')">${n.status==='done'?'↺':'✓'}</button><button class="ghost sm" title="Modifier" onclick="openNote('${n.id}')">✏️</button><button class="ghost sm" title="Exporter en PDF / imprimer" onclick="printNote('${n.id}')">🖨</button><button class="ghost sm" title="Supprimer" onclick="delNote('${n.id}')">🗑</button></span></div></article>`}
 function renderNotes(){const due=NOTES.filter(isDue).length;if($('nbNotes'))$('nbNotes').textContent=due||'';
@@ -1410,6 +1435,7 @@ function openNote(id,preset={}){const n=id?NOTES.find(x=>x.id===id):{type:'Appel
     <label>Objet</label><input id="nTitle" value="${esc(n.title||'')}" placeholder="Ex. : Appel de suivi — installation sur 2 postes">
     <label class="lrow">Compte rendu <a href="#" onclick="insertTpl();return false">📋 Modèle « <span id="nTplName">${esc(n.type)}</span> »</a></label>
     <textarea id="nBody" rows="10" placeholder="Rédige ta note…">${esc(n.body||'')}</textarea>
+    <label>📎 Pièces jointes / captures d'écran</label>${attBox('note',n.att||n._att)}
     <div class="g2"><div><label>Priorité</label><div class="seg" id="nPrio">${['Normale','Haute','Urgente'].map(p=>`<button type="button" data-p="${p}" class="${p===(n.prio||'Normale')?'act':''}">${{Normale:'⚪',Haute:'🟠',Urgente:'🔴'}[p]} ${p}</button>`).join('')}</div></div>
       <div><label>Rappel / date de suivi</label><div class="dueRow"><input id="nDue" type="date" value="${n.due||''}"><button type="button" class="ghost sm" onclick="dueIn(1)">Demain</button><button type="button" class="ghost sm" onclick="dueIn(7)">+7 j</button><button type="button" class="ghost sm" title="Sans rappel" onclick="$('nDue').value=''">✕</button></div></div></div>
     <label class="chk"><input type="checkbox" id="nDone" ${n.status==='done'?'checked':''}> ✓ Note traitée (archivée)</label>
@@ -1417,12 +1443,14 @@ function openNote(id,preset={}){const n=id?NOTES.find(x=>x.id===id):{type:'Appel
   <div class="md-f"><button class="ghost" onclick="closeModal()">Annuler</button><button class="btn" id="nSave" onclick="saveNoteForm()">💾 Enregistrer la note</button></div>`);
   chips('nType',b=>{const old=NE.type;NE.type=b.dataset.t;$('nTplName').textContent=NE.type;const body=$('nBody');if(!body.value.trim()||body.value===fillTpl(old))body.value=fillTpl(NE.type);$('md').querySelector('.md-h .pi').textContent=NTYPES[NE.type]});
   chips('nPrio',b=>NE.prio=b.dataset.p);
+  attRender('note');
   if(!id&&!$('nBody').value)$('nBody').value=fillTpl(n.type)}
 async function saveNoteForm(){const title=$('nTitle').value.trim(),body=$('nBody').value.trim(),email=norm($('nMail').value);
   if(!title&&!body)return toast('Ajoute au moins un objet ou un compte rendu','ko');
   if(email&&!/^\S+@\S+\.\S+$/.test(email))return toast('E-mail du client invalide','ko');
-  const now=Date.now(),n={...NE,id:NE.id||uid(),t:NE.t||now,u:now,email,client:$('nClient').value.trim(),prod:$('nProd').value,title:title||NE.type,body,prio:NE.prio||'Normale',due:$('nDue').value||'',status:$('nDone').checked?'done':'open'};
+  const now=Date.now(),n={...NE,att:(ATT.note||[]).length?ATT.note.slice():null,id:NE.id||uid(),t:NE.t||now,u:now,email,client:$('nClient').value.trim(),prod:$('nProd').value,title:title||NE.type,body,prio:NE.prio||'Normale',due:$('nDue').value||'',status:$('nDone').checked?'done':'open'};
   const b=$('nSave');b.classList.add('load');
+  delete n._att;if(!n.att)delete n.att;
   try{await fbPut('crm/notes/'+n.id,n);closeModal();toast('📝 Note enregistrée');await loadNotes();renderAcc()}catch(e){toast(e.message.includes('401')?'Règles Firebase à republier (nœud « crm ») — voir Réglages':e.message,'ko')}
   b.classList.remove('load')}
 async function toggleNote(id){const n=NOTES.find(x=>x.id===id);if(!n)return;try{await fbPut('crm/notes/'+id,{...n,status:n.status==='done'?'open':'done',u:Date.now()});await loadNotes();toast(n.status==='done'?'↺ Note rouverte':'✓ Note traitée')}catch(e){toast(e.message,'ko')}}
@@ -1574,23 +1602,23 @@ const supMsgs=x=>[{from:'client',text:x.message,t:x.t},...Object.values(x.msgs||
 const supUnread=x=>supMsgs(x).filter(m=>m.from==='client'&&m.t>(x.seenAdmin||0)).length;
 const waNum=v=>{let d=String(v||'').replace(/[^\d]/g,'');if(/^0\d{9}$/.test(d))d='33'+d.slice(1);return d};
 let SUPT=null,supPoll=null;
-async function openSup(tid){SUPT=tid;await refreshSup(true);clearInterval(supPoll);supPoll=setInterval(()=>{if(!$('mdl').classList.contains('on')||!$('supTh'))return clearInterval(supPoll);if(!$('supRep').value)refreshSup(false)},10000)}
+async function openSup(tid){SUPT=tid;await refreshSup(true);clearInterval(supPoll);supPoll=setInterval(()=>{if(!$('mdl').classList.contains('on')||!$('supTh'))return clearInterval(supPoll);if(!$('supRep').value&&!(ATT.sup||[]).length)refreshSup(false)},10000)}
 async function refreshSup(first){try{const t=await fbTok(),r=await fetch(`${FB()}/support/${SUPT}.json?auth=${t}&t=${Date.now()}`),x=await r.json();if(!x)return;x.tid=SUPT;
   const i=SUP.findIndex(k=>k.tid===SUPT);if(i>=0)SUP[i]=x;
   const m=supMsgs(x),wa=waNum(x.tel),l=LIC.find(k=>k.email===x.email&&k.produit===x.produit);
   const html=`<div class="md-h"><div class="pi" style="--pc:${pm(x.produit)[1]}">${pm(x.produit)[0]}</div><div><h2>${esc(x.sujet||'Demande SAV')}</h2><span>${esc(x.email||'—')}${x.tel?' · 📞 '+esc(x.tel):''} · ${esc(x.produit)}${x.module?' · '+esc(x.module):''}</span></div><button class="x" onclick="closeModal()">✕</button></div>
-    <div class="md-b chatB" id="supTh">${m.map(k=>{const me=k.from==='sav';return `<div class="bub ${me?'me':''}"><div>${esc(k.text)}</div><small>${me?'🛟 Toi':'👤 Client'}${k.via&&k.via!=='app'?' · via '+({whatsapp:'WhatsApp','e-mail':'e-mail'}[k.via]||esc(k.via)):''} · ${fmtD(new Date(k.t))}</small></div>`}).join('')}
+    <div class="md-b chatB" id="supTh">${m.map(k=>{const me=k.from==='sav';return `<div class="bub ${me?'me':''}"><div>${esc(k.text)}${thumbs(k.img,'att-th bub-img')}</div><small>${me?'🛟 Toi':'👤 Client'}${k.via&&k.via!=='app'?' · via '+({whatsapp:'WhatsApp','e-mail':'e-mail'}[k.via]||esc(k.via)):''} · ${fmtD(new Date(k.t))}</small></div>`}).join('')}
       ${l&&!savActive(l)?'<p class="hint" style="color:#fbbf24;text-align:center">⚠️ Le SAV de ce client n\'est plus actif</p>':''}</div>
-    <div class="chatF"><textarea id="supRep" rows="3" placeholder="Ta réponse au client…"></textarea>
+    <div class="chatF"><textarea id="supRep" rows="3" placeholder="Ta réponse au client…"></textarea>${attBox('sup')}
       <div class="chatA"><button class="btn" onclick="sendSup('app')">📨 Envoyer dans l'app</button>${wa?`<button class="ghost" onclick="sendSup('whatsapp')">💬 + WhatsApp</button>`:''}${x.email?`<button class="ghost" onclick="sendSup('e-mail')">✉️ + E-mail</button>`:''}
         <span style="flex:1"></span>${wa?`<a class="ghost sm" style="text-decoration:none" target="_blank" href="https://wa.me/${wa}">Ouvrir WhatsApp</a>`:''}${x.tel?`<a class="ghost sm" style="text-decoration:none" href="tel:${esc(x.tel.replace(/\s/g,''))}">📞 Appeler</a>`:''}
         <button class="ghost sm" onclick="${x.statut==='traite'?`setSupSt('nouveau')">↺ Rouvrir`:`setSupSt('traite')">✓ Marquer résolue`}</button></div></div>`;
-  if(first||!$('supTh'))openModal(html);else{$('md').innerHTML=html}
+  const keep=ATT.sup;if(first||!$('supTh'))openModal(html);else{$('md').innerHTML=html}if(!first&&keep)ATT.sup=keep;attRender('sup');
   const th=$('supTh');th.scrollTop=th.scrollHeight;
   if(supUnread(x))fbPut(`support/${SUPT}/seenAdmin`,Date.now()).then(()=>{x.seenAdmin=Date.now();renderSup()}).catch(()=>{})}catch(e){toast(e.message,'ko')}}
-async function sendSup(via){const v=$('supRep').value.trim();if(!v)return toast('Écris ta réponse','ko');const x=SUP.find(k=>k.tid===SUPT)||{};
+async function sendSup(via){const imgs=(ATT.sup||[]).slice(),v=$('supRep').value.trim()||(imgs.length?'📷 Capture d\'écran jointe':'');if(!v)return toast('Écris ta réponse','ko');const x=SUP.find(k=>k.tid===SUPT)||{};
   const mid='m'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),sign=localStorage.getItem('licSign')||'ALIANDpro';
-  try{await fbPut(`support/${SUPT}/msgs/${mid}`,{from:'sav',text:v.slice(0,2000),t:Date.now(),via});await fbPut(`support/${SUPT}/statut`,'repondu');await fbPut(`support/${SUPT}/seenAdmin`,Date.now());
+  try{await fbPut(`support/${SUPT}/msgs/${mid}`,{from:'sav',text:v.slice(0,2000),t:Date.now(),via,...(imgs.length?{img:imgs}:{})});ATT.sup=[];await fbPut(`support/${SUPT}/statut`,'repondu');await fbPut(`support/${SUPT}/seenAdmin`,Date.now());
     const full=`Bonjour,\n\n${v}\n\nCordialement,\n${sign}\n\n(Réponse à votre demande SAV « ${x.sujet||''} » — ${x.produit||''}. Vous pouvez aussi répondre depuis le bouton 🛟 SAV de votre logiciel.)`;
     if(via==='whatsapp')window.open('https://wa.me/'+waNum(x.tel)+'?text='+encodeURIComponent(full),'_blank');
     if(via==='e-mail')mailTo(x.email,'Re : '+(x.sujet||'Votre demande SAV')+' — '+(x.produit||''),full);
@@ -2291,5 +2319,61 @@ document.querySelectorAll('#aflt button').forEach(b=>b.onclick=()=>{AFILTER=b.da
 document.querySelectorAll('#aTabs button').forEach(b=>b.onclick=()=>{ATAB=b.dataset.t;actSaveUi();renderActList()});
 document.querySelectorAll('#aChips button').forEach(b=>b.onclick=()=>{ACHIP=b.dataset.c;renderActList()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('aDrw')&&$('aDrw').classList.contains('open'))actDrwClose()});
+/* ═══════════ PIÈCES JOINTES & CAPTURES D'ÉCRAN ═══════════ */
+let ATT={};const ATT_MAX=6,IMGRX=/^data:image\/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=]+$/;
+const isImg=u=>typeof u==='string'&&IMGRX.test(u);
+// réduit l'image (1600 px max, JPEG) pour qu'elle tienne dans Firebase
+function attCompress(src){return new Promise((ok,ko)=>{const im=new Image();im.onload=()=>{const k=Math.min(1,1600/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
+  const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);let q=.8,u=c.toDataURL('image/jpeg',q);while(u.length>700000&&q>.4){q-=.1;u=c.toDataURL('image/jpeg',q)}ok(u)};im.onerror=()=>ko(new Error('Image illisible'));im.src=src})}
+const fileToData=f=>new Promise((ok,ko)=>{const r=new FileReader();r.onload=()=>ok(r.result);r.onerror=ko;r.readAsDataURL(f)});
+function attBox(key,init){ATT[key]=(init||[]).filter(isImg);return `<div class="att" data-k="${key}" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="attDrop(event,'${key}')">
+  <div class="att-b"><button type="button" class="ghost sm att-shot" onclick="attShot('${key}')" title="Capturer l'écran (Ctrl+Alt+S)">📸 Capture d'écran</button><button type="button" class="ghost sm" onclick="attPick('${key}')">📎 Joindre une image</button>
+    <span class="hint" style="margin:0">ou <b>Ctrl+V</b> pour coller · glisser-déposer</span><button type="button" class="ghost sm" style="margin-left:auto" title="Comment faire une capture d'écran" onclick="openShotHelp()">❔</button></div>
+  <div class="att-l" id="attL_${key}"></div></div>`}
+function attRender(key){const el=$('attL_'+key);if(!el)return;const A=ATT[key]||[];
+  el.innerHTML=A.map((u,i)=>`<div class="att-i"><img src="${u}" alt="Pièce jointe ${i+1}" onclick="imgView('${key}',${i})"><button type="button" title="Retirer" onclick="ATT['${key}'].splice(${i},1);attRender('${key}')">✕</button></div>`).join('')+(A.length?`<span class="hint" style="margin:0;align-self:center">${A.length}/${ATT_MAX} image(s)</span>`:'')}
+async function attAdd(key,src){if(!ATT[key])ATT[key]=[];if(ATT[key].length>=ATT_MAX)return toast('Maximum '+ATT_MAX+' images','ko');
+  try{ATT[key].push(await attCompress(src));attRender(key);toast('📎 Image ajoutée')}catch(e){toast(e.message,'ko')}}
+function attPick(key){const i=document.createElement('input');i.type='file';i.accept='image/*';i.multiple=true;i.onchange=async()=>{for(const f of i.files)await attAdd(key,await fileToData(f))};i.click()}
+async function attDrop(e,key){e.preventDefault();e.currentTarget.classList.remove('drag');for(const f of e.dataTransfer.files)if(/^image\//.test(f.type))await attAdd(key,await fileToData(f))}
+// capture d'écran directe (ordinateur : Chrome, Edge, Firefox, Safari récent)
+const canShot=()=>!!(navigator.mediaDevices&&navigator.mediaDevices.getDisplayMedia);
+async function grabScreen(){if(!canShot())throw new Error('NOSHOT');document.body.classList.add('shooting');
+  try{const st=await navigator.mediaDevices.getDisplayMedia({video:{displaySurface:'monitor'},audio:false,selfBrowserSurface:'include',preferCurrentTab:false});
+    const v=document.createElement('video');v.srcObject=st;v.muted=true;await v.play();await new Promise(r=>setTimeout(r,450));
+    const c=document.createElement('canvas');c.width=v.videoWidth;c.height=v.videoHeight;c.getContext('2d').drawImage(v,0,0);st.getTracks().forEach(t=>t.stop());return c.toDataURL('image/png')}
+  finally{document.body.classList.remove('shooting')}}
+async function attShot(key){try{await attAdd(key,await grabScreen())}catch(e){shotErr(e)}}
+function shotErr(e){if(e&&e.message==='NOSHOT'){toast('Capture directe impossible sur cet appareil — utilisez le raccourci du téléphone puis 📎','ko');openShotHelp()}else if(e&&e.name==='NotAllowedError')toast('Capture annulée');else toast('Capture impossible : '+((e&&e.message)||e),'ko')}
+// coller une image (Ctrl+V) dans le formulaire ouvert
+document.addEventListener('paste',async e=>{const box=document.querySelector('#mdl.on .att')||document.querySelector('.att');if(!box||!$('mdl').classList.contains('on'))return;
+  const its=[...(e.clipboardData||{}).items||[]].filter(i=>/^image\//.test(i.type));if(!its.length)return;e.preventDefault();for(const it of its)await attAdd(box.dataset.k,await fileToData(it.getAsFile()))});
+// visionneuse plein écran
+function imgView(key,i,list){const A=list||ATT[key]||[];let k=i;const o=document.createElement('div');o.className='imgv';
+  const draw=()=>{o.innerHTML=`<img src="${A[k]}" alt=""><div class="imgv-b">${A.length>1?`<button data-a="p">‹</button><span>${k+1} / ${A.length}</span><button data-a="n">›</button>`:''}<a download="capture-${k+1}.jpg" href="${A[k]}">💾 Télécharger</a><button data-a="x">✕ Fermer</button></div>`};
+  draw();o.onclick=e=>{const a=e.target.dataset.a;if(a==='p'){k=(k-1+A.length)%A.length;draw()}else if(a==='n'){k=(k+1)%A.length;draw()}else if(a==='x'||e.target===o)o.remove()};document.body.appendChild(o)}
+window._imgSets={};const imgSet=A=>{const id='s'+Math.random().toString(36).slice(2,8);window._imgSets[id]=A;return id};
+const thumbs=(A,cls)=>{A=(A||[]).filter(isImg);if(!A.length)return'';const id=imgSet(A);return `<div class="${cls||'att-th'}">${A.map((u,i)=>`<img src="${u}" alt="" onclick="event.stopPropagation();imgView(null,${i},window._imgSets['${id}'])">`).join('')}</div>`};
+// ── bouton 📸 de l'en-tête : capture rapide puis choix de l'action ──
+let QSHOT=null;
+async function quickShot(){if(document.querySelector('#mdl.on .att'))return attShot(document.querySelector('#mdl.on .att').dataset.k);
+  try{QSHOT=await attCompress(await grabScreen())}catch(e){return shotErr(e)}
+  openModal(`<div class="md-h"><div class="pi" style="--pc:#06b6d4">📸</div><div><h2>Capture d'écran prête</h2><span>Que voulez-vous en faire ?</span></div><button class="x" onclick="closeModal()">✕</button></div>
+  <div class="md-b"><img src="${QSHOT}" class="qs-img" alt="Capture" onclick="imgView(null,0,[QSHOT])">
+    <div class="qs-a"><button class="btn" onclick="closeModal();openNote(null,{_att:[QSHOT]})">📝 Joindre à une nouvelle note</button><button class="ghost" onclick="qsCopy()">📋 Copier l'image</button><a class="ghost" style="text-decoration:none;text-align:center" download="capture-${new Date().toISOString().slice(0,16).replace(/[:T]/g,'-')}.jpg" href="${QSHOT}">💾 Télécharger</a><button class="ghost" onclick="quickShot()">🔄 Refaire</button></div></div>`)}
+async function qsCopy(){try{const b=await (await fetch(QSHOT)).blob(),png=await new Promise(ok=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=im.width;c.height=im.height;c.getContext('2d').drawImage(im,0,0);c.toBlob(ok,'image/png')};im.src=QSHOT});
+  await navigator.clipboard.write([new ClipboardItem({'image/png':png})]);toast('📋 Image copiée — collez-la avec Ctrl+V')}catch(e){toast('Copie impossible sur ce navigateur — utilisez 💾 Télécharger','ko')}}
+// raccourci clavier de Licence Pro : Ctrl+Alt+S (⌘+⌥+S sur Mac)
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.altKey&&(e.key==='s'||e.key==='S'||e.code==='KeyS')){e.preventDefault();quickShot()}});
+function openShotHelp(){const mac=/Mac/.test(navigator.platform),ios=/iPhone|iPad/.test(navigator.userAgent),and=/Android/.test(navigator.userAgent);
+  const R=[['💻','Windows','<kbd>Win</kbd> + <kbd>Maj</kbd> + <kbd>S</kbd>','Sélectionnez une zone : l\'image est copiée. Revenez dans Licence Pro et faites <kbd>Ctrl</kbd> + <kbd>V</kbd> dans le formulaire.','<kbd>Impr. écran</kbd> copie tout l\'écran.'],
+    ['🍎','Mac','<kbd>⌘</kbd> + <kbd>Ctrl</kbd> + <kbd>Maj</kbd> + <kbd>4</kbd>','Sélectionnez une zone : l\'image est copiée. Puis <kbd>⌘</kbd> + <kbd>V</kbd> dans le formulaire.','Sans <kbd>Ctrl</kbd>, la capture est enregistrée sur le bureau : utilisez 📎.'],
+    ['📱','iPhone / iPad','Bouton latéral + Volume haut','La capture va dans Photos. Dans Licence Pro, touchez <b>📎 Joindre une image</b> et choisissez-la.','Sur iPhone avec bouton principal : bouton principal + bouton latéral.'],
+    ['🤖','Android','Bouton marche + Volume bas','La capture va dans la galerie. Touchez <b>📎 Joindre une image</b> et choisissez-la.','Sur certains Samsung : glisser la tranche de la main sur l\'écran.']];
+  const me=ios?2:and?3:mac?1:0;
+  openModal(`<div class="md-h"><div class="pi" style="--pc:#06b6d4">❔</div><div><h2>Faire une capture d'écran</h2><span>Avec le bouton de Licence Pro ou le raccourci de votre appareil</span></div><button class="x" onclick="closeModal()">✕</button></div>
+  <div class="md-b"><div class="sh-hero"><div><b>📸 Bouton « Capture d'écran »</b><p>Dans l'en-tête de Licence Pro, ou dans une note / une réponse SAV. Choisissez l'écran, la fenêtre ou l'onglet à capturer : l'image est jointe automatiquement.</p>
+      <p>Raccourci : <kbd>${mac?'⌘':'Ctrl'}</kbd> + <kbd>${mac?'⌥':'Alt'}</kbd> + <kbd>S</kbd> — depuis n'importe quel écran de Licence Pro.</p>${canShot()?'':'<p class="red">⚠️ Cet appareil ne permet pas la capture directe depuis le navigateur (téléphones, tablettes) : utilisez le raccourci ci-dessous puis 📎.</p>'}</div></div>
+    <div class="sh-g">${R.map(([ic,os,k,how,tip],i)=>`<div class="sh-c${i===me?' me':''}"><div class="sh-t">${ic} ${os}${i===me?' <span class="pill" style="padding:2px 8px">votre appareil</span>':''}</div><div class="sh-k">${k}</div><p>${how}</p><small>${tip}</small></div>`).join('')}</div></div>`)}
 </script>
 </body></html>
