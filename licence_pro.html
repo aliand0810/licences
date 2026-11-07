@@ -767,6 +767,9 @@ kbd{display:inline-block;padding:2px 7px;border-radius:6px;border:1px solid var(
     <div class="card"><h3>🏷️ Annonces à valider <span style="display:flex;gap:6px;margin-left:auto"><a class="ghost sm" href="annonces/" target="_blank" style="text-decoration:none">Ouvrir le site ↗</a><button class="ghost sm" onclick="loadAnn().then(()=>toast('↻ Annonces actualisées'))">↻</button></span></h3>
       <p class="hint">Annonces déposées sur Maison des Annonces. Rien n'est visible sur le site tant que tu n'as pas autorisé la publication. Les coordonnées du vendeur ne s'affichent que si tu choisis « Publier + coordonnées ».</p>
       <div id="annList"></div></div>
+    <div class="card" style="margin-top:16px"><h3>👤 Comptes membres <span style="margin-left:auto;font-weight:400;opacity:.7" id="annMbN"></span></h3>
+      <p class="hint">Inscriptions et demandes de nouveau mot de passe envoyées depuis le site. Aucune licence à générer : un clic suffit.</p>
+      <div id="annMb"></div></div>
     <div class="card" style="margin-top:16px"><h3>✅ Annonces en ligne <span id="annOnN" style="margin-left:auto;font-weight:400;opacity:.7"></span></h3><div id="annOn"></div></div>
   </section>
 
@@ -1316,7 +1319,7 @@ let REQ=[],REQP=null,REQ_ERR='';
 async function loadReq(){REQ_ERR='';
   try{const t=await fbTok();const r=await fetch(`${FB()}/requests.json?auth=${t}&t=${Date.now()}`);
     if(r.status===401)throw new Error('Règles Firebase à republier (nœud « requests »)');if(!r.ok)throw new Error('Firebase '+r.status);
-    const j=await r.json()||{};REQ=Object.entries(j).map(([rid,v])=>({rid,...v})).sort((a,b)=>(a.statut==='attente'?0:1)-(b.statut==='attente'?0:1)||b.t-a.t)}
+    const j=await r.json()||{};REQ=Object.entries(j).map(([rid,v])=>({rid,...v})).filter(r=>!(r.produit==='Annonces'&&(r.type==='compte'||r.type==='mdp'))).sort((a,b)=>(a.statut==='attente'?0:1)-(b.statut==='attente'?0:1)||b.t-a.t)}
   catch(e){REQ_ERR=e.message}
   renderReq()}
 function renderReq(){const n=REQ.filter(r=>r.statut==='attente').length;if($('nbReq'))$('nbReq').textContent=n||'';
@@ -1766,7 +1769,7 @@ let ANNW=[],ANNON=[];
 const ANCAT={auto:'🚗 Voiture',moto:'🏍 Moto',immo:'🏠 Immobilier',tech:'📱 High-Tech',maison:'🛋 Maison',mode:'👜 Mode',loisirs:'🎮 Loisirs',promo:'🔥 Promotion',autre:'📦 Autre'};
 const annEur=n=>Number(n||0).toLocaleString('fr-FR',{style:'currency',currency:'EUR',maximumFractionDigits:0});
 async function annGet(p){const t=await fbTok(),r=await fetch(`${FB()}/${p}.json?auth=${t}&t=${Date.now()}`);if(r.status===401||r.status===403)throw new Error('Règles Firebase à republier (nœuds « annonces »)');if(!r.ok)throw new Error('Firebase '+r.status);return await r.json()||{}}
-async function loadAnn(){try{const w=await annGet('annoncesWait'),o=await fetch(`${FB()}/annonces.json?t=${Date.now()}`).then(r=>r.ok?r.json():{})||{};
+async function loadAnn(){loadAnnMb();try{const w=await annGet('annoncesWait'),o=await fetch(`${FB()}/annonces.json?t=${Date.now()}`).then(r=>r.ok?r.json():{})||{};
   ANNW=Object.entries(w).map(([id,a])=>({...a,id})).sort((a,b)=>b.t-a.t);ANNON=Object.entries(o).map(([id,a])=>({...a,id})).sort((a,b)=>b.t-a.t);renderAnn()}
  catch(e){$('annList').innerHTML=`<div class="empty">⚠️ ${esc(e.message)}</div>`}}
 function annCard(a,on){const p=a.priv||a.contact||{},img=(a.imgs||[])[0];
@@ -1780,6 +1783,22 @@ function annCard(a,on){const p=a.priv||a.contact||{},img=(a.imgs||[])[0];
   </div></div>`}
 function renderAnn(){const n=ANNW.length;$('nbAnn').textContent=n||'';$('annList').innerHTML=n?ANNW.map(a=>annCard(a,false)).join(''):'<div class="empty">📭 Aucune annonce en attente</div>';
  $('annOnN').textContent=ANNON.length+' en ligne';$('annOn').innerHTML=ANNON.length?ANNON.map(a=>annCard(a,true)).join(''):'<div class="empty">Aucune annonce publiée</div>'}
+let ANNMB=[];
+async function loadAnnMb(){try{const d=await annGet('requests');ANNMB=Object.entries(d).map(([rid,r])=>({...r,rid})).filter(r=>r.produit==='Annonces'&&(r.type==='compte'||r.type==='mdp')).sort((a,b)=>b.t-a.t);renderAnnMb()}catch(e){$('annMb').innerHTML=`<div class="empty">⚠️ ${esc(e.message)}</div>`}}
+function renderAnnMb(){const w=ANNMB.filter(r=>r.statut==='attente'),ok=ANNMB.filter(r=>r.type==='compte'&&r.statut==='accordee');
+ $('annMbN').textContent=ok.length+' membre(s) · '+w.length+' en attente';const nb=$('nbAnn');nb.textContent=(ANNW.length+w.length)||'';
+ const row=(r,btns)=>`<div class="card" style="padding:12px 14px;margin-top:8px"><b>${r.type==='mdp'?'🔑 Nouveau mot de passe':'🆕 Inscription'} — ${esc(r.nom||r.email)}</b>
+  <div style="opacity:.75;font-size:.85rem;margin:3px 0">✉ ${esc(r.email)}${r.tel?' · 📞 '+esc(r.tel):''}${r.ville?' · 📍 '+esc(r.ville):''} · ${fmtD(new Date(r.t))}</div>
+  ${r.message&&r.message.includes('\n\n')?`<div style="font-size:.85rem;opacity:.85;white-space:pre-wrap">${esc(r.message.split('\n\n').slice(1).join('\n\n'))}</div>`:''}<div class="acts2" style="margin-top:8px">${btns}</div></div>`;
+ $('annMb').innerHTML=(w.length?w.map(r=>row(r,r.type==='mdp'?`<button class="btn sm" onclick="mbPwd('${r.rid}')">✅ Valider le nouveau mot de passe</button><button class="ghost sm danger" onclick="mbNo('${r.rid}')">❌ Refuser</button>`:`<button class="btn sm" onclick="mbOk('${r.rid}')">✅ Valider le compte</button><button class="ghost sm danger" onclick="mbNo('${r.rid}')">❌ Refuser</button>`)).join(''):'<div class="empty">📭 Aucune demande de compte en attente</div>')
+  +(ok.length?`<details style="margin-top:12px"><summary style="cursor:pointer">Membres validés (${ok.length})</summary>${ok.map(r=>row(r,`<button class="ghost sm danger" onclick="mbOff('${r.rid}')">⛔ Désactiver</button>`)).join('')}</details>`:'')}
+const mbGet=rid=>ANNMB.find(x=>x.rid===rid);
+async function mbSet(rid,patch){const{rid:_,...v}=mbGet(rid);await fbPut('requests/'+rid,{...v,...patch,traite:Date.now()})}
+async function mbOk(rid){try{await mbSet(rid,{statut:'accordee'});toast('🎉 Compte validé — le membre peut se connecter');loadAnnMb()}catch(e){toast(e.message,'ko')}}
+async function mbNo(rid){const m=prompt('Motif du refus (facultatif, affiché au demandeur) :','');if(m===null)return;try{await mbSet(rid,{statut:'refusee',motif:m.slice(0,200)});toast('Demande refusée');loadAnnMb()}catch(e){toast(e.message,'ko')}}
+async function mbOff(rid){if(!confirm('Désactiver ce membre ? Il sera déconnecté du site.'))return;try{await mbSet(rid,{statut:'refusee',motif:'Compte désactivé'});toast('Membre désactivé');loadAnnMb()}catch(e){toast(e.message,'ko')}}
+async function mbPwd(rid){const r=mbGet(rid);try{const t=await fbTok(),acc=await (await fetch(`${FB()}/requests/${r.ref}.json?auth=${t}`)).json();if(!acc)throw new Error('Compte d\'origine introuvable');
+  await fbPut('requests/'+r.ref,{...acc,hash:r.hash,mdpLe:Date.now()});await mbSet(rid,{statut:'accordee'});toast('🔑 Nouveau mot de passe activé');loadAnnMb()}catch(e){toast(e.message,'ko')}}
 function annImgs(id,on){const a=(on?ANNON:ANNW).find(x=>x.id===id);if(!a)return;const w=window.open('','_blank');if(w)w.document.write(`<title>${esc(a.title)}</title><body style="margin:0;background:#111;display:grid;gap:8px;padding:8px">${(a.imgs||[]).map(s=>`<img src="${s}" style="max-width:100%">`).join('')}`)}
 async function annOk(id,show){const a=ANNW.find(x=>x.id===id);if(!a)return;const{id:_,priv,...ad}=a;if(show&&priv)ad.contact=priv;else delete ad.contact;
  try{await fbPut('crm/annoncesPriv/'+id,priv||{});await fbPut('annonces/'+id,ad);await fbPut('annoncesWait/'+id,null);toast(show?'✅ Annonce publiée avec coordonnées':'✅ Annonce publiée, coordonnées masquées');await loadAnn()}catch(e){toast(e.message,'ko')}}

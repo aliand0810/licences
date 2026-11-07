@@ -91,6 +91,13 @@
         ".write": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (!data.exists() && newData.exists())",
         ".validate": "$id.length >= 10 && $id.length <= 40 && newData.hasChildren(['title','price','t']) && newData.child('title').isString() && newData.child('title').val().length <= 80"
       }
+    },
+    "membresIdx": {
+      ".read": true,
+      "$k": {
+        ".write": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || !data.exists() || root.child('requests').child(data.val()).child('statut').val() === 'refusee'",
+        ".validate": "newData.isString() && newData.val().length <= 40"
+      }
     }
   }
 }
