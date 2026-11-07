@@ -654,6 +654,7 @@ kbd{display:inline-block;padding:2px 7px;border-radius:6px;border:1px solid var(
     <button data-v="acc"><span class="ni">👥</span><span>Comptes</span></button>
     <button data-v="new"><span class="ni">➕</span><span>Nouvelle licence</span></button>
     <button data-v="req"><span class="ni">📨</span><span>Demandes</span><i class="nb" id="nbReq"></i></button>
+    <button data-v="ann"><span class="ni">🏷️</span><span>Annonces</span><i class="nb" id="nbAnn"></i></button>
     <button data-v="notes"><span class="ni">📝</span><span>Notes</span><i class="nb" id="nbNotes"></i></button>
     <button data-v="act"><span class="ni">📡</span><span>Activité</span></button>
     <button data-v="vault"><span class="ni">🧰</span><span>Coffre</span></button>
@@ -759,6 +760,14 @@ kbd{display:inline-block;padding:2px 7px;border-radius:6px;border:1px solid var(
     <div class="card" style="margin-top:16px"><h3>🛟 Demandes SAV <button class="ghost sm" style="margin-left:auto" onclick="loadSup().then(()=>toast('↻ SAV actualisé'))">↻</button></h3>
       <p class="hint">Demandes d'assistance envoyées par les clients depuis le bouton 🛟 SAV de leurs logiciels.</p>
       <div id="supList"></div></div>
+  </section>
+
+  <!-- ANNONCES -->
+  <section id="v-ann" class="view">
+    <div class="card"><h3>🏷️ Annonces à valider <span style="display:flex;gap:6px;margin-left:auto"><a class="ghost sm" href="annonces/" target="_blank" style="text-decoration:none">Ouvrir le site ↗</a><button class="ghost sm" onclick="loadAnn().then(()=>toast('↻ Annonces actualisées'))">↻</button></span></h3>
+      <p class="hint">Annonces déposées sur Maison des Annonces. Rien n'est visible sur le site tant que tu n'as pas autorisé la publication. Les coordonnées du vendeur ne s'affichent que si tu choisis « Publier + coordonnées ».</p>
+      <div id="annList"></div></div>
+    <div class="card" style="margin-top:16px"><h3>✅ Annonces en ligne <span id="annOnN" style="margin-left:auto;font-weight:400;opacity:.7"></span></h3><div id="annOn"></div></div>
   </section>
 
   <!-- NOTES -->
@@ -954,11 +963,11 @@ function MODS(){let m;try{m=C().mods?JSON.parse(C().mods):DEF_MODS}catch(e){m=DE
 const pm=p=>PMETA[p]||['📦',PAL[Math.max(0,prods().indexOf(p))%PAL.length]];
 
 /* ── navigation ── */
-const TITLES={dash:["Vue d'ensemble","Tes licences et tes clients en un coup d'œil"],acc:['Comptes clients','Chaque client, ses licences, ses appareils et ses modules'],new:['Nouvelle licence','Crée ou modifie une licence en quelques secondes'],alerts:['Licences en trop','Appareils refusés car la limite est atteinte'],req:['Demandes','Demandes de licence et inscriptions envoyées par tes clients'],act:["Suivi d'activité","Les pages et logiciels consultés par tes clients, en direct"],vault:['Coffre à codes','Tes clés, configurations et informations — prêtes à injecter'],notes:['Notes','Journal professionnel : appels, échanges, suivis et refus'],set:['Réglages','Connexions GitHub et Firebase'],ip:['Adresses IP','Qui se connecte, depuis quelle adresse, sur quel logiciel']};
+const TITLES={ann:["Annonces","Autoriser ou refuser la publication sur Maison des Annonces"],dash:["Vue d'ensemble","Tes licences et tes clients en un coup d'œil"],acc:['Comptes clients','Chaque client, ses licences, ses appareils et ses modules'],new:['Nouvelle licence','Crée ou modifie une licence en quelques secondes'],alerts:['Licences en trop','Appareils refusés car la limite est atteinte'],req:['Demandes','Demandes de licence et inscriptions envoyées par tes clients'],act:["Suivi d'activité","Les pages et logiciels consultés par tes clients, en direct"],vault:['Coffre à codes','Tes clés, configurations et informations — prêtes à injecter'],notes:['Notes','Journal professionnel : appels, échanges, suivis et refus'],set:['Réglages','Connexions GitHub et Firebase'],ip:['Adresses IP','Qui se connecte, depuis quelle adresse, sur quel logiciel']};
 function go(v){if(v!=='set'&&UNLOCKED)lockSet();if(v==='set'&&!UNLOCKED)showLock();document.querySelectorAll('.view').forEach(x=>x.classList.toggle('on',x.id==='v-'+v));
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('act',b.dataset.v===v));
   $('vTitle').textContent=TITLES[v][0];$('vSub').textContent=TITLES[v][1];
-  document.body.className='on'+v[0].toUpperCase()+v.slice(1);if(v==='ip')renderIpView();if(v==='act')renderActView();{const nb=document.querySelector(`nav button[data-v="${v}"]`);if(nb&&innerWidth<=860)nb.scrollIntoView({inline:'center',block:'nearest'})}if(v==='dash')drawCharts();window.scrollTo({top:0})}
+  document.body.className='on'+v[0].toUpperCase()+v.slice(1);if(v==='ip')renderIpView();if(v==='ann')loadAnn();if(v==='act')renderActView();{const nb=document.querySelector(`nav button[data-v="${v}"]`);if(nb&&innerWidth<=860)nb.scrollIntoView({inline:'center',block:'nearest'})}if(v==='dash')drawCharts();window.scrollTo({top:0})}
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>b.dataset.v==='new'?newLic():go(b.dataset.v));
 
 /* ── crypto ── */
@@ -1753,7 +1762,30 @@ if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceW
 
 mergeTabs({});initCfg();newLic();go('dash');setDev(0);
 if(C().fbMail&&C().fbPass)fbTok().then(()=>{FBOK=true;renderConn()}).catch(()=>{});
-load();setInterval(load,60000);setInterval(()=>LIC.length&&renderAll(),30000);
+let ANNW=[],ANNON=[];
+const ANCAT={auto:'🚗 Voiture',moto:'🏍 Moto',immo:'🏠 Immobilier',tech:'📱 High-Tech',maison:'🛋 Maison',mode:'👜 Mode',loisirs:'🎮 Loisirs',promo:'🔥 Promotion',autre:'📦 Autre'};
+const annEur=n=>Number(n||0).toLocaleString('fr-FR',{style:'currency',currency:'EUR',maximumFractionDigits:0});
+async function annGet(p){const t=await fbTok(),r=await fetch(`${FB()}/${p}.json?auth=${t}&t=${Date.now()}`);if(r.status===401||r.status===403)throw new Error('Règles Firebase à republier (nœuds « annonces »)');if(!r.ok)throw new Error('Firebase '+r.status);return await r.json()||{}}
+async function loadAnn(){try{const w=await annGet('annoncesWait'),o=await fetch(`${FB()}/annonces.json?t=${Date.now()}`).then(r=>r.ok?r.json():{})||{};
+  ANNW=Object.entries(w).map(([id,a])=>({...a,id})).sort((a,b)=>b.t-a.t);ANNON=Object.entries(o).map(([id,a])=>({...a,id})).sort((a,b)=>b.t-a.t);renderAnn()}
+ catch(e){$('annList').innerHTML=`<div class="empty">⚠️ ${esc(e.message)}</div>`}}
+function annCard(a,on){const p=a.priv||a.contact||{},img=(a.imgs||[])[0];
+ return `<div class="card" style="display:grid;grid-template-columns:110px 1fr;gap:14px;padding:14px;margin-top:10px">
+  ${img?`<img src="${img}" style="width:110px;height:110px;object-fit:cover;border-radius:12px;cursor:zoom-in" onclick="annImgs('${a.id}',${on})">`:'<div style="width:110px;height:110px;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.06);font-size:2rem">🏷️</div>'}
+  <div><b style="font-size:1.05rem">${esc(a.title)}</b> — <b>${annEur(a.price)}</b>${a.oldPrice>a.price?` <s style="opacity:.6">${annEur(a.oldPrice)}</s>`:''}
+   <div style="opacity:.75;font-size:.85rem;margin:4px 0">${ANCAT[a.cat]||''} · ${esc(a.cond||'')} · 📍 ${esc(a.sCity||'')} · ${fmtD(new Date(a.t))} · ${(a.imgs||[]).length} photo(s)${a.membre?' · 👤 membre':''}</div>
+   ${on?`<div style="font-size:.85rem">${a.contact?'🔓 Coordonnées affichées':'🔒 Coordonnées masquées'}</div>`:`<div style="font-size:.85rem">👤 ${esc(a.sName||'')} · 📞 ${esc(p.phone||'—')} · ✉ ${esc(p.mail||'—')}${p.wa?' · WhatsApp':''}</div>
+   <div style="font-size:.85rem;opacity:.8;margin-top:6px;white-space:pre-wrap;max-height:90px;overflow:auto">${esc(a.desc||'')}</div>`}
+   <div class="acts2" style="margin-top:10px">${on?`<button class="ghost sm danger" onclick="annDel('${a.id}')">🗑️ Retirer du site</button>`:`<button class="btn sm" onclick="annOk('${a.id}',true)">✅ Publier + coordonnées</button><button class="btn sm" onclick="annOk('${a.id}',false)">✅ Publier (coordonnées masquées)</button><button class="ghost sm danger" onclick="annNo('${a.id}')">❌ Refuser</button>`}</div>
+  </div></div>`}
+function renderAnn(){const n=ANNW.length;$('nbAnn').textContent=n||'';$('annList').innerHTML=n?ANNW.map(a=>annCard(a,false)).join(''):'<div class="empty">📭 Aucune annonce en attente</div>';
+ $('annOnN').textContent=ANNON.length+' en ligne';$('annOn').innerHTML=ANNON.length?ANNON.map(a=>annCard(a,true)).join(''):'<div class="empty">Aucune annonce publiée</div>'}
+function annImgs(id,on){const a=(on?ANNON:ANNW).find(x=>x.id===id);if(!a)return;const w=window.open('','_blank');if(w)w.document.write(`<title>${esc(a.title)}</title><body style="margin:0;background:#111;display:grid;gap:8px;padding:8px">${(a.imgs||[]).map(s=>`<img src="${s}" style="max-width:100%">`).join('')}`)}
+async function annOk(id,show){const a=ANNW.find(x=>x.id===id);if(!a)return;const{id:_,priv,...ad}=a;if(show&&priv)ad.contact=priv;else delete ad.contact;
+ try{await fbPut('crm/annoncesPriv/'+id,priv||{});await fbPut('annonces/'+id,ad);await fbPut('annoncesWait/'+id,null);toast(show?'✅ Annonce publiée avec coordonnées':'✅ Annonce publiée, coordonnées masquées');await loadAnn()}catch(e){toast(e.message,'ko')}}
+async function annNo(id){const a=ANNW.find(x=>x.id===id);if(!a||!confirm('Refuser et supprimer l\'annonce « '+a.title+' » ?'))return;try{await fbPut('annoncesWait/'+id,null);toast('Annonce refusée');await loadAnn()}catch(e){toast(e.message,'ko')}}
+async function annDel(id){if(!confirm('Retirer définitivement cette annonce du site ?'))return;try{await fbPut('annonces/'+id,null);await fbPut('crm/annoncesPriv/'+id,null);toast('Annonce retirée');await loadAnn()}catch(e){toast(e.message,'ko')}}
+load();setInterval(load,60000);loadAnn();setInterval(loadAnn,60000);setInterval(()=>LIC.length&&renderAll(),30000);
 if(!C().tok)go('set');
 /* ═══════════ THÈMES ═══════════ */
 const THEMES={
