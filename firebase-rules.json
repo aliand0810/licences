@@ -79,6 +79,18 @@
       "$ip": {
         ".read": true
       }
+    },
+    "annonces": {
+      ".read": true,
+      ".write": "auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63'"
+    },
+    "annoncesWait": {
+      ".read": "auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63'",
+      ".write": "auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63'",
+      "$id": {
+        ".write": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (!data.exists() && newData.exists())",
+        ".validate": "$id.length >= 10 && $id.length <= 40 && newData.hasChildren(['title','price','t']) && newData.child('title').isString() && newData.child('title').val().length <= 80"
+      }
     }
   }
 }

@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f4efe6">
+<title>Maison Annonces</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+ --paper:#f4efe6;--paper2:#ebe4d6;--card:#fffdf8;--ink:#1b1814;--ink2:#5d564b;--line:#ddd3c1;
+ --terra:#c4532f;--terra2:#e7a078;--olive:#3f5a3c;--gold:#b8893b;
+ --r:22px;--sh:0 1px 2px rgba(27,24,20,.06),0 12px 32px -12px rgba(27,24,20,.22);
+ --serif:Fraunces,Georgia,serif;--sans:Manrope,system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);-webkit-font-smoothing:antialiased;min-height:100vh}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.35;z-index:999;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1240px;margin:auto;padding:0 20px}
+
+/* Header */
+header{position:sticky;top:0;z-index:50;background:rgba(244,239,230,.82);backdrop-filter:saturate(1.4) blur(14px);border-bottom:1px solid var(--line)}
+.bar{display:flex;align-items:center;gap:16px;height:72px}
+.logo{font-family:var(--serif);font-weight:800;font-size:1.55rem;letter-spacing:-.02em;cursor:pointer;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.logo i{width:30px;height:30px;border-radius:9px;background:var(--ink);color:var(--paper);display:grid;place-items:center;font-style:normal;font-size:1rem}
+.logo em{font-style:italic;color:var(--terra);font-weight:600}
+.search{flex:1;max-width:520px;margin-left:auto;display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:99px;padding:0 6px 0 16px;transition:.25s}
+.search:focus-within{border-color:var(--ink);box-shadow:0 0 0 4px rgba(27,24,20,.06)}
+.search input{flex:1;border:0;outline:0;background:none;padding:12px 0}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 22px;border-radius:99px;font-weight:700;font-size:.92rem;transition:.25s cubic-bezier(.2,.8,.2,1);white-space:nowrap}
+.btn-ink{background:var(--ink);color:var(--paper)}
+.btn-ink:hover{background:var(--terra);transform:translateY(-1px)}
+.btn-line{border:1px solid var(--line);background:var(--card)}
+.btn-line:hover{border-color:var(--ink)}
+.btn-terra{background:var(--terra);color:#fff}
+.btn-terra:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.btn-ok{background:var(--olive);color:#fff}
+.ib{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);background:var(--card);position:relative;flex:none;transition:.2s}
+.ib:hover{border-color:var(--ink)}
+.dot{position:absolute;top:-3px;right:-3px;background:var(--terra);color:#fff;font-size:.68rem;font-weight:700;min-width:19px;height:19px;border-radius:10px;display:grid;place-items:center;padding:0 5px}
+
+/* Hero */
+.hero{padding:64px 0 34px;display:grid;grid-template-columns:1.25fr 1fr;gap:40px;align-items:end}
+.eyebrow{text-transform:uppercase;letter-spacing:.18em;font-size:.72rem;font-weight:700;color:var(--terra)}
+.hero h1{font-family:var(--serif);font-size:clamp(2.6rem,6.5vw,5.2rem);line-height:.95;letter-spacing:-.035em;font-weight:600;margin-top:14px}
+.hero h1 em{font-style:italic;color:var(--terra)}
+.hero p{color:var(--ink2);font-size:1.08rem;line-height:1.6;max-width:440px}
+.kpis{display:flex;gap:30px;margin-top:22px}
+.kpis b{font-family:var(--serif);font-size:2rem;font-weight:600;display:block;line-height:1}
+.kpis small{color:var(--ink2);font-size:.8rem}
+
+/* Categories */
+.cats{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding:6px 0 4px}
+.cats::-webkit-scrollbar{display:none}
+.cat{flex:none;display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:99px;border:1px solid var(--line);background:var(--card);font-weight:600;font-size:.9rem;transition:.25s}
+.cat:hover{border-color:var(--ink)}
+.cat.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:18px 0 6px;padding-top:18px;border-top:1px solid var(--line)}
+.tools select,.tools input{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:10px 12px;outline:0;font-size:.9rem}
+.tools input{width:110px}
+.count{margin-left:auto;font-family:var(--serif);font-style:italic;color:var(--ink2)}
+
+/* Grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:26px;margin:22px 0 100px}
+.card{background:var(--card);border-radius:var(--r);overflow:hidden;cursor:pointer;box-shadow:var(--sh);transition:.45s cubic-bezier(.2,.8,.2,1);opacity:0;transform:translateY(24px);animation:up .7s cubic-bezier(.2,.8,.2,1) forwards}
+@keyframes up{to{opacity:1;transform:none}}
+.card:hover{transform:translateY(-6px);box-shadow:0 2px 4px rgba(27,24,20,.06),0 30px 50px -20px rgba(27,24,20,.35)}
+.card.big{grid-column:span 2}
+.card.big .ph{aspect-ratio:16/9}
+.ph{position:relative;aspect-ratio:5/4;overflow:hidden;background:var(--paper2)}
+.ph img{width:100%;height:100%;object-fit:cover;transition:1s cubic-bezier(.2,.8,.2,1)}
+.card:hover .ph img{transform:scale(1.06)}
+.ph .none{display:grid;place-items:center;height:100%;font-size:3.4rem;opacity:.5}
+.pill{position:absolute;left:12px;top:12px;background:rgba(255,253,248,.92);backdrop-filter:blur(6px);padding:6px 12px;border-radius:99px;font-size:.74rem;font-weight:700}
+.pill.promo{background:var(--terra);color:#fff}
+.heart{position:absolute;right:12px;top:12px;width:38px;height:38px;border-radius:50%;background:rgba(255,253,248,.92);display:grid;place-items:center;font-size:1.05rem;transition:.25s}
+.heart:hover{transform:scale(1.12)}
+.heart.on{background:var(--terra);color:#fff}
+.nimg{position:absolute;right:12px;bottom:12px;background:rgba(27,24,20,.7);color:#fff;font-size:.72rem;padding:4px 10px;border-radius:99px}
+.cb{padding:16px 18px 18px}
+.ttl{font-family:var(--serif);font-weight:600;font-size:1.12rem;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card.big .ttl{font-size:1.5rem}
+.row1{display:flex;align-items:baseline;justify-content:space-between;margin-top:10px;gap:8px}
+.price{font-weight:800;font-size:1.25rem;letter-spacing:-.02em}
+.price s{font-weight:500;font-size:.85rem;color:var(--ink2);margin-left:6px}
+.where{color:var(--ink2);font-size:.82rem;white-space:nowrap}
+.empty{grid-column:1/-1;text-align:center;padding:80px 20px}
+.empty h3{font-family:var(--serif);font-size:2rem;font-weight:600;margin:10px 0}
+.empty p{color:var(--ink2);margin-bottom:22px}
+.skel{border-radius:var(--r);background:linear-gradient(90deg,var(--paper2),#f7f2ea,var(--paper2));background-size:200% 100%;animation:sk 1.4s infinite;aspect-ratio:4/5}
+@keyframes sk{to{background-position:-200% 0}}
+
+/* Sheet / modal */
+.modal{position:fixed;inset:0;z-index:100;background:rgba(27,24,20,.55);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:20px}
+.modal.open{display:flex;animation:fd .3s}
+@keyframes fd{from{opacity:0}}
+.sheet{background:var(--paper);border-radius:28px;width:100%;max-width:1060px;max-height:92vh;overflow:auto;box-shadow:0 40px 100px -20px rgba(0,0,0,.5);animation:rise .5s cubic-bezier(.2,.9,.2,1)}
+@keyframes rise{from{transform:translateY(40px) scale(.98);opacity:0}}
+.sheet.sm{max-width:660px}
+.shd{position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;padding:16px 22px;background:rgba(244,239,230,.94);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.shd h2{font-family:var(--serif);font-weight:600;font-size:1.3rem}
+.x{width:40px;height:40px;border-radius:50%;background:var(--card);border:1px solid var(--line);font-size:1rem}
+.dt{display:grid;grid-template-columns:1.35fr 1fr}
+.gal{position:relative;background:var(--ink)}
+.gal .main{width:100%;aspect-ratio:4/3;object-fit:contain;display:block;animation:fd .4s}
+.nav{position:absolute;top:50%;transform:translateY(-50%);width:46px;height:46px;border-radius:50%;background:rgba(255,253,248,.9);font-size:1.3rem}
+.nav.l{left:14px}.nav.r{right:14px}
+.ctr{position:absolute;left:14px;bottom:14px;background:rgba(27,24,20,.7);color:#fff;padding:4px 12px;border-radius:99px;font-size:.78rem}
+.ths{display:flex;gap:8px;padding:12px;overflow-x:auto;background:var(--paper2)}
+.ths img{width:74px;height:58px;object-fit:cover;border-radius:10px;opacity:.5;cursor:pointer;flex:none;transition:.2s;outline:2px solid transparent}
+.ths img.on{opacity:1;outline-color:var(--ink)}
+.inf{padding:26px;display:flex;flex-direction:column;gap:18px}
+.inf h3{font-family:var(--serif);font-size:1.9rem;line-height:1.1;font-weight:600;letter-spacing:-.02em}
+.inf .price{font-size:2.1rem}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{padding:6px 12px;border-radius:99px;border:1px solid var(--line);background:var(--card);font-size:.8rem;font-weight:600}
+.chip.t{background:var(--terra);color:#fff;border:0}
+.specs{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border-radius:16px;overflow:hidden;border:1px solid var(--line)}
+.specs div{background:var(--card);padding:11px 14px;font-weight:600;font-size:.9rem}
+.specs small{display:block;color:var(--ink2);font-weight:500;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em}
+.desc{line-height:1.7;color:#3a352d;white-space:pre-wrap}
+.seller{background:var(--card);border-radius:20px;padding:18px;border:1px solid var(--line)}
+.sr{display:flex;align-items:center;gap:12px}
+.av{width:50px;height:50px;border-radius:50%;background:var(--ink);color:var(--paper);display:grid;place-items:center;font-family:var(--serif);font-size:1.3rem;flex:none}
+.cbx{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.lock{margin-top:12px;font-size:.84rem;color:var(--ink2);display:flex;gap:8px;align-items:center;background:var(--paper2);padding:10px 12px;border-radius:12px}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+
+/* Form */
+form,.pad{padding:24px;display:grid;gap:16px}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+label{display:grid;gap:6px;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink2)}
+.f{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 14px;outline:0;width:100%;font-size:.95rem;text-transform:none;letter-spacing:0;font-weight:500;color:var(--ink)}
+.f:focus{border-color:var(--ink)}
+textarea.f{min-height:120px;resize:vertical}
+.sec{font-family:var(--serif);font-size:1.15rem;font-weight:600;padding-top:8px;border-top:1px solid var(--line)}
+.sec:first-child{border:0;padding:0}
+.drop{border:1.5px dashed var(--ink2);border-radius:18px;padding:28px;text-align:center;color:var(--ink2);cursor:pointer;transition:.25s;background:var(--card)}
+.drop.over,.drop:hover{border-color:var(--terra);color:var(--terra)}
+.prev{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px}
+.prev div{position:relative;aspect-ratio:1;border-radius:12px;overflow:hidden;cursor:grab}
+.prev img{width:100%;height:100%;object-fit:cover}
+.prev button{position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;background:rgba(27,24,20,.75);color:#fff;font-size:.75rem}
+.prev .first::after{content:"Couverture";position:absolute;left:0;right:0;bottom:0;background:var(--ink);color:var(--paper);font-size:.62rem;text-align:center;padding:3px}
+.veh{display:none}
+.ck{display:flex;align-items:center;gap:10px;text-transform:none;letter-spacing:0;font-size:.92rem;color:var(--ink);font-weight:600}
+.ck input{width:18px;height:18px;accent-color:var(--terra)}
+.note{font-size:.84rem;color:var(--ink2);background:var(--paper2);padding:12px 14px;border-radius:14px;line-height:1.5}
+
+/* Messages */
+.bub{max-width:85%;padding:10px 14px;border-radius:16px;background:var(--card);border:1px solid var(--line);line-height:1.5;white-space:pre-wrap}
+.bub.me{margin-left:auto;background:var(--ink);color:var(--paper);border:0}
+.bub small{display:block;opacity:.6;font-size:.72rem;margin-top:4px}
+.thr{display:grid;gap:8px;max-height:46vh;overflow:auto;padding:4px}
+.th{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px;border:1px solid var(--line);border-radius:16px;background:var(--card);cursor:pointer}
+.th:hover{border-color:var(--ink)}
+
+/* Admin */
+.admin-bar{display:none;background:var(--ink);color:var(--paper);font-size:.85rem}
+.admin-bar .wrap{display:flex;align-items:center;gap:12px;height:44px}
+body.adm .admin-bar{display:block}
+.qi{display:grid;grid-template-columns:90px 1fr;gap:14px;padding:14px;border:1px solid var(--line);border-radius:18px;background:var(--card)}
+.qi img{width:90px;height:90px;object-fit:cover;border-radius:12px}
+.qi h4{font-family:var(--serif);font-size:1.05rem}
+.qi .m{font-size:.82rem;color:var(--ink2);margin:4px 0 10px;line-height:1.5}
+.qi .acts .btn{padding:8px 14px;font-size:.82rem}
+
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,120px);background:var(--ink);color:var(--paper);padding:13px 24px;border-radius:99px;z-index:300;transition:.4s cubic-bezier(.2,.9,.2,1);font-weight:600;box-shadow:var(--sh)}
+.toast.show{transform:translate(-50%,0)}
+.fab{display:none;position:fixed;right:18px;bottom:18px;width:62px;height:62px;border-radius:50%;font-size:1.8rem;z-index:40;box-shadow:0 14px 30px -8px rgba(27,24,20,.5)}
+footer{border-top:1px solid var(--line);padding:30px 0 40px;color:var(--ink2);font-size:.85rem}
+footer .wrap{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+footer button{text-decoration:underline;color:var(--ink2)}
+
+@media(max-width:820px){
+ .hero{grid-template-columns:1fr;padding:38px 0 22px;gap:18px}
+ .dt{grid-template-columns:1fr}
+ .card.big{grid-column:auto}
+ .card.big .ph{aspect-ratio:5/4}
+ .bar .btn-ink,.search{display:none}
+ .msearch{display:flex!important}
+ .fab{display:grid;place-items:center}
+ .modal{padding:0;align-items:flex-end}
+ .sheet{border-radius:28px 28px 0 0;max-height:94vh}
+ .grid{grid-template-columns:1fr 1fr;gap:14px}
+ .cb{padding:12px}
+ .ttl{font-size:.98rem}
+ .price{font-size:1.05rem}
+ .where{display:none}
+}
+.msearch{display:none;margin:0 0 14px}
+.msearch .search{display:flex;max-width:none;margin:0}
+@media(max-width:420px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="admin-bar"><div class="wrap">
+ <b>🛡 Mode administrateur</b>
+ <button class="btn btn-terra" style="padding:6px 14px" onclick="openQueue()">À valider <span id="qN">0</span></button>
+ <span style="margin-left:auto;opacity:.7">Réponses aux acheteurs : Licence Pro → SAV</span>
+ <button style="color:var(--paper);text-decoration:underline" onclick="logout()">Quitter</button>
+</div></div>
+
+<header><div class="wrap bar">
+ <div class="logo" onclick="resetAll()"><i>◆</i>Maison <em>Annonces</em></div>
+ <div class="search">🔍<input id="q" placeholder="Voiture, canapé, téléphone…" oninput="render()"></div>
+ <button class="ib" onclick="openMsgs()" title="Mes messages">✉<span class="dot" id="mN" hidden>0</span></button>
+ <button class="ib" onclick="toggleFav()" title="Favoris">♡<span class="dot" id="fN" hidden>0</span></button>
+ <button class="btn btn-ink" onclick="openForm()">Déposer une annonce</button>
+</div></header>
+
+<main class="wrap">
+ <section class="hero">
+  <div>
+   <div class="eyebrow">Petites annonces · Sélection vérifiée</div>
+   <h1>Ce qui compte,<br>à <em>bon prix.</em></h1>
+  </div>
+  <div>
+   <p>Voitures, objets, bonnes affaires et promotions. Chaque annonce est vérifiée avant publication — vos échanges restent protégés.</p>
+   <div class="kpis"><div><b id="kT">–</b><small>annonces</small></div><div><b id="kP">–</b><small>promotions</small></div><div><b id="kV">–</b><small>véhicules</small></div></div>
+  </div>
+ </section>
+
+ <div class="msearch"><div class="search">🔍<input id="q2" placeholder="Rechercher…" oninput="q.value=this.value;render()"></div></div>
+ <nav class="cats" id="cats"></nav>
+ <div class="tools">
+  <select id="sort" onchange="render()"><option value="new">Plus récentes</option><option value="pa">Prix croissant</option><option value="pd">Prix décroissant</option></select>
+  <input id="pmin" type="number" placeholder="Prix min" oninput="render()">
+  <input id="pmax" type="number" placeholder="Prix max" oninput="render()">
+  <input id="city" placeholder="Ville" oninput="render()" style="width:130px">
+  <span class="count" id="count"></span>
+ </div>
+ <section class="grid" id="grid"><div class="skel"></div><div class="skel"></div><div class="skel"></div><div class="skel"></div></section>
+</main>
+
+<footer><div class="wrap"><span>© Maison Annonces — les annonces sont modérées avant publication.</span><button onclick="openLogin()">Administration</button></div></footer>
+
+<button class="btn-ink fab" onclick="openForm()">＋</button>
+
+<!-- Détail -->
+<div class="modal" id="mD" onclick="if(event.target===this)closeM('mD')"><div class="sheet">
+ <div class="shd"><h2 id="dH">Annonce</h2><button class="x" onclick="closeM('mD')">✕</button></div>
+ <div class="dt" id="dB"></div>
+</div></div>
+
+<!-- Dépôt -->
+<div class="modal" id="mF" onclick="if(event.target===this)closeM('mF')"><div class="sheet sm">
+ <div class="shd"><h2 id="fH">Déposer une annonce</h2><button class="x" onclick="closeM('mF')">✕</button></div>
+ <form id="form" onsubmit="submitAd(event)">
+  <div class="sec">Photos</div>
+  <div class="drop" id="drop" onclick="fileIn.click()"><b>Ajoutez jusqu'à 8 photos</b><br><small>Glissez-déposez ou touchez pour choisir · la 1ʳᵉ sert de couverture</small></div>
+  <input type="file" id="fileIn" accept="image/*" multiple hidden>
+  <div class="prev" id="prev"></div>
+  <div class="sec">L'annonce</div>
+  <label>Titre *<input class="f" name="title" required maxlength="80"></label>
+  <div class="r2">
+   <label>Catégorie *<select class="f" name="cat" id="fCat" required></select></label>
+   <label>État<select class="f" name="cond"><option>Neuf</option><option>Très bon état</option><option selected>Bon état</option><option>État correct</option><option>Pour pièces</option></select></label>
+  </div>
+  <div class="r2">
+   <label>Prix (€) *<input class="f" name="price" type="number" min="0" step="0.01" required></label>
+   <label>Ancien prix (promo)<input class="f" name="oldPrice" type="number" min="0" step="0.01" placeholder="Optionnel"></label>
+  </div>
+  <div class="r2 veh"><label>Marque<input class="f" name="brand"></label><label>Modèle<input class="f" name="model"></label></div>
+  <div class="r2 veh"><label>Année<input class="f" name="year" type="number" min="1950" max="2030"></label><label>Kilométrage<input class="f" name="km" type="number" min="0"></label></div>
+  <div class="r2 veh">
+   <label>Carburant<select class="f" name="fuel"><option></option><option>Essence</option><option>Diesel</option><option>Hybride</option><option>Électrique</option><option>GPL</option></select></label>
+   <label>Boîte<select class="f" name="gear"><option></option><option>Manuelle</option><option>Automatique</option></select></label>
+  </div>
+  <label>Description *<textarea class="f" name="desc" required maxlength="3000"></textarea></label>
+  <label class="ck"><input type="checkbox" name="nego"> Prix négociable</label>
+  <div class="sec">Vos coordonnées</div>
+  <div class="r2"><label>Nom *<input class="f" name="sName" required maxlength="60"></label><label>Ville *<input class="f" name="sCity" required maxlength="60"></label></div>
+  <div class="r2"><label>Téléphone<input class="f" name="sPhone" type="tel" maxlength="30"></label><label>E-mail<input class="f" name="sMail" type="email" maxlength="120"></label></div>
+  <label class="ck"><input type="checkbox" name="sWa"> Joignable sur WhatsApp</label>
+  <div class="note">🔒 Votre annonce est vérifiée avant d'être publiée. Vos coordonnées ne sont affichées publiquement qu'avec l'accord de l'administrateur ; sinon, les acheteurs passent par la messagerie sécurisée.</div>
+  <button class="btn btn-ink" type="submit" id="fBtn" style="padding:15px">Envoyer pour validation</button>
+ </form>
+</div></div>
+
+<!-- Contact -->
+<div class="modal" id="mC" onclick="if(event.target===this)closeM('mC')"><div class="sheet sm">
+ <div class="shd"><h2>Contacter le vendeur</h2><button class="x" onclick="closeM('mC')">✕</button></div>
+ <form onsubmit="sendContact(event)">
+  <div class="note" id="cAd"></div>
+  <div class="r2"><label>Votre nom<input class="f" id="cN" maxlength="60"></label><label>Téléphone<input class="f" id="cT" type="tel" maxlength="30"></label></div>
+  <label>Votre e-mail *<input class="f" id="cE" type="email" required maxlength="120"></label>
+  <label>Message *<textarea class="f" id="cM" required maxlength="1500"></textarea></label>
+  <button class="btn btn-terra" style="padding:15px">Envoyer le message</button>
+  <small style="color:var(--ink2)">La réponse s'affichera dans ✉ Mes messages, sur cet appareil.</small>
+ </form>
+</div></div>
+
+<!-- Messages acheteur -->
+<div class="modal" id="mM" onclick="if(event.target===this)closeM('mM')"><div class="sheet sm">
+ <div class="shd"><h2 id="mH">Mes messages</h2><button class="x" onclick="closeM('mM')">✕</button></div>
+ <div class="pad" id="mB"></div>
+</div></div>
+
+<!-- Login admin -->
+<div class="modal" id="mL" onclick="if(event.target===this)closeM('mL')"><div class="sheet sm">
+ <div class="shd"><h2>Administration</h2><button class="x" onclick="closeM('mL')">✕</button></div>
+ <form onsubmit="login(event)">
+  <div class="note">Connectez-vous avec le compte Firebase de Licence Pro.</div>
+  <label>E-mail<input class="f" id="lE" type="email" required autocomplete="username"></label>
+  <label>Mot de passe<input class="f" id="lP" type="password" required autocomplete="current-password"></label>
+  <button class="btn btn-ink" style="padding:15px">Se connecter</button>
+ </form>
+</div></div>
+
+<!-- File de validation -->
+<div class="modal" id="mQ" onclick="if(event.target===this)closeM('mQ')"><div class="sheet">
+ <div class="shd"><h2>Annonces à valider</h2><button class="x" onclick="closeM('mQ')">✕</button></div>
+ <div class="pad" id="qB"></div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===== Config ===== */
+const FB='https://covo-licences-default-rtdb.europe-west1.firebasedatabase.app';
+const FBKEY='AIzaSyBf93ZHmBf6qi6GbtUX-dQh-DGMgR6nIts';
+const PRODUIT='Annonces';
+const CATS=[{id:'all',n:'Tout',i:'✦'},{id:'auto',n:'Voitures',i:'🚗'},{id:'moto',n:'Motos',i:'🏍'},{id:'immo',n:'Immobilier',i:'🏠'},{id:'tech',n:'High-Tech',i:'📱'},{id:'maison',n:'Maison',i:'🛋'},{id:'mode',n:'Mode',i:'👜'},{id:'loisirs',n:'Loisirs',i:'🎮'},{id:'promo',n:'Promotions',i:'🔥'},{id:'autre',n:'Autres',i:'📦'}];
+const VEH=['auto','moto'];
+
+/* ===== État ===== */
+const LS={get:(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let ads=[],favs=LS.get('ma_favs',[]),cat='all',favView=false,imgs=[],gi=0,cur=null,ADM=LS.get('ma_adm',null),queue=[],editId=null;
+
+/* ===== Utils ===== */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const eur=n=>Number(n||0).toLocaleString('fr-FR',{style:'currency',currency:'EUR',maximumFractionDigits:n%1?2:0});
+const ago=t=>{const s=(Date.now()-t)/1e3;if(s<3600)return`il y a ${Math.max(1,~~(s/60))} min`;if(s<86400)return`il y a ${~~(s/3600)} h`;if(s<86400*30)return`il y a ${~~(s/86400)} j`;return new Date(t).toLocaleDateString('fr-FR')};
+const catOf=id=>CATS.find(c=>c.id===id)||CATS.at(-1);
+const rid=()=>Date.now().toString(36)+Array.from(crypto.getRandomValues(new Uint8Array(10)),b=>b.toString(36).padStart(2,'0')).join('').slice(0,16);
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800)}
+function openM(id){$(id).classList.add('open');document.body.style.overflow='hidden'}
+function closeM(id){$(id).classList.remove('open');if(!document.querySelector('.modal.open'))document.body.style.overflow=''}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.modal.open').forEach(m=>closeM(m.id));if($('mD').classList.contains('open')){if(e.key==='ArrowRight')go(1);if(e.key==='ArrowLeft')go(-1)}});
+
+/* ===== Firebase (REST) ===== */
+async function tok(){if(!ADM)return null;if(ADM.exp>Date.now()+60e3)return ADM.t;
+ const r=await fetch('https://securetoken.googleapis.com/v1/token?key='+FBKEY,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'grant_type=refresh_token&refresh_token='+encodeURIComponent(ADM.rt)});
+ if(!r.ok){logout();throw new Error('Session expirée')}const j=await r.json();ADM={...ADM,t:j.id_token,rt:j.refresh_token,exp:Date.now()+j.expires_in*1e3};LS.set('ma_adm',ADM);return ADM.t}
+async function fget(p,auth){const t=auth?await tok():null;const r=await fetch(`${FB}/${p}.json?${t?'auth='+t+'&':''}t=${Date.now()}`,{cache:'no-store'});if(!r.ok)throw new Error('Firebase '+r.status);return r.json()}
+async function fput(p,v,auth){const t=auth?await tok():null;const r=await fetch(`${FB}/${p}.json${t?'?auth='+t:''}`,{method:v===null?'DELETE':'PUT',body:JSON.stringify(v)});if(!r.ok)throw new Error(r.status===401||r.status===403?'Accès refusé (règles Firebase à republier ?)':'Firebase '+r.status);return r.json()}
+
+/* ===== Images ===== */
+function compress(file,max=1100,q=.72){return new Promise(res=>{const u=URL.createObjectURL(file),im=new Image();im.onload=()=>{let w=im.width,h=im.height;const k=Math.min(1,max/Math.max(w,h));w=Math.round(w*k);h=Math.round(h*k);const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(im,0,0,w,h);URL.revokeObjectURL(u);res(c.toDataURL('image/jpeg',q))};im.onerror=()=>res(null);im.src=u})}
+
+/* ===== Chargement ===== */
+async function load(){
+ try{const d=await fget('annonces')||{};ads=Object.entries(d).map(([id,a])=>({...a,id,imgs:a.imgs||[]}))}
+ catch(e){ads=[];toast('Impossible de charger les annonces')}
+ render();
+}
+
+/* ===== Rendu liste ===== */
+function renderCats(){
+ $('cats').innerHTML=CATS.map(c=>`<button class="cat ${c.id===cat&&!favView?'on':''}" onclick="setCat('${c.id}')"><span>${c.i}</span>${c.n}</button>`).join('');
+ $('fCat').innerHTML=CATS.slice(1).map(c=>`<option value="${c.id}">${c.i} ${c.n}</option>`).join('');
+}
+function setCat(c){cat=c;favView=false;renderCats();render()}
+function resetAll(){['q','q2','pmin','pmax','city'].forEach(i=>$(i).value='');setCat('all');scrollTo({top:0})}
+function toggleFav(){favView=!favView;renderCats();render();toast(favView?'Vos favoris':'Toutes les annonces')}
+const isPromo=a=>a.oldPrice>a.price;
+function filtered(){
+ const q=$('q').value.toLowerCase().trim(),mn=parseFloat($('pmin').value),mx=parseFloat($('pmax').value),ci=$('city').value.toLowerCase().trim();
+ const r=ads.filter(a=>{
+  if(favView&&!favs.includes(a.id))return false;
+  if(!favView&&cat!=='all'){if(cat==='promo'?!(isPromo(a)||a.cat==='promo'):a.cat!==cat)return false}
+  if(q&&!`${a.title} ${a.desc} ${a.brand||''} ${a.model||''}`.toLowerCase().includes(q))return false;
+  if(!isNaN(mn)&&a.price<mn)return false;if(!isNaN(mx)&&a.price>mx)return false;
+  if(ci&&!(a.sCity||'').toLowerCase().includes(ci))return false;return true});
+ const s=$('sort').value;return r.sort((a,b)=>s==='pa'?a.price-b.price:s==='pd'?b.price-a.price:b.t-a.t);
+}
+function render(){
+ const r=filtered();
+ $('count').textContent=`${r.length} annonce${r.length>1?'s':''}`;
+ $('kT').textContent=ads.length;$('kP').textContent=ads.filter(a=>isPromo(a)||a.cat==='promo').length;$('kV').textContent=ads.filter(a=>VEH.includes(a.cat)).length;
+ const fn=favs.filter(f=>ads.some(a=>a.id===f)).length;$('fN').textContent=fn;$('fN').hidden=!fn;
+ if(!r.length){$('grid').innerHTML=`<div class="empty"><div style="font-size:3rem">${favView?'♡':'✦'}</div><h3>${favView?'Aucun favori pour l\'instant':'Rien par ici… encore.'}</h3><p>${favView?'Touchez ♡ sur une annonce pour la retrouver ici.':'Soyez le premier à proposer quelque chose.'}</p><button class="btn btn-ink" onclick="openForm()">Déposer une annonce</button></div>`;return}
+ $('grid').innerHTML=r.map((a,i)=>{const c=catOf(a.cat),p=isPromo(a),big=i===0&&!favView&&cat==='all'&&r.length>3&&innerWidth>820;
+  return`<article class="card ${big?'big':''}" style="animation-delay:${Math.min(i,12)*55}ms" onclick="openDetail('${a.id}')">
+   <div class="ph">${a.imgs[0]?`<img src="${a.imgs[0]}" loading="lazy" alt="">`:`<div class="none">${c.i}</div>`}
+    <span class="pill ${p?'promo':''}">${p?`−${Math.round((1-a.price/a.oldPrice)*100)} %`:`${c.i} ${c.n}`}</span>
+    <button class="heart ${favs.includes(a.id)?'on':''}" onclick="event.stopPropagation();fav('${a.id}')">${favs.includes(a.id)?'♥':'♡'}</button>
+    ${a.imgs.length>1?`<span class="nimg">${a.imgs.length} photos</span>`:''}</div>
+   <div class="cb"><div class="ttl">${esc(a.title)}</div>
+    <div class="row1"><span class="price">${eur(a.price)}${p?`<s>${eur(a.oldPrice)}</s>`:''}</span><span class="where">${esc(a.sCity)} · ${ago(a.t)}</span></div></div></article>`}).join('');
+}
+function fav(id){favs=favs.includes(id)?favs.filter(f=>f!==id):[...favs,id];LS.set('ma_favs',favs);render();if(cur&&cur.id===id&&$('mD').classList.contains('open'))openDetail(id,true)}
+
+/* ===== Détail ===== */
+function openDetail(id,keep){
+ const a=ads.find(x=>x.id===id);if(!a)return;cur=a;if(!keep)gi=0;
+ const c=catOf(a.cat),p=isPromo(a),ct=a.contact;
+ const ph=ct&&ct.phone?ct.phone.replace(/[^\d+]/g,''):'',wa=ph.replace(/^0/,'33').replace('+','');
+ const msg=encodeURIComponent(`Bonjour, votre annonce « ${a.title} » m'intéresse. Est-elle toujours disponible ?`);
+ const specs=[['Catégorie',c.n],['État',a.cond],a.brand&&['Marque',a.brand],a.model&&['Modèle',a.model],a.year&&['Année',a.year],a.km&&['Kilométrage',Number(a.km).toLocaleString('fr-FR')+' km'],a.fuel&&['Carburant',a.fuel],a.gear&&['Boîte',a.gear]].filter(Boolean);
+ $('dH').textContent=c.i+' '+c.n;
+ $('dB').innerHTML=`<div><div class="gal">${a.imgs.length?`<img class="main" id="gM" src="${a.imgs[gi]}" alt="">`:`<div class="none" style="aspect-ratio:4/3;display:grid;place-items:center;font-size:4rem">${c.i}</div>`}
+   ${a.imgs.length>1?`<button class="nav l" onclick="go(-1)">‹</button><button class="nav r" onclick="go(1)">›</button><span class="ctr" id="gC">${gi+1} / ${a.imgs.length}</span>`:''}</div>
+   ${a.imgs.length>1?`<div class="ths">${a.imgs.map((s,i)=>`<img src="${s}" class="${i===gi?'on':''}" onclick="gi=${i};showG()">`).join('')}</div>`:''}</div>
+  <div class="inf">
+   <div><h3>${esc(a.title)}</h3><div class="price" style="margin-top:8px">${eur(a.price)}${p?`<s>${eur(a.oldPrice)}</s>`:''}</div></div>
+   <div class="chips">${p?`<span class="chip t">−${Math.round((1-a.price/a.oldPrice)*100)} %</span>`:''}${a.nego?'<span class="chip">Négociable</span>':''}<span class="chip">📍 ${esc(a.sCity)}</span><span class="chip">${ago(a.t)}</span></div>
+   <div class="specs">${specs.map(([k,v])=>`<div><small>${k}</small>${esc(v)}</div>`).join('')}</div>
+   <div class="desc">${esc(a.desc)}</div>
+   <div class="seller"><div class="sr"><div class="av">${esc((a.sName||'?')[0].toUpperCase())}</div><div><b>${esc(a.sName)}</b><br><small style="color:var(--ink2)">${esc(a.sCity)}</small></div></div>
+    <div class="cbx">
+     <button class="btn btn-terra" style="grid-column:1/-1" onclick="openContact()">✉ Envoyer un message</button>
+     ${ph?`<a class="btn btn-ink" href="tel:${ph}">Appeler</a>`:''}
+     ${ph&&ct.wa?`<a class="btn btn-ok" target="_blank" rel="noopener" href="https://wa.me/${wa}?text=${msg}">WhatsApp</a>`:''}
+     ${ct&&ct.mail?`<a class="btn btn-line" href="mailto:${esc(ct.mail)}?subject=${encodeURIComponent(a.title)}&body=${msg}">E-mail</a>`:''}
+    </div>
+    ${ph?`<div class="lock">📞 ${esc(ct.phone)}</div>`:`<div class="lock">🔒 Coordonnées protégées — utilisez la messagerie sécurisée.</div>`}
+   </div>
+   <div class="acts">
+    <button class="btn btn-line" onclick="fav('${a.id}')">${favs.includes(a.id)?'♥ Retirer':'♡ Favori'}</button>
+    <button class="btn btn-line" onclick="share()">Partager</button>
+    ${ADM?`<button class="btn btn-line" onclick="toggleContact('${a.id}')">${ct?'🔒 Masquer coordonnées':'🔓 Afficher coordonnées'}</button>
+     <button class="btn btn-line" style="color:var(--terra)" onclick="delAd('${a.id}')">🗑 Supprimer</button>`:''}
+   </div></div>`;
+ history.replaceState(null,'','#'+id);
+ if(!keep)openM('mD');
+}
+$('mD').addEventListener('click',()=>{if(!$('mD').classList.contains('open'))history.replaceState(null,'',location.pathname)});
+function go(d){if(!cur||cur.imgs.length<2)return;gi=(gi+d+cur.imgs.length)%cur.imgs.length;showG()}
+function showG(){const m=$('gM');m.style.animation='none';m.offsetHeight;m.style.animation='';m.src=cur.imgs[gi];if($('gC'))$('gC').textContent=`${gi+1} / ${cur.imgs.length}`;document.querySelectorAll('.ths img').forEach((t,i)=>t.classList.toggle('on',i===gi))}
+let tx0=0;document.addEventListener('touchstart',e=>{if(e.target.id==='gM')tx0=e.touches[0].clientX},{passive:true});
+document.addEventListener('touchend',e=>{if(e.target.id==='gM'){const d=e.changedTouches[0].clientX-tx0;if(Math.abs(d)>40)go(d<0?1:-1)}});
+function share(){const url=location.href.split('#')[0]+'#'+cur.id,t=`${cur.title} — ${eur(cur.price)}`;
+ if(navigator.share)navigator.share({title:cur.title,text:t,url}).catch(()=>{});else{navigator.clipboard?.writeText(url);toast('Lien copié')}}
+
+/* ===== Messagerie → Licence Pro (SAV) ===== */
+function openContact(){const s=LS.get('ma_me',{});$('cN').value=s.n||'';$('cE').value=s.e||'';$('cT').value=s.t||'';
+ $('cAd').innerHTML=`<b>${esc(cur.title)}</b> · ${eur(cur.price)} · ${esc(cur.sCity)}`;
+ $('cM').value=`Bonjour, votre annonce « ${cur.title} » m'intéresse. Est-elle toujours disponible ?`;openM('mC')}
+async function sendContact(e){
+ e.preventDefault();const b=e.submitter;b.disabled=true;
+ const n=$('cN').value.trim(),em=$('cE').value.trim(),t=$('cT').value.trim(),m=$('cM').value.trim();
+ LS.set('ma_me',{n,e:em,t});const tid=rid();
+ const body={email:em.slice(0,120),produit:PRODUIT,module:'Annonce '+cur.id,t:Date.now(),sujet:('Annonce : '+cur.title).slice(0,120),message:`[Annonce ${cur.id}] ${cur.title} — ${eur(cur.price)} (${cur.sCity})\n\n${m}\n\n— ${n||'Acheteur'}${t?' · '+t:''}`.slice(0,2000),tel:t.slice(0,30),ua:navigator.userAgent.slice(0,200),page:(location.href.split('#')[0]+'#'+cur.id).slice(0,200),statut:'nouveau',annonce:cur.id};
+ try{await fput('support/'+tid,body);const th=LS.get('ma_threads',[]);th.unshift({tid,title:cur.title,ad:cur.id,t:Date.now(),seen:Date.now()});LS.set('ma_threads',th);
+  closeM('mC');toast('Message envoyé ✓');checkReplies()}
+ catch(err){toast('Envoi impossible, réessayez')}finally{b.disabled=false}
+}
+async function checkReplies(){const th=LS.get('ma_threads',[]);let n=0;
+ await Promise.all(th.map(async x=>{try{const d=await fget('support/'+x.tid);x.last=Math.max(0,...Object.values(d&&d.msgs||{}).filter(m=>m.from!=='client').map(m=>m.t));if(x.last>(x.seen||0))n++}catch(e){}}));
+ LS.set('ma_threads',th);$('mN').textContent=n;$('mN').hidden=!n}
+function openMsgs(){const th=LS.get('ma_threads',[]);$('mH').textContent='Mes messages';
+ $('mB').innerHTML=th.length?th.map(x=>`<div class="th" onclick="openThread('${x.tid}')"><div><b>${esc(x.title)}</b><br><small style="color:var(--ink2)">${ago(x.t)}</small></div>${x.last>(x.seen||0)?'<span class="chip t">Nouvelle réponse</span>':'<span>›</span>'}</div>`).join(''):'<div class="note">Aucune conversation. Utilisez « Envoyer un message » sur une annonce.</div>';openM('mM')}
+async function openThread(tid){const th=LS.get('ma_threads',[]),x=th.find(y=>y.tid===tid);$('mH').textContent=x?x.title:'Conversation';$('mB').innerHTML='<div class="note">Chargement…</div>';
+ let d;try{d=await fget('support/'+tid)}catch(e){}if(!d){$('mB').innerHTML='<div class="note">Conversation introuvable.</div>';return}
+ const ms=[{from:'client',text:d.message,t:d.t},...Object.values(d.msgs||{}).sort((a,b)=>a.t-b.t)];
+ $('mB').innerHTML=`<button class="btn btn-line" style="justify-self:start" onclick="openMsgs()">‹ Retour</button>
+  <div class="thr" id="thr">${ms.map(m=>`<div class="bub ${m.from==='client'?'me':''}">${esc(m.text)}<small>${m.from==='client'?'Vous':'Vendeur'} · ${new Date(m.t).toLocaleString('fr-FR',{dateStyle:'short',timeStyle:'short'})}</small></div>`).join('')}</div>
+  <textarea class="f" id="rep" placeholder="Votre réponse…" maxlength="2000"></textarea><button class="btn btn-terra" onclick="replyThread('${tid}',this)">Envoyer</button>`;
+ $('thr').scrollTop=1e9;if(x){x.seen=Date.now();LS.set('ma_threads',th);checkReplies()}}
+async function replyThread(tid,b){const v=$('rep').value.trim();if(!v)return;b.disabled=true;
+ try{await fput(`support/${tid}/msgs/${rid()}`,{from:'client',text:v.slice(0,2000),t:Date.now(),via:'app'});fput(`support/${tid}/statut`,'nouveau').catch(()=>{});openThread(tid)}catch(e){toast('Envoi impossible');b.disabled=false}}
+
+/* ===== Dépôt ===== */
+const form=$('form');
+function vehToggle(){document.querySelectorAll('.veh').forEach(e=>e.style.display=VEH.includes($('fCat').value)?'grid':'none')}
+$('fCat').addEventListener('change',vehToggle);
+function openForm(id){form.reset();imgs=[];editId=id||null;
+ if(id){const a=ads.find(x=>x.id===id)||queue.find(x=>x.id===id);imgs=[...(a.imgs||[])];for(const k in a){const el=form.elements[k];if(!el)continue;el.type==='checkbox'?el.checked=!!a[k]:el.value=a[k]??''}
+  const c=a.contact||a.priv||{};if(ADM&&!a.priv)fget('crm/annoncesPriv/'+id,true).then(p=>{if(p&&editId===id){form.elements.sPhone.value=p.phone||'';form.elements.sMail.value=p.mail||'';form.elements.sWa.checked=!!p.wa}}).catch(()=>{});form.elements.sPhone.value=c.phone||'';form.elements.sMail.value=c.mail||'';form.elements.sWa.checked=!!c.wa}
+ else if(cat!=='all'&&cat!=='promo')$('fCat').value=cat;
+ $('fH').textContent=id?'Modifier l\'annonce':'Déposer une annonce';$('fBtn').textContent=id?'Enregistrer':(ADM?'Publier':'Envoyer pour validation');
+ vehToggle();renderPrev();openM('mF')}
+async function addFiles(fs){for(const f of [...fs].filter(f=>f.type.startsWith('image/'))){if(imgs.length>=8){toast('8 photos maximum');break}const d=await compress(f);if(d){imgs.push(d);renderPrev()}}}
+$('fileIn').onchange=e=>{addFiles(e.target.files);e.target.value=''};
+const drop=$('drop');
+['dragenter','dragover'].forEach(v=>drop.addEventListener(v,e=>{e.preventDefault();drop.classList.add('over')}));
+['dragleave','drop'].forEach(v=>drop.addEventListener(v,e=>{e.preventDefault();drop.classList.remove('over')}));
+drop.addEventListener('drop',e=>addFiles(e.dataTransfer.files));
+let dI=null;
+function renderPrev(){$('prev').innerHTML=imgs.map((s,i)=>`<div draggable="true" class="${i?'':'first'}" ondragstart="dI=${i}" ondragover="event.preventDefault()" ondrop="mv(${i})"><img src="${s}"><button type="button" onclick="imgs.splice(${i},1);renderPrev()">✕</button></div>`).join('')}
+function mv(to){if(dI===null||dI===to)return;const[m]=imgs.splice(dI,1);imgs.splice(to,0,m);dI=null;renderPrev()}
+function readForm(){const f=form.elements,o={};
+ ['title','cat','cond','brand','model','year','km','fuel','gear','desc','sName','sCity'].forEach(k=>o[k]=f[k].value.trim());
+ o.price=parseFloat(f.price.value)||0;o.oldPrice=parseFloat(f.oldPrice.value)||0;o.nego=f.nego.checked;
+ if(!VEH.includes(o.cat))['brand','model','year','km','fuel','gear'].forEach(k=>delete o[k]);
+ Object.keys(o).forEach(k=>o[k]===''&&delete o[k]);
+ return{o,priv:{phone:f.sPhone.value.trim(),mail:f.sMail.value.trim(),wa:f.sWa.checked}}}
+async function submitAd(e){
+ e.preventDefault();const{o,priv}=readForm();
+ if(!priv.phone&&!priv.mail){toast('Indiquez un téléphone ou un e-mail');return}
+ const b=$('fBtn');b.disabled=true;
+ try{
+  if(ADM){const id=editId||rid(),old=ads.find(x=>x.id===id)||queue.find(x=>x.id===id);
+   const ad={...o,imgs,t:old?old.t:Date.now(),...(old&&old.contact?{contact:priv}:{})};
+   await fput('crm/annoncesPriv/'+id,priv,true);await fput('annonces/'+id,ad,true);if(queue.some(x=>x.id===id))await fput('annoncesWait/'+id,null,true);
+   toast('Annonce publiée ✓');closeM('mF');await load();loadQueue()}
+  else{await fput('annoncesWait/'+rid(),{...o,imgs,priv,t:Date.now()});closeM('mF');toast('Merci ! Votre annonce sera publiée après validation.')}
+ }catch(err){toast(err.message.includes('413')?'Photos trop lourdes, retirez-en':'Envoi impossible : '+err.message)}
+ finally{b.disabled=false}
+}
+
+/* ===== Admin ===== */
+function openLogin(){if(ADM){openQueue();return}openM('mL')}
+async function login(e){e.preventDefault();
+ try{const r=await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key='+FBKEY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:$('lE').value,password:$('lP').value,returnSecureToken:true})});
+  const j=await r.json();if(!r.ok)throw new Error('Identifiants incorrects');
+  ADM={t:j.idToken,rt:j.refreshToken,exp:Date.now()+j.expiresIn*1e3};LS.set('ma_adm',ADM);$('lP').value='';
+  await loadQueue();closeM('mL');setAdm();toast('Connecté ✓')}
+ catch(err){ADM=null;LS.set('ma_adm',null);toast(err.message)}}
+function logout(){ADM=null;LS.set('ma_adm',null);setAdm();toast('Déconnecté')}
+function setAdm(){document.body.classList.toggle('adm',!!ADM);if(cur&&$('mD').classList.contains('open'))openDetail(cur.id,true)}
+async function loadQueue(){if(!ADM)return;try{const d=await fget('annoncesWait',true)||{};queue=Object.entries(d).map(([id,a])=>({...a,id,imgs:a.imgs||[]})).sort((a,b)=>b.t-a.t)}catch(e){if(String(e.message).match(/401|403/)){toast('Ce compte n\'a pas les droits admin');logout()}return}$('qN').textContent=queue.length}
+async function openQueue(){await loadQueue();
+ $('qB').innerHTML=queue.length?queue.map(a=>{const c=catOf(a.cat),p=a.priv||{};return`<div class="qi">${a.imgs[0]?`<img src="${a.imgs[0]}">`:`<div style="width:90px;height:90px;display:grid;place-items:center;font-size:2rem;background:var(--paper2);border-radius:12px">${c.i}</div>`}
+  <div><h4>${esc(a.title)} — ${eur(a.price)}</h4><div class="m">${c.i} ${c.n} · ${esc(a.sCity)} · ${ago(a.t)} · ${a.imgs.length} photo(s)<br>👤 ${esc(a.sName)} · 📞 ${esc(p.phone||'—')} · ✉ ${esc(p.mail||'—')}${p.wa?' · WhatsApp':''}<br>${esc((a.desc||'').slice(0,180))}</div>
+  <div class="acts"><button class="btn btn-ok" onclick="approve('${a.id}',true)">✓ Publier + coordonnées</button><button class="btn btn-ink" onclick="approve('${a.id}',false)">✓ Publier (coordonnées masquées)</button><button class="btn btn-line" onclick="closeM('mQ');openForm('${a.id}')">Modifier</button><button class="btn btn-line" style="color:var(--terra)" onclick="reject('${a.id}')">Refuser</button></div></div></div>`}).join(''):'<div class="note">Aucune annonce en attente. ✓</div>';
+ openM('mQ')}
+async function approve(id,show){const a=queue.find(x=>x.id===id);if(!a)return;const{id:_,priv,...ad}=a;if(show)ad.contact=priv;else delete ad.contact;
+ try{await fput('crm/annoncesPriv/'+id,priv||{},true);await fput('annonces/'+id,ad,true);await fput('annoncesWait/'+id,null,true);toast(show?'Publiée avec coordonnées ✓':'Publiée, coordonnées masquées ✓');await load();openQueue()}catch(e){toast(e.message)}}
+async function reject(id){if(!confirm('Refuser et supprimer cette annonce ?'))return;try{await fput('annoncesWait/'+id,null,true);toast('Annonce refusée');openQueue()}catch(e){toast(e.message)}}
+async function toggleContact(id){const a=ads.find(x=>x.id===id);try{if(a.contact){await fput(`annonces/${id}/contact`,null,true);delete a.contact}else{const c=await fget('crm/annoncesPriv/'+id,true)||{};if(!c.phone&&!c.mail){toast('Aucune coordonnée enregistrée');return}await fput(`annonces/${id}/contact`,c,true);a.contact=c}openDetail(id,true);toast(a.contact?'Coordonnées visibles':'Coordonnées masquées')}catch(e){toast(e.message)}}
+async function delAd(id){if(!confirm('Supprimer définitivement cette annonce ?'))return;try{await fput('annonces/'+id,null,true);fput('crm/annoncesPriv/'+id,null,true).catch(()=>{});ads=ads.filter(a=>a.id!==id);closeM('mD');render();toast('Annonce supprimée')}catch(e){toast(e.message)}}
+
+/* ===== Démarrage ===== */
+(async()=>{renderCats();setAdm();await load();if(ADM)loadQueue();checkReplies();
+ const h=location.hash.slice(1);if(h&&ads.some(a=>a.id===h))openDetail(h)})();
+</script>
+</body>
+</html>
