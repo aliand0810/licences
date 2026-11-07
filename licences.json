@@ -128,10 +128,10 @@
       "produit": "Annonces",
       "hash": "af4eed22f610b495a9b3a5c533e79bd66a598aba3d04a20b1616ea32012fab86",
       "cree": "2026-11-07",
-      "expire": "2026-11-08T17:39:33.102Z",
+      "expire": null,
       "actif": true,
       "modules": null,
-      "maxDevices": 1,
+      "maxDevices": null,
       "sav": {
         "on": false
       },
