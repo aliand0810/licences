@@ -92,8 +92,10 @@ header{position:sticky;top:0;z-index:50;background:rgba(244,239,230,.82);backdro
 .card.big{grid-column:span 2}
 .card.big .ph{aspect-ratio:16/9}
 .ph{position:relative;aspect-ratio:5/4;overflow:hidden;background:var(--paper2)}
-.ph img{width:100%;height:100%;object-fit:cover;transition:1s cubic-bezier(.2,.8,.2,1)}
-.card:hover .ph img{transform:scale(1.06)}
+.ph img{position:relative;width:100%;height:100%;object-fit:contain;object-position:center;padding:6px;transition:1s cubic-bezier(.2,.8,.2,1);filter:drop-shadow(0 8px 14px rgba(27,24,20,.18))}
+.ph .bg,.gal .bg{position:absolute;inset:-20px;background-size:cover;background-position:center;filter:blur(22px) saturate(1.2);opacity:.55;transform:scale(1.1)}
+.gal{overflow:hidden}.gal .main{position:relative}
+.card:hover .ph img{transform:scale(1.04)}
 .ph .none{display:grid;place-items:center;height:100%;font-size:3.4rem;opacity:.5}
 .pill{position:absolute;left:12px;top:12px;background:rgba(255,253,248,.92);backdrop-filter:blur(6px);padding:6px 12px;border-radius:99px;font-size:.74rem;font-weight:700}
 .pill.promo{background:var(--terra);color:#fff}
@@ -436,7 +438,7 @@ function render(){
  if(!r.length){$('grid').innerHTML=`<div class="empty"><div style="font-size:3rem">${favView?'♡':'✦'}</div><h3>${favView?'Aucun favori pour l\'instant':'Rien par ici… encore.'}</h3><p>${favView?'Touchez ♡ sur une annonce pour la retrouver ici.':'Soyez le premier à proposer quelque chose.'}</p><button class="btn btn-ink" onclick="openForm()">Déposer une annonce</button></div>`;return}
  $('grid').innerHTML=r.map((a,i)=>{const c=catOf(a.cat),p=isPromo(a),big=i===0&&!favView&&cat==='all'&&r.length>3&&innerWidth>820;
   return`<article class="card ${big?'big':''}" style="animation-delay:${Math.min(i,12)*55}ms" onclick="openDetail('${a.id}')">
-   <div class="ph">${a.imgs[0]?`<img src="${a.imgs[0]}" loading="lazy" alt="">`:`<div class="none">${c.i}</div>`}
+   <div class="ph">${a.imgs[0]?`<div class="bg" style="background-image:url('${a.imgs[0]}')"></div><img src="${a.imgs[0]}" loading="lazy" alt="">`:`<div class="none">${c.i}</div>`}
     <span class="pill ${p?'promo':''}">${p?`−${Math.round((1-a.price/a.oldPrice)*100)} %`:`${c.i} ${c.n}`}</span>
     <button class="heart ${favs.includes(a.id)?'on':''}" onclick="event.stopPropagation();fav('${a.id}')">${favs.includes(a.id)?'♥':'♡'}</button>
     ${a.imgs.length>1?`<span class="nimg">${a.imgs.length} photos</span>`:''}</div>
@@ -453,7 +455,7 @@ function openDetail(id,keep){
  const msg=encodeURIComponent(`Bonjour, votre annonce « ${a.title} » m'intéresse. Est-elle toujours disponible ?`);
  const specs=[['Catégorie',c.n],['État',a.cond],a.brand&&['Marque',a.brand],a.model&&['Modèle',a.model],a.year&&['Année',a.year],a.km&&['Kilométrage',Number(a.km).toLocaleString('fr-FR')+' km'],a.fuel&&['Carburant',a.fuel],a.gear&&['Boîte',a.gear]].filter(Boolean);
  $('dH').textContent=c.i+' '+c.n;
- $('dB').innerHTML=`<div><div class="gal">${a.imgs.length?`<img class="main" id="gM" src="${a.imgs[gi]}" alt="">`:`<div class="none" style="aspect-ratio:4/3;display:grid;place-items:center;font-size:4rem">${c.i}</div>`}
+ $('dB').innerHTML=`<div><div class="gal">${a.imgs.length?`<div class="bg" id="gBg" style="background-image:url('${a.imgs[gi]}')"></div><img class="main" id="gM" src="${a.imgs[gi]}" alt="">`:`<div class="none" style="aspect-ratio:4/3;display:grid;place-items:center;font-size:4rem">${c.i}</div>`}
    ${a.imgs.length>1?`<button class="nav l" onclick="go(-1)">‹</button><button class="nav r" onclick="go(1)">›</button><span class="ctr" id="gC">${gi+1} / ${a.imgs.length}</span>`:''}</div>
    ${a.imgs.length>1?`<div class="ths">${a.imgs.map((s,i)=>`<img src="${s}" class="${i===gi?'on':''}" onclick="gi=${i};showG()">`).join('')}</div>`:''}</div>
   <div class="inf">
@@ -481,7 +483,7 @@ function openDetail(id,keep){
 }
 $('mD').addEventListener('click',()=>{if(!$('mD').classList.contains('open'))history.replaceState(null,'',location.pathname)});
 function go(d){if(!cur||cur.imgs.length<2)return;gi=(gi+d+cur.imgs.length)%cur.imgs.length;showG()}
-function showG(){const m=$('gM');m.style.animation='none';m.offsetHeight;m.style.animation='';m.src=cur.imgs[gi];if($('gC'))$('gC').textContent=`${gi+1} / ${cur.imgs.length}`;document.querySelectorAll('.ths img').forEach((t,i)=>t.classList.toggle('on',i===gi))}
+function showG(){const m=$('gM');m.style.animation='none';m.offsetHeight;m.style.animation='';m.src=cur.imgs[gi];if($('gBg'))$('gBg').style.backgroundImage=`url('${cur.imgs[gi]}')`;if($('gC'))$('gC').textContent=`${gi+1} / ${cur.imgs.length}`;document.querySelectorAll('.ths img').forEach((t,i)=>t.classList.toggle('on',i===gi))}
 let tx0=0;document.addEventListener('touchstart',e=>{if(e.target.id==='gM')tx0=e.touches[0].clientX},{passive:true});
 document.addEventListener('touchend',e=>{if(e.target.id==='gM'){const d=e.changedTouches[0].clientX-tx0;if(Math.abs(d)>40)go(d<0?1:-1)}});
 function share(){const url=location.href.split('#')[0]+'#'+cur.id,t=`${cur.title} — ${eur(cur.price)}`;
