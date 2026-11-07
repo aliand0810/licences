@@ -121,6 +121,24 @@
         }
       ],
       "suivi": 1
+    },
+    {
+      "id": "e920618ab44fccf2e98f0e20f0a4e04c5de1abeab2f1f1a522bf11eaf42edd96",
+      "email": "aliand0810@gmail.com",
+      "produit": "Annonces",
+      "hash": "af4eed22f610b495a9b3a5c533e79bd66a598aba3d04a20b1616ea32012fab86",
+      "cree": "2026-11-07",
+      "expire": "2026-11-08T17:38:12.628Z",
+      "actif": true,
+      "modules": null,
+      "maxDevices": 1,
+      "sav": {
+        "on": false
+      },
+      "onglets": null,
+      "google": null,
+      "ongletsOff": null,
+      "ongletsNoms": null
     }
   ],
   "bannis": [],
