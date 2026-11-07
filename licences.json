@@ -139,6 +139,24 @@
       "google": null,
       "ongletsOff": null,
       "ongletsNoms": null
+    },
+    {
+      "id": "e26c290ce3849e13dd8182d565d944e387c40123b964476fbd99ceff0d1fec79",
+      "email": "r.souffou@outlook.com",
+      "produit": "Annonces",
+      "hash": "43064bab4a8bef90c0248470d6dba64f3baa49ee00ca79178b6dec2211bca210",
+      "cree": "2026-11-07",
+      "expire": null,
+      "actif": true,
+      "modules": null,
+      "maxDevices": null,
+      "sav": {
+        "on": false
+      },
+      "onglets": null,
+      "google": null,
+      "ongletsOff": null,
+      "ongletsNoms": null
     }
   ],
   "bannis": [],
