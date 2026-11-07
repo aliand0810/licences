@@ -1628,7 +1628,7 @@ async function refreshSup(first){try{const t=await fbTok(),r=await fetch(`${FB()
   const i=SUP.findIndex(k=>k.tid===SUPT);if(i>=0)SUP[i]=x;
   const m=supMsgs(x),wa=waNum(x.tel),l=LIC.find(k=>k.email===x.email&&k.produit===x.produit);
   const html=`<div class="md-h"><div class="pi" style="--pc:${pm(x.produit)[1]}">${pm(x.produit)[0]}</div><div><h2>${esc(x.sujet||'Demande SAV')}</h2><span>${esc(x.email||'—')}${x.tel?' · 📞 '+esc(x.tel):''} · ${esc(x.produit)}${x.module?' · '+esc(x.module):''}</span></div><button class="x" onclick="closeModal()">✕</button></div>
-    <div class="md-b chatB" id="supTh">${m.map(k=>{const me=k.from==='sav';return `<div class="bub ${me?'me':''}"><div>${esc(k.text)}${thumbs(k.img,'att-th bub-img')}${fileChips(k.files)}</div><small>${me?'🛟 Toi':'👤 Client'}${k.via&&k.via!=='app'?' · via '+({whatsapp:'WhatsApp','e-mail':'e-mail'}[k.via]||esc(k.via)):''} · ${fmtD(new Date(k.t))}</small></div>`}).join('')}
+    <div class="md-b chatB" id="supTh">${m.map(k=>{const me=k.from==='sav';return `<div class="bub ${me?'me':''}"><div>${esc(k.text)}${thumbs(k.img,'att-th bub-img')}${fileChips(k.files)}</div><small>${me?'🛟 Toi':k.who==='vendeur'?'🏷️ Vendeur':'👤 Client'}${k.via&&k.via!=='app'?' · via '+({whatsapp:'WhatsApp','e-mail':'e-mail'}[k.via]||esc(k.via)):''} · ${fmtD(new Date(k.t))}</small></div>`}).join('')}
       ${l&&!savActive(l)?'<p class="hint" style="color:#fbbf24;text-align:center">⚠️ Le SAV de ce client n\'est plus actif</p>':''}</div>
     <div class="chatF"><textarea id="supRep" rows="3" placeholder="Ta réponse au client…"></textarea>${attBox('sup')}
       <div class="chatA"><button class="btn" onclick="sendSup('app')">📨 Envoyer dans l'app</button>${wa?`<button class="ghost" onclick="sendSup('whatsapp')">💬 + WhatsApp</button>`:''}${x.email?`<button class="ghost" onclick="sendSup('e-mail')">✉️ + E-mail</button>`:''}
@@ -1792,7 +1792,7 @@ function annBadge(){const u=ANNMSG.reduce((a,x)=>a+x.unread,0);$('nbAnn').textCo
 async function loadAnnMsg(){try{const d=await annGet('support');
   ANNMSG=Object.entries(d).filter(([,x])=>x&&x.produit==='Annonces').map(([tid,x])=>{const ms=[{from:'client',t:x.t},...Object.values(x.msgs||{})].sort((a,b)=>a.t-b.t);
    const seen=x.seenAdmin||0,lastSav=Math.max(0,...ms.filter(m=>m.from==='sav').map(m=>m.t)),ref=Math.max(seen,lastSav);
-   return{...x,tid,last:ms.at(-1).t,unread:ms.filter(m=>m.from==='client'&&m.t>ref).length}}).sort((a,b)=>b.last-a.last);
+   return{...x,tid,last:ms.at(-1).t,unread:ms.filter(m=>m.from==='client'&&m.who!=='vendeur'&&m.t>ref).length}}).sort((a,b)=>b.last-a.last);
   const u=ANNMSG.reduce((a,x)=>a+x.unread,0);$('annMsgN').innerHTML=annRed(u);annBadge();
   $('annMsg').innerHTML=ANNMSG.length?ANNMSG.map(x=>`<div class="card" style="padding:12px 14px;margin-top:8px;cursor:pointer;display:flex;gap:10px;align-items:center;${x.unread?'border-color:#ef4444':''}" onclick="annOpenMsg('${x.tid}')">
    <div style="flex:1;min-width:0"><b>${esc((x.sujet||'').replace(/^Annonce : /,''))}</b><div style="opacity:.75;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">✉ ${esc(x.email)} · ${fmtD(new Date(x.last))}</div></div>${annRed(x.unread)||'<span style="opacity:.5">›</span>'}</div>`).join(''):'<div class="empty">📭 Aucun message</div>'}

@@ -55,6 +55,7 @@ header{position:sticky;top:0;z-index:50;background:rgba(244,239,230,.82);backdro
 .btn-ok{background:var(--olive);color:#fff}
 .ib{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);background:var(--card);position:relative;flex:none;transition:.2s}
 .ib:hover{border-color:var(--ink)}
+.dot[hidden]{display:none!important}
 .dot{position:absolute;top:-3px;right:-3px;background:var(--terra);color:#fff;font-size:.68rem;font-weight:700;min-width:19px;height:19px;border-radius:10px;display:grid;place-items:center;padding:0 5px}
 
 /* Hero */
@@ -476,33 +477,52 @@ document.addEventListener('touchend',e=>{if(e.target.id==='gM'){const d=e.change
 function share(){const url=location.href.split('#')[0]+'#'+cur.id,t=`${cur.title} — ${eur(cur.price)}`;
  if(navigator.share)navigator.share({title:cur.title,text:t,url}).catch(()=>{});else{navigator.clipboard?.writeText(url);toast('Lien copié')}}
 
-/* ===== Messagerie → Licence Pro (SAV) ===== */
-function openContact(){const s=LS.get('ma_me',{});$('cN').value=s.n||'';$('cE').value=s.e||'';$('cT').value=s.t||'';
+/* ===== Messagerie : acheteur ↔ vendeur (propriétaire) — copie visible dans Licence Pro (SAV) ===== */
+function openContact(){const s=LS.get('ma_me',{});$('cN').value=s.n||(ACC&&ACC.nom)||'';$('cE').value=s.e||(ACC&&ACC.email)||'';$('cT').value=s.t||'';
  $('cAd').innerHTML=`<b>${esc(cur.title)}</b> · ${eur(cur.price)} · ${esc(cur.sCity)}`;
  $('cM').value=`Bonjour, votre annonce « ${cur.title} » m'intéresse. Est-elle toujours disponible ?`;openM('mC')}
 async function sendContact(e){
  e.preventDefault();const b=e.submitter;b.disabled=true;
  const n=$('cN').value.trim(),em=$('cE').value.trim(),t=$('cT').value.trim(),m=$('cM').value.trim();
  LS.set('ma_me',{n,e:em,t});const tid=rid();
- const body={email:em.slice(0,120),produit:PRODUIT,module:'Annonce '+cur.id,t:Date.now(),sujet:('Annonce : '+cur.title).slice(0,120),message:`[Annonce ${cur.id}] ${cur.title} — ${eur(cur.price)} (${cur.sCity})\n\n${m}\n\n— ${n||'Acheteur'}${t?' · '+t:''}`.slice(0,2000),tel:t.slice(0,30),ua:navigator.userAgent.slice(0,200),page:(location.href.split('#')[0]+'#'+cur.id).slice(0,200),statut:'nouveau',annonce:cur.id};
- try{await fput('support/'+tid,body);const th=LS.get('ma_threads',[]);th.unshift({tid,title:cur.title,ad:cur.id,t:Date.now(),seen:Date.now()});LS.set('ma_threads',th);
-  closeM('mC');toast('Message envoyé ✓');checkReplies()}
+ const body={email:em.slice(0,120),produit:PRODUIT,module:'Annonce '+cur.id,t:Date.now(),sujet:('Annonce : '+cur.title).slice(0,120),message:`[Annonce ${cur.id}] ${cur.title} — ${eur(cur.price)} (${cur.sCity})\n\n${m}\n\n— ${n||'Acheteur'}${t?' · '+t:''}`.slice(0,2000),tel:t.slice(0,30),ua:navigator.userAgent.slice(0,200),page:(location.href.split('#')[0]+'#'+cur.id).slice(0,200),statut:'nouveau',annonce:cur.id,acheteur:(n||'Acheteur').slice(0,60),...(cur.membre?{owner:cur.membre}:{})};
+ try{await fput('support/'+tid,body);
+  if(cur.membre)await fput(`inbox/${cur.membre}/${tid}`,Date.now()).catch(()=>{});
+  const th=LS.get('ma_threads',[]);th.unshift({tid,title:cur.title,ad:cur.id,t:Date.now(),seen:Date.now()});LS.set('ma_threads',th);
+  closeM('mC');toast(cur.membre?'Message envoyé au vendeur ✓':'Message envoyé ✓');checkReplies()}
  catch(err){toast('Envoi impossible, réessayez')}finally{b.disabled=false}
 }
+const isBuyerMsg=m=>m.from==='client'&&m.who!=='vendeur';
+const msgsOf=d=>[{from:'client',who:'acheteur',text:d.message,t:d.t},...Object.values(d.msgs||{})].sort((a,b)=>a.t-b.t);
+let OWN=[];
 async function checkReplies(){const th=LS.get('ma_threads',[]);let n=0;
- await Promise.all(th.map(async x=>{try{const d=await fget('support/'+x.tid);const v=Object.values(d&&d.msgs||{}).filter(m=>m.from!=='client');x.last=Math.max(0,...v.map(m=>m.t));x.unread=v.filter(m=>m.t>(x.seen||0)).length;n+=x.unread}catch(e){}}));
- LS.set('ma_threads',th);$('mN').textContent=n;$('mN').hidden=!n}
-function openMsgs(){const th=LS.get('ma_threads',[]);$('mH').textContent='Mes messages';
- $('mB').innerHTML=th.length?th.map(x=>`<div class="th" onclick="openThread('${x.tid}')"><div><b>${esc(x.title)}</b><br><small style="color:var(--ink2)">${ago(x.t)}</small></div>${x.unread?`<span class="dot" style="position:static;min-width:24px;height:24px;font-size:.8rem">${x.unread}</span>`:'<span>›</span>'}</div>`).join(''):'<div class="note">Aucune conversation. Utilisez « Envoyer un message » sur une annonce.</div>';openM('mM')}
-async function openThread(tid){const th=LS.get('ma_threads',[]),x=th.find(y=>y.tid===tid);$('mH').textContent=x?x.title:'Conversation';$('mB').innerHTML='<div class="note">Chargement…</div>';
+ await Promise.all(th.map(async x=>{try{const d=await fget('support/'+x.tid);const v=Object.values(d&&d.msgs||{}).filter(m=>!isBuyerMsg(m));x.last=Math.max(0,...v.map(m=>m.t));x.unread=v.filter(m=>m.t>(x.seen||0)).length;n+=x.unread}catch(e){}}));
+ LS.set('ma_threads',th);
+ OWN=[];if(accOk()){try{const ix=await fget('inbox/'+ACC.rid)||{},seen=LS.get('ma_seenown',{});
+  OWN=(await Promise.all(Object.keys(ix).map(async tid=>{try{const d=await fget('support/'+tid);if(!d)return null;const ms=msgsOf(d);
+   return{tid,title:(d.sujet||'').replace(/^Annonce : /,''),who:d.acheteur||d.email,last:ms.at(-1).t,unread:ms.filter(m=>isBuyerMsg(m)&&m.t>(seen[tid]||0)).length}}catch(e){return null}}))).filter(Boolean).sort((a,b)=>b.last-a.last);
+  n+=OWN.reduce((a,x)=>a+x.unread,0)}catch(e){}}
+ $('mN').textContent=n;$('mN').hidden=!n;return n}
+const red=n=>n?`<span class="dot" style="position:static;min-width:24px;height:24px;font-size:.8rem">${n}</span>`:'<span>›</span>';
+function renderMsgs(){const th=LS.get('ma_threads',[]);$('mH').textContent='Mes messages';
+ const own=accOk()?`<div class="sec" style="border:0;padding:0">📥 Messages reçus sur mes annonces</div>${OWN.length?OWN.map(x=>`<div class="th" onclick="openThread('${x.tid}','vendeur')"><div><b>${esc(x.title)}</b><br><small style="color:var(--ink2)">De ${esc(x.who)} · ${ago(x.last)}</small></div>${red(x.unread)}</div>`).join(''):'<div class="note">Aucun message reçu pour l\'instant.</div>'}`:'';
+ const mine=`<div class="sec"${accOk()?'':' style="border:0;padding:0"'}>📤 Mes demandes aux vendeurs</div>${th.length?th.map(x=>`<div class="th" onclick="openThread('${x.tid}','acheteur')"><div><b>${esc(x.title)}</b><br><small style="color:var(--ink2)">${ago(x.t)}</small></div>${red(x.unread)}</div>`).join(''):'<div class="note">Aucune conversation. Utilisez « Envoyer un message » sur une annonce.</div>'}`;
+ $('mB').innerHTML=own+mine}
+function openMsgs(){renderMsgs();openM('mM');checkReplies().then(()=>{if($('mM').classList.contains('open')&&$('mH').textContent==='Mes messages')renderMsgs()})}
+async function openThread(tid,role){const vend=role==='vendeur',th=LS.get('ma_threads',[]),x=th.find(y=>y.tid===tid);$('mB').innerHTML='<div class="note">Chargement…</div>';
  let d;try{d=await fget('support/'+tid)}catch(e){}if(!d){$('mB').innerHTML='<div class="note">Conversation introuvable.</div>';return}
- const ms=[{from:'client',text:d.message,t:d.t},...Object.values(d.msgs||{}).sort((a,b)=>a.t-b.t)];
+ $('mH').textContent=(d.sujet||'Conversation').replace(/^Annonce : /,'');
+ const mine=m=>vend?m.who==='vendeur':isBuyerMsg(m),lab=m=>mine(m)?'Vous':m.from==='sav'?'Maison des Annonces':m.who==='vendeur'?'Vendeur':(d.acheteur||'Acheteur');
  $('mB').innerHTML=`<button class="btn btn-line" style="justify-self:start" onclick="openMsgs()">‹ Retour</button>
-  <div class="thr" id="thr">${ms.map(m=>`<div class="bub ${m.from==='client'?'me':''}">${esc(m.text)}<small>${m.from==='client'?'Vous':'Vendeur'} · ${new Date(m.t).toLocaleString('fr-FR',{dateStyle:'short',timeStyle:'short'})}</small></div>`).join('')}</div>
-  <textarea class="f" id="rep" placeholder="Votre réponse…" maxlength="2000"></textarea><button class="btn btn-terra" onclick="replyThread('${tid}',this)">Envoyer</button>`;
- $('thr').scrollTop=1e9;if(x){x.seen=Date.now();x.unread=0;LS.set('ma_threads',th);checkReplies()}}
-async function replyThread(tid,b){const v=$('rep').value.trim();if(!v)return;b.disabled=true;
- try{await fput(`support/${tid}/msgs/${rid()}`,{from:'client',text:v.slice(0,2000),t:Date.now(),via:'app'});fput(`support/${tid}/statut`,'nouveau').catch(()=>{});openThread(tid)}catch(e){toast('Envoi impossible');b.disabled=false}}
+  ${vend?`<div class="note">✉ ${esc(d.email)}${d.tel?' · 📞 '+esc(d.tel):''}</div>`:''}
+  <div class="thr" id="thr">${msgsOf(d).map(m=>`<div class="bub ${mine(m)?'me':''}">${esc(m.text)}<small>${esc(lab(m))} · ${new Date(m.t).toLocaleString('fr-FR',{dateStyle:'short',timeStyle:'short'})}</small></div>`).join('')}</div>
+  <textarea class="f" id="rep" placeholder="Votre réponse…" maxlength="2000"></textarea><button class="btn btn-terra" onclick="replyThread('${tid}',this,'${vend?'vendeur':'acheteur'}')">Envoyer</button>`;
+ $('thr').scrollTop=1e9;
+ if(vend){const s=LS.get('ma_seenown',{});s[tid]=Date.now();LS.set('ma_seenown',s)}else if(x){x.seen=Date.now();x.unread=0;LS.set('ma_threads',th)}
+ checkReplies()}
+async function replyThread(tid,b,role){const v=$('rep').value.trim();if(!v)return;b.disabled=true;
+ try{await fput(`support/${tid}/msgs/${rid()}`,{from:'client',who:role,text:v.slice(0,2000),t:Date.now(),via:role==='vendeur'?'vendeur':'app'});
+  if(role!=='vendeur')fput(`support/${tid}/statut`,'nouveau').catch(()=>{});openThread(tid,role)}catch(e){toast('Envoi impossible');b.disabled=false}}
 
 /* ===== Dépôt ===== */
 const form=$('form');

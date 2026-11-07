@@ -98,6 +98,15 @@
         ".write": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || !data.exists() || root.child('requests').child(data.val()).child('statut').val() === 'refusee'",
         ".validate": "newData.isString() && newData.val().length <= 40"
       }
+    },
+    "inbox": {
+      ".read": true,
+      "$o": {
+        "$t": {
+          ".write": "!data.exists() && newData.exists() && root.child('support').child($t).exists()",
+          ".validate": "newData.isNumber() && $o.length <= 40 && $t.length <= 40"
+        }
+      }
     }
   }
 }
