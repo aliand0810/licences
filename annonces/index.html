@@ -29,7 +29,15 @@ a{color:inherit;text-decoration:none}
 header{position:sticky;top:0;z-index:50;background:rgba(244,239,230,.82);backdrop-filter:saturate(1.4) blur(14px);border-bottom:1px solid var(--line)}
 .bar{display:flex;align-items:center;gap:16px;height:72px}
 .logo{font-family:var(--serif);font-weight:800;font-size:1.55rem;letter-spacing:-.02em;cursor:pointer;display:flex;align-items:center;gap:8px;white-space:nowrap}
-.logo img{height:58px;width:auto;mix-blend-mode:multiply;display:block}
+.logo{perspective:600px}
+.logo img{height:68px;width:auto;display:block;transform-style:preserve-3d;transform:rotateX(var(--rx,8deg)) rotateY(var(--ry,-12deg)) translateZ(0);
+ filter:drop-shadow(1px 1px 0 #cfc5b1) drop-shadow(2px 2px 0 #c2b79f) drop-shadow(3px 3px 0 #b3a78d) drop-shadow(6px 10px 10px rgba(27,24,20,.28));
+ transition:transform .5s cubic-bezier(.2,.8,.2,1);animation:lg 6s ease-in-out infinite}
+@keyframes lg{50%{translate:0 -2px}}
+.logo:hover img{transform:rotateX(var(--rx)) rotateY(var(--ry)) scale(1.06)}
+.bar{height:88px!important}
+.acc{display:flex;align-items:center;gap:8px}
+.acc .av{width:44px;height:44px;font-size:1.1rem}
 .hero-logo{width:min(260px,60vw);mix-blend-mode:multiply;margin-bottom:6px;animation:up .9s cubic-bezier(.2,.8,.2,1) both}
 .e{filter:grayscale(1) contrast(1.4);display:inline-block}
 .logo i{width:30px;height:30px;border-radius:9px;background:var(--ink);color:var(--paper);display:grid;place-items:center;font-style:normal;font-size:1rem}
@@ -183,7 +191,8 @@ footer .wrap{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
 footer button{text-decoration:underline;color:var(--ink2)}
 
 @media(max-width:820px){
- .logo img{height:48px}
+ .logo img{height:56px}
+ .bar{height:76px!important}
  .hero{grid-template-columns:1fr;padding:38px 0 22px;gap:18px}
  .dt{grid-template-columns:1fr}
  .card.big{grid-column:auto}
@@ -214,8 +223,9 @@ footer button{text-decoration:underline;color:var(--ink2)}
 </div></div>
 
 <header><div class="wrap bar">
- <div class="logo" onclick="resetAll()"><img src="logo.jpg" alt="Maison des Annonces"></div>
+ <div class="logo" onclick="resetAll()"><img src="logo.png" alt="Maison des Annonces"></div>
  <div class="search">🔍<input id="q" placeholder="Voiture, canapé, téléphone…" oninput="render()"></div>
+ <button class="ib" id="accBtn" onclick="openAcc()" title="Mon compte">👤</button>
  <button class="ib" onclick="openMsgs()" title="Mes messages">✉<span class="dot" id="mN" hidden>0</span></button>
  <button class="ib" onclick="toggleFav()" title="Favoris">♡<span class="dot" id="fN" hidden>0</span></button>
  <button class="btn btn-ink" onclick="openForm()">Déposer une annonce</button>
@@ -224,7 +234,7 @@ footer button{text-decoration:underline;color:var(--ink2)}
 <main class="wrap">
  <section class="hero">
   <div>
-   <img class="hero-logo" src="logo.jpg" alt=""><div class="eyebrow">Petites annonces · Sélection vérifiée</div>
+   <div class="eyebrow">Petites annonces · Sélection vérifiée</div>
    <h1>Ce qui compte,<br>à <em>bon prix.</em></h1>
   </div>
   <div>
@@ -307,6 +317,12 @@ footer button{text-decoration:underline;color:var(--ink2)}
 <div class="modal" id="mM" onclick="if(event.target===this)closeM('mM')"><div class="sheet sm">
  <div class="shd"><h2 id="mH">Mes messages</h2><button class="x" onclick="closeM('mM')">✕</button></div>
  <div class="pad" id="mB"></div>
+</div></div>
+
+<!-- Compte membre -->
+<div class="modal" id="mA" onclick="if(event.target===this)closeM('mA')"><div class="sheet sm">
+ <div class="shd"><h2 id="aH">Mon compte</h2><button class="x" onclick="closeM('mA')">✕</button></div>
+ <div class="pad" id="aB"></div>
 </div></div>
 
 <!-- Login admin -->
@@ -479,10 +495,11 @@ async function replyThread(tid,b){const v=$('rep').value.trim();if(!v)return;b.d
 const form=$('form');
 function vehToggle(){document.querySelectorAll('.veh').forEach(e=>e.style.display=VEH.includes($('fCat').value)?'grid':'none')}
 $('fCat').addEventListener('change',vehToggle);
-function openForm(id){form.reset();imgs=[];editId=id||null;
+function openForm(id){if(!ADM&&!accOk()){openAcc();toast(ACC?'Votre compte est en attente de validation':'Créez un compte pour déposer une annonce');return}
+ form.reset();imgs=[];editId=id||null;
  if(id){const a=ads.find(x=>x.id===id)||queue.find(x=>x.id===id);imgs=[...(a.imgs||[])];for(const k in a){const el=form.elements[k];if(!el)continue;el.type==='checkbox'?el.checked=!!a[k]:el.value=a[k]??''}
   const c=a.contact||a.priv||{};if(ADM&&!a.priv)fget('crm/annoncesPriv/'+id,true).then(p=>{if(p&&editId===id){form.elements.sPhone.value=p.phone||'';form.elements.sMail.value=p.mail||'';form.elements.sWa.checked=!!p.wa}}).catch(()=>{});form.elements.sPhone.value=c.phone||'';form.elements.sMail.value=c.mail||'';form.elements.sWa.checked=!!c.wa}
- else if(cat!=='all'&&cat!=='promo')$('fCat').value=cat;
+ else{if(cat!=='all'&&cat!=='promo')$('fCat').value=cat;if(ACC){form.elements.sName.value=ACC.nom||'';form.elements.sCity.value=ACC.ville||'';form.elements.sPhone.value=ACC.tel||'';form.elements.sMail.value=ACC.email||''}}
  $('fH').textContent=id?'Modifier l\'annonce':'Déposer une annonce';$('fBtn').textContent=id?'Enregistrer':(ADM?'Publier':'Envoyer pour validation');
  vehToggle();renderPrev();openM('mF')}
 async function addFiles(fs){for(const f of [...fs].filter(f=>f.type.startsWith('image/'))){if(imgs.length>=8){toast('8 photos maximum');break}const d=await compress(f);if(d){imgs.push(d);renderPrev()}}}
@@ -509,7 +526,7 @@ async function submitAd(e){
    const ad={...o,imgs,t:old?old.t:Date.now(),...(old&&old.contact?{contact:priv}:{})};
    await fput('crm/annoncesPriv/'+id,priv,true);await fput('annonces/'+id,ad,true);if(queue.some(x=>x.id===id))await fput('annoncesWait/'+id,null,true);
    toast('Annonce publiée ✓');closeM('mF');await load();loadQueue()}
-  else{await fput('annoncesWait/'+rid(),{...o,imgs,priv,t:Date.now()});closeM('mF');toast('Merci ! Votre annonce sera publiée après validation.')}
+  else{await fput('annoncesWait/'+rid(),{...o,imgs,priv,t:Date.now(),...(ACC?{membre:ACC.rid}:{})});closeM('mF');toast('Merci ! Votre annonce sera publiée après validation.')}
  }catch(err){toast(err.message.includes('413')?'Photos trop lourdes, retirez-en':'Envoi impossible : '+err.message)}
  finally{b.disabled=false}
 }
@@ -527,7 +544,7 @@ function setAdm(){document.body.classList.toggle('adm',!!ADM);if(cur&&$('mD').cl
 async function loadQueue(){if(!ADM)return;try{const d=await fget('annoncesWait',true)||{};queue=Object.entries(d).map(([id,a])=>({...a,id,imgs:a.imgs||[]})).sort((a,b)=>b.t-a.t)}catch(e){if(String(e.message).match(/401|403/)){toast('Ce compte n\'a pas les droits admin');logout()}return}$('qN').textContent=queue.length}
 async function openQueue(){await loadQueue();
  $('qB').innerHTML=queue.length?queue.map(a=>{const c=catOf(a.cat),p=a.priv||{};return`<div class="qi">${a.imgs[0]?`<img src="${a.imgs[0]}">`:`<div style="width:90px;height:90px;display:grid;place-items:center;font-size:2rem;background:var(--paper2);border-radius:12px">${c.i}</div>`}
-  <div><h4>${esc(a.title)} — ${eur(a.price)}</h4><div class="m">${c.i} ${c.n} · ${esc(a.sCity)} · ${ago(a.t)} · ${a.imgs.length} photo(s)<br>👤 ${esc(a.sName)} · 📞 ${esc(p.phone||'—')} · ✉ ${esc(p.mail||'—')}${p.wa?' · WhatsApp':''}<br>${esc((a.desc||'').slice(0,180))}</div>
+  <div><h4>${esc(a.title)} — ${eur(a.price)}</h4><div class="m">${c.i} ${c.n} · ${esc(a.sCity)} · ${ago(a.t)} · ${a.imgs.length} photo(s)<br>👤 ${esc(a.sName)}${a.membre?' (membre)':''} · 📞 ${esc(p.phone||'—')} · ✉ ${esc(p.mail||'—')}${p.wa?' · WhatsApp':''}<br>${esc((a.desc||'').slice(0,180))}</div>
   <div class="acts"><button class="btn btn-ok" onclick="approve('${a.id}',true)">✓ Publier + coordonnées</button><button class="btn btn-ink" onclick="approve('${a.id}',false)">✓ Publier (coordonnées masquées)</button><button class="btn btn-line" onclick="closeM('mQ');openForm('${a.id}')">Modifier</button><button class="btn btn-line" style="color:var(--terra)" onclick="reject('${a.id}')">Refuser</button></div></div></div>`}).join(''):'<div class="note">Aucune annonce en attente. ✓</div>';
  openM('mQ')}
 async function approve(id,show){const a=queue.find(x=>x.id===id);if(!a)return;const{id:_,priv,...ad}=a;if(show)ad.contact=priv;else delete ad.contact;
@@ -536,14 +553,50 @@ async function reject(id){if(!confirm('Refuser et supprimer cette annonce ?'))re
 async function toggleContact(id){const a=ads.find(x=>x.id===id);try{if(a.contact){await fput(`annonces/${id}/contact`,null,true);delete a.contact}else{const c=await fget('crm/annoncesPriv/'+id,true)||{};if(!c.phone&&!c.mail){toast('Aucune coordonnée enregistrée');return}await fput(`annonces/${id}/contact`,c,true);a.contact=c}openDetail(id,true);toast(a.contact?'Coordonnées visibles':'Coordonnées masquées')}catch(e){toast(e.message)}}
 async function delAd(id){if(!confirm('Supprimer définitivement cette annonce ?'))return;try{await fput('annonces/'+id,null,true);fput('crm/annoncesPriv/'+id,null,true).catch(()=>{});ads=ads.filter(a=>a.id!==id);closeM('mD');render();toast('Annonce supprimée')}catch(e){toast(e.message)}}
 
+/* ===== Comptes membres (demande → Licence Pro) ===== */
+let ACC=LS.get('ma_acc',null),accT=null;
+const accOk=()=>ACC&&ACC.statut==='accordee';
+function accUI(){const b=$('accBtn');b.innerHTML=accOk()?`<b style="font-family:var(--serif)">${esc((ACC.nom||'?')[0].toUpperCase())}</b>`:ACC?'⏳':'👤';b.style.background=accOk()?'var(--ink)':'';b.style.color=accOk()?'var(--paper)':''}
+async function pollAcc(){if(!ACC||accOk())return;try{const r=await fget('requests/'+ACC.rid);
+  if(!r){ACC=null;LS.set('ma_acc',null);toast('Votre demande a été clôturée')}
+  else if(r.statut==='accordee'){ACC.statut='accordee';LS.set('ma_acc',ACC);toast('🎉 Votre compte est validé !')}
+  else if(r.statut==='refusee'){ACC.statut='refusee';ACC.motif=r.motif||'';LS.set('ma_acc',ACC)}}catch(e){}
+ accUI();if($('mA').classList.contains('open'))openAcc(true)}
+function openAcc(keep){const f=(id,l,t='text',v='',req='')=>`<label>${l}<input class="f" id="${id}" type="${t}" value="${esc(v)}" ${req}></label>`;
+ if(accOk()){$('aH').textContent='Mon compte';$('aB').innerHTML=`<div class="sr"><div class="av">${esc(ACC.nom[0].toUpperCase())}</div><div><b>${esc(ACC.nom)}</b><br><small style="color:var(--ink2)">${esc(ACC.email)}</small></div></div>
+   <div class="note">✅ Compte validé. Vous pouvez déposer des annonces.<br>Code membre (pour vous connecter sur un autre appareil) : <b style="user-select:all">${ACC.rid}</b></div>
+   <button class="btn btn-ink" onclick="closeM('mA');openForm()">Déposer une annonce</button><button class="btn btn-line" onclick="accOut()">Se déconnecter</button>`}
+ else if(ACC&&ACC.statut!=='refusee'){$('aH').textContent='Demande envoyée';$('aB').innerHTML=`<div class="note">⏳ Votre demande d'inscription est en cours de validation.<br>Vous recevrez l'accès automatiquement ici dès qu'elle sera acceptée.</div><small style="color:var(--ink2)">Code de demande : ${ACC.rid}</small><button class="btn btn-line" onclick="pollAcc()">Vérifier maintenant</button><button class="btn btn-line" style="color:var(--terra)" onclick="if(confirm('Annuler la demande ?'))accOut()">Annuler la demande</button>`}
+ else{$('aH').textContent='Créer un compte';$('aB').innerHTML=`${ACC&&ACC.statut==='refusee'?`<div class="note">❌ Votre précédente demande a été refusée${ACC.motif?' : '+esc(ACC.motif):'.'}</div>`:''}
+   <div class="note">L'inscription se fait sur demande. Une fois validée, vous pourrez déposer vos annonces.</div>
+   <div class="r2">${f('rN','Nom *','text','','maxlength=60')}${f('rC','Ville','text','','maxlength=60')}</div>
+   <div class="r2">${f('rE','E-mail *','email','','maxlength=120')}${f('rT','Téléphone','tel','','maxlength=30')}</div>
+   <label>Message (facultatif)<textarea class="f" id="rM" maxlength="800" placeholder="Ex. : particulier, je souhaite vendre ma voiture"></textarea></label>
+   <button class="btn btn-ink" onclick="accReq(this)">Envoyer ma demande d'inscription</button>
+   <details><summary style="cursor:pointer;font-weight:700">J'ai déjà un compte validé</summary><div style="display:grid;gap:10px;margin-top:10px">${f('xE','E-mail','email')}${f('xC','Code membre')}<button class="btn btn-line" onclick="accLogin(this)">Se connecter</button></div></details>`}
+ if(!keep)openM('mA')}
+async function accReq(b){const nom=$('rN').value.trim(),email=$('rE').value.trim().toLowerCase();
+ if(!nom||!/^\S+@\S+\.\S+$/.test(email)){toast('Nom et e-mail valides requis');return}b.disabled=true;const id=rid();
+ const body={email,nom,tel:$('rT').value.trim().slice(0,30),ville:$('rC').value.trim().slice(0,60),produit:PRODUIT,module:'Inscription site',t:Date.now(),message:('Demande d\'inscription — Maison des Annonces'+($('rM').value.trim()?'\n\n'+$('rM').value.trim():'')).slice(0,1000),statut:'attente',ua:navigator.userAgent.slice(0,200),page:location.href.split('#')[0].slice(0,200)};
+ try{await fput('requests/'+id,body);ACC={rid:id,email,nom,tel:body.tel,ville:body.ville,statut:'attente'};LS.set('ma_acc',ACC);accUI();openAcc(true);toast('Demande envoyée ✓')}
+ catch(e){toast('Envoi impossible, réessayez');b.disabled=false}}
+async function accLogin(b){const e=$('xE').value.trim().toLowerCase(),c=$('xC').value.trim();if(!e||!c)return;b.disabled=true;
+ try{const r=await fget('requests/'+encodeURIComponent(c));if(!r||String(r.email).toLowerCase()!==e||r.produit!==PRODUIT)throw 0;
+  ACC={rid:c,email:e,nom:r.nom||e,tel:r.tel||'',ville:r.ville||'',statut:r.statut};LS.set('ma_acc',ACC);accUI();openAcc(true);toast(accOk()?'Connecté ✓':'Demande retrouvée')}
+ catch(x){toast('E-mail ou code incorrect');b.disabled=false}}
+function accOut(){ACC=null;LS.set('ma_acc',null);accUI();openAcc(true)}
+
 /* ===== Icônes noir & blanc ===== */
 const EMO=/(\p{Extended_Pictographic}(?:\uFE0F|\u200D\p{Extended_Pictographic})*)/gu;
 function mono(root){const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>n.parentNode&&!n.parentNode.classList?.contains('e')&&!/SCRIPT|STYLE|TEXTAREA|OPTION/.test(n.parentNode.nodeName)&&EMO.test(n.nodeValue)?(EMO.lastIndex=0,1):(EMO.lastIndex=0,2)});const L=[];while(w.nextNode())L.push(w.currentNode);
  L.forEach(n=>{const f=document.createElement('span');f.innerHTML=n.nodeValue.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])).replace(EMO,'<span class="e">$1</span>');n.replaceWith(...f.childNodes)})}
 mono(document.body);new MutationObserver(m=>m.forEach(r=>r.addedNodes.forEach(n=>n.nodeType===1?mono(n):n.nodeType===3&&n.parentNode&&mono(n.parentNode)))).observe(document.body,{childList:true,subtree:true});
 document.querySelectorAll('option').forEach(o=>o.textContent=o.textContent.replace(EMO,'').trim());
+/* Logo 3D : inclinaison au survol */
+document.querySelector('.logo').addEventListener('mousemove',e=>{const r=e.currentTarget.getBoundingClientRect(),i=e.currentTarget.querySelector('img');i.style.setProperty('--ry',((e.clientX-r.left)/r.width-.5)*30+'deg');i.style.setProperty('--rx',(.5-(e.clientY-r.top)/r.height)*24+'deg')});
+document.querySelector('.logo').addEventListener('mouseleave',e=>{const i=e.currentTarget.querySelector('img');i.style.removeProperty('--ry');i.style.removeProperty('--rx')});
 /* ===== Démarrage ===== */
-(async()=>{renderCats();setAdm();await load();if(ADM)loadQueue();checkReplies();
+(async()=>{renderCats();setAdm();accUI();pollAcc();setInterval(pollAcc,20000);await load();if(ADM)loadQueue();checkReplies();
  const h=location.hash.slice(1);if(h&&ads.some(a=>a.id===h))openDetail(h)})();
 </script>
 </body>
