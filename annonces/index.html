@@ -56,6 +56,9 @@ header{position:sticky;top:0;z-index:50;background:rgba(244,239,230,.82);backdro
 .ib{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);background:var(--card);position:relative;flex:none;transition:.2s}
 .ib:hover{border-color:var(--ink)}
 .dot[hidden]{display:none!important}
+.dot.zero{background:var(--ink2)}
+.dot.bump{animation:bump .5s}
+@keyframes bump{40%{transform:scale(1.5)}}
 .dot{position:absolute;top:-3px;right:-3px;background:var(--terra);color:#fff;font-size:.68rem;font-weight:700;min-width:19px;height:19px;border-radius:10px;display:grid;place-items:center;padding:0 5px}
 
 /* Hero */
@@ -229,7 +232,7 @@ footer button{text-decoration:underline;color:var(--ink2)}
  <div class="search">🔍<input id="q" placeholder="Voiture, canapé, téléphone…" oninput="render()"></div>
  <button class="btn btn-line" id="regBtn" onclick="openRegister()" style="padding:10px 16px">S'inscrire</button>
  <button class="ib" id="accBtn" onclick="openAcc()" title="Connexion / Mon compte">👤</button>
- <button class="ib" onclick="openMsgs()" title="Mes messages">✉<span class="dot" id="mN" hidden>0</span></button>
+ <button class="ib" onclick="openMsgs()" title="Mes messages">✉<span class="dot zero" id="mN">0</span></button>
  <button class="ib" onclick="toggleFav()" title="Favoris">♡<span class="dot" id="fN" hidden>0</span></button>
  <button class="btn btn-ink" onclick="openForm()">Déposer une annonce</button>
 </div></header>
@@ -502,7 +505,7 @@ async function checkReplies(){const th=LS.get('ma_threads',[]);let n=0;
   OWN=(await Promise.all(Object.keys(ix).map(async tid=>{try{const d=await fget('support/'+tid);if(!d)return null;const ms=msgsOf(d);
    return{tid,title:(d.sujet||'').replace(/^Annonce : /,''),who:d.acheteur||d.email,last:ms.at(-1).t,unread:ms.filter(m=>isBuyerMsg(m)&&m.t>(seen[tid]||0)).length}}catch(e){return null}}))).filter(Boolean).sort((a,b)=>b.last-a.last);
   n+=OWN.reduce((a,x)=>a+x.unread,0)}catch(e){}}
- $('mN').textContent=n;$('mN').hidden=!n;return n}
+ {const o=+$('mN').textContent;if(o!==n){$('mN').classList.remove('bump');void $('mN').offsetWidth;$('mN').classList.add('bump')}}$('mN').textContent=n;$('mN').hidden=false;$('mN').classList.toggle('zero',!n);return n}
 const red=n=>n?`<span class="dot" style="position:static;min-width:24px;height:24px;font-size:.8rem">${n}</span>`:'<span>›</span>';
 function renderMsgs(){const th=LS.get('ma_threads',[]);$('mH').textContent='Mes messages';
  const own=accOk()?`<div class="sec" style="border:0;padding:0">📥 Messages reçus sur mes annonces</div>${OWN.length?OWN.map(x=>`<div class="th" onclick="openThread('${x.tid}','vendeur')"><div><b>${esc(x.title)}</b><br><small style="color:var(--ink2)">De ${esc(x.who)} · ${ago(x.last)}</small></div>${red(x.unread)}</div>`).join(''):'<div class="note">Aucun message reçu pour l\'instant.</div>'}`:'';
@@ -671,7 +674,7 @@ document.querySelectorAll('option').forEach(o=>o.textContent=o.textContent.repla
 document.querySelector('.logo').addEventListener('mousemove',e=>{const r=e.currentTarget.getBoundingClientRect(),i=e.currentTarget.querySelector('img');i.style.setProperty('--ry',((e.clientX-r.left)/r.width-.5)*30+'deg');i.style.setProperty('--rx',(.5-(e.clientY-r.top)/r.height)*24+'deg')});
 document.querySelector('.logo').addEventListener('mouseleave',e=>{const i=e.currentTarget.querySelector('img');i.style.removeProperty('--ry');i.style.removeProperty('--rx')});
 /* ===== Démarrage ===== */
-(async()=>{renderCats();setAdm();accUI();pollAcc();setInterval(()=>pollAcc(),20000);await load();if(ADM)loadQueue();checkReplies();setInterval(checkReplies,30000);
+(async()=>{renderCats();setAdm();accUI();pollAcc();setInterval(()=>pollAcc(),20000);await load();if(ADM)loadQueue();checkReplies();setInterval(checkReplies,15000);
  const h=location.hash.slice(1);if(h&&ads.some(a=>a.id===h))openDetail(h)})();
 </script>
 </body>
