@@ -4,7 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f4efe6">
-<title>Maison Annonces</title>
+<title>Maison des Annonces</title>
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
@@ -27,6 +29,9 @@ a{color:inherit;text-decoration:none}
 header{position:sticky;top:0;z-index:50;background:rgba(244,239,230,.82);backdrop-filter:saturate(1.4) blur(14px);border-bottom:1px solid var(--line)}
 .bar{display:flex;align-items:center;gap:16px;height:72px}
 .logo{font-family:var(--serif);font-weight:800;font-size:1.55rem;letter-spacing:-.02em;cursor:pointer;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.logo img{height:58px;width:auto;mix-blend-mode:multiply;display:block}
+.hero-logo{width:min(260px,60vw);mix-blend-mode:multiply;margin-bottom:6px;animation:up .9s cubic-bezier(.2,.8,.2,1) both}
+.e{filter:grayscale(1) contrast(1.4);display:inline-block}
 .logo i{width:30px;height:30px;border-radius:9px;background:var(--ink);color:var(--paper);display:grid;place-items:center;font-style:normal;font-size:1rem}
 .logo em{font-style:italic;color:var(--terra);font-weight:600}
 .search{flex:1;max-width:520px;margin-left:auto;display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:99px;padding:0 6px 0 16px;transition:.25s}
@@ -178,6 +183,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
 footer button{text-decoration:underline;color:var(--ink2)}
 
 @media(max-width:820px){
+ .logo img{height:48px}
  .hero{grid-template-columns:1fr;padding:38px 0 22px;gap:18px}
  .dt{grid-template-columns:1fr}
  .card.big{grid-column:auto}
@@ -208,7 +214,7 @@ footer button{text-decoration:underline;color:var(--ink2)}
 </div></div>
 
 <header><div class="wrap bar">
- <div class="logo" onclick="resetAll()"><i>◆</i>Maison <em>Annonces</em></div>
+ <div class="logo" onclick="resetAll()"><img src="logo.jpg" alt="Maison des Annonces"></div>
  <div class="search">🔍<input id="q" placeholder="Voiture, canapé, téléphone…" oninput="render()"></div>
  <button class="ib" onclick="openMsgs()" title="Mes messages">✉<span class="dot" id="mN" hidden>0</span></button>
  <button class="ib" onclick="toggleFav()" title="Favoris">♡<span class="dot" id="fN" hidden>0</span></button>
@@ -218,7 +224,7 @@ footer button{text-decoration:underline;color:var(--ink2)}
 <main class="wrap">
  <section class="hero">
   <div>
-   <div class="eyebrow">Petites annonces · Sélection vérifiée</div>
+   <img class="hero-logo" src="logo.jpg" alt=""><div class="eyebrow">Petites annonces · Sélection vérifiée</div>
    <h1>Ce qui compte,<br>à <em>bon prix.</em></h1>
   </div>
   <div>
@@ -239,7 +245,7 @@ footer button{text-decoration:underline;color:var(--ink2)}
  <section class="grid" id="grid"><div class="skel"></div><div class="skel"></div><div class="skel"></div><div class="skel"></div></section>
 </main>
 
-<footer><div class="wrap"><span>© Maison Annonces — les annonces sont modérées avant publication.</span><button onclick="openLogin()">Administration</button></div></footer>
+<footer><div class="wrap"><span>© Maison des Annonces — les annonces sont modérées avant publication.</span><button onclick="openLogin()">Administration</button></div></footer>
 
 <button class="btn-ink fab" onclick="openForm()">＋</button>
 
@@ -366,7 +372,7 @@ async function load(){
 /* ===== Rendu liste ===== */
 function renderCats(){
  $('cats').innerHTML=CATS.map(c=>`<button class="cat ${c.id===cat&&!favView?'on':''}" onclick="setCat('${c.id}')"><span>${c.i}</span>${c.n}</button>`).join('');
- $('fCat').innerHTML=CATS.slice(1).map(c=>`<option value="${c.id}">${c.i} ${c.n}</option>`).join('');
+ $('fCat').innerHTML=CATS.slice(1).map(c=>`<option value="${c.id}">${c.n}</option>`).join('');
 }
 function setCat(c){cat=c;favView=false;renderCats();render()}
 function resetAll(){['q','q2','pmin','pmax','city'].forEach(i=>$(i).value='');setCat('all');scrollTo({top:0})}
@@ -530,6 +536,12 @@ async function reject(id){if(!confirm('Refuser et supprimer cette annonce ?'))re
 async function toggleContact(id){const a=ads.find(x=>x.id===id);try{if(a.contact){await fput(`annonces/${id}/contact`,null,true);delete a.contact}else{const c=await fget('crm/annoncesPriv/'+id,true)||{};if(!c.phone&&!c.mail){toast('Aucune coordonnée enregistrée');return}await fput(`annonces/${id}/contact`,c,true);a.contact=c}openDetail(id,true);toast(a.contact?'Coordonnées visibles':'Coordonnées masquées')}catch(e){toast(e.message)}}
 async function delAd(id){if(!confirm('Supprimer définitivement cette annonce ?'))return;try{await fput('annonces/'+id,null,true);fput('crm/annoncesPriv/'+id,null,true).catch(()=>{});ads=ads.filter(a=>a.id!==id);closeM('mD');render();toast('Annonce supprimée')}catch(e){toast(e.message)}}
 
+/* ===== Icônes noir & blanc ===== */
+const EMO=/(\p{Extended_Pictographic}(?:\uFE0F|\u200D\p{Extended_Pictographic})*)/gu;
+function mono(root){const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>n.parentNode&&!n.parentNode.classList?.contains('e')&&!/SCRIPT|STYLE|TEXTAREA|OPTION/.test(n.parentNode.nodeName)&&EMO.test(n.nodeValue)?(EMO.lastIndex=0,1):(EMO.lastIndex=0,2)});const L=[];while(w.nextNode())L.push(w.currentNode);
+ L.forEach(n=>{const f=document.createElement('span');f.innerHTML=n.nodeValue.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])).replace(EMO,'<span class="e">$1</span>');n.replaceWith(...f.childNodes)})}
+mono(document.body);new MutationObserver(m=>m.forEach(r=>r.addedNodes.forEach(n=>n.nodeType===1?mono(n):n.nodeType===3&&n.parentNode&&mono(n.parentNode)))).observe(document.body,{childList:true,subtree:true});
+document.querySelectorAll('option').forEach(o=>o.textContent=o.textContent.replace(EMO,'').trim());
 /* ===== Démarrage ===== */
 (async()=>{renderCats();setAdm();await load();if(ADM)loadQueue();checkReplies();
  const h=location.hash.slice(1);if(h&&ads.some(a=>a.id===h))openDetail(h)})();
