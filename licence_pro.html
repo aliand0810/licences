@@ -767,6 +767,9 @@ kbd{display:inline-block;padding:2px 7px;border-radius:6px;border:1px solid var(
     <div class="card"><h3>🏷️ Annonces à valider <span style="display:flex;gap:6px;margin-left:auto"><a class="ghost sm" href="annonces/" target="_blank" style="text-decoration:none">Ouvrir le site ↗</a><button class="ghost sm" onclick="loadAnn().then(()=>toast('↻ Annonces actualisées'))">↻</button></span></h3>
       <p class="hint">Annonces déposées sur Maison des Annonces. Rien n'est visible sur le site tant que tu n'as pas autorisé la publication. Les coordonnées du vendeur ne s'affichent que si tu choisis « Publier + coordonnées ».</p>
       <div id="annList"></div></div>
+    <div class="card" style="margin-top:16px"><h3>💬 Messages des acheteurs <span id="annMsgN" style="margin-left:auto"></span></h3>
+      <p class="hint">Messages envoyés depuis les annonces. Le chiffre rouge indique les messages non lus.</p>
+      <div id="annMsg"></div></div>
     <div class="card" style="margin-top:16px"><h3>👤 Comptes membres <span style="margin-left:auto;font-weight:400;opacity:.7" id="annMbN"></span></h3>
       <p class="hint">Inscriptions et demandes de nouveau mot de passe envoyées depuis le site. Aucune licence à générer : un clic suffit.</p>
       <div id="annMb"></div></div>
@@ -1769,7 +1772,7 @@ let ANNW=[],ANNON=[];
 const ANCAT={auto:'🚗 Voiture',moto:'🏍 Moto',immo:'🏠 Immobilier',tech:'📱 High-Tech',maison:'🛋 Maison',mode:'👜 Mode',loisirs:'🎮 Loisirs',promo:'🔥 Promotion',autre:'📦 Autre'};
 const annEur=n=>Number(n||0).toLocaleString('fr-FR',{style:'currency',currency:'EUR',maximumFractionDigits:0});
 async function annGet(p){const t=await fbTok(),r=await fetch(`${FB()}/${p}.json?auth=${t}&t=${Date.now()}`);if(r.status===401||r.status===403)throw new Error('Règles Firebase à republier (nœuds « annonces »)');if(!r.ok)throw new Error('Firebase '+r.status);return await r.json()||{}}
-async function loadAnn(){loadAnnMb();try{const w=await annGet('annoncesWait'),o=await fetch(`${FB()}/annonces.json?t=${Date.now()}`).then(r=>r.ok?r.json():{})||{};
+async function loadAnn(){loadAnnMb();loadAnnMsg();try{const w=await annGet('annoncesWait'),o=await fetch(`${FB()}/annonces.json?t=${Date.now()}`).then(r=>r.ok?r.json():{})||{};
   ANNW=Object.entries(w).map(([id,a])=>({...a,id})).sort((a,b)=>b.t-a.t);ANNON=Object.entries(o).map(([id,a])=>({...a,id})).sort((a,b)=>b.t-a.t);renderAnn()}
  catch(e){$('annList').innerHTML=`<div class="empty">⚠️ ${esc(e.message)}</div>`}}
 function annCard(a,on){const p=a.priv||a.contact||{},img=(a.imgs||[])[0];
@@ -1781,12 +1784,23 @@ function annCard(a,on){const p=a.priv||a.contact||{},img=(a.imgs||[])[0];
    <div style="font-size:.85rem;opacity:.8;margin-top:6px;white-space:pre-wrap;max-height:90px;overflow:auto">${esc(a.desc||'')}</div>`}
    <div class="acts2" style="margin-top:10px">${on?`<button class="ghost sm danger" onclick="annDel('${a.id}')">🗑️ Retirer du site</button>`:`<button class="btn sm" onclick="annOk('${a.id}',true)">✅ Publier + coordonnées</button><button class="btn sm" onclick="annOk('${a.id}',false)">✅ Publier (coordonnées masquées)</button><button class="ghost sm danger" onclick="annNo('${a.id}')">❌ Refuser</button>`}</div>
   </div></div>`}
-function renderAnn(){const n=ANNW.length;$('nbAnn').textContent=n||'';$('annList').innerHTML=n?ANNW.map(a=>annCard(a,false)).join(''):'<div class="empty">📭 Aucune annonce en attente</div>';
+function renderAnn(){const n=ANNW.length;annBadge();$('annList').innerHTML=n?ANNW.map(a=>annCard(a,false)).join(''):'<div class="empty">📭 Aucune annonce en attente</div>';
  $('annOnN').textContent=ANNON.length+' en ligne';$('annOn').innerHTML=ANNON.length?ANNON.map(a=>annCard(a,true)).join(''):'<div class="empty">Aucune annonce publiée</div>'}
-let ANNMB=[];
+let ANNMB=[],ANNMBW=0,ANNMSG=[];
+const annRed=n=>n?`<span style="background:#ef4444;color:#fff;border-radius:99px;min-width:22px;height:22px;padding:0 7px;display:inline-grid;place-items:center;font-size:.75rem;font-weight:800">${n}</span>`:'';
+function annBadge(){const u=ANNMSG.reduce((a,x)=>a+x.unread,0);$('nbAnn').textContent=(ANNW.length+ANNMBW+u)||''}
+async function loadAnnMsg(){try{const d=await annGet('support');
+  ANNMSG=Object.entries(d).filter(([,x])=>x&&x.produit==='Annonces').map(([tid,x])=>{const ms=[{from:'client',t:x.t},...Object.values(x.msgs||{})].sort((a,b)=>a.t-b.t);
+   const seen=x.seenAdmin||0,lastSav=Math.max(0,...ms.filter(m=>m.from==='sav').map(m=>m.t)),ref=Math.max(seen,lastSav);
+   return{...x,tid,last:ms.at(-1).t,unread:ms.filter(m=>m.from==='client'&&m.t>ref).length}}).sort((a,b)=>b.last-a.last);
+  const u=ANNMSG.reduce((a,x)=>a+x.unread,0);$('annMsgN').innerHTML=annRed(u);annBadge();
+  $('annMsg').innerHTML=ANNMSG.length?ANNMSG.map(x=>`<div class="card" style="padding:12px 14px;margin-top:8px;cursor:pointer;display:flex;gap:10px;align-items:center;${x.unread?'border-color:#ef4444':''}" onclick="annOpenMsg('${x.tid}')">
+   <div style="flex:1;min-width:0"><b>${esc((x.sujet||'').replace(/^Annonce : /,''))}</b><div style="opacity:.75;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">✉ ${esc(x.email)} · ${fmtD(new Date(x.last))}</div></div>${annRed(x.unread)||'<span style="opacity:.5">›</span>'}</div>`).join(''):'<div class="empty">📭 Aucun message</div>'}
+ catch(e){$('annMsg').innerHTML=`<div class="empty">⚠️ ${esc(e.message)}</div>`}}
+async function annOpenMsg(tid){try{await fbPut(`support/${tid}/seenAdmin`,Date.now())}catch(e){}await openSup(tid);loadAnnMsg()}
 async function loadAnnMb(){try{const d=await annGet('requests');ANNMB=Object.entries(d).map(([rid,r])=>({...r,rid})).filter(r=>r.produit==='Annonces'&&(r.type==='compte'||r.type==='mdp')).sort((a,b)=>b.t-a.t);renderAnnMb()}catch(e){$('annMb').innerHTML=`<div class="empty">⚠️ ${esc(e.message)}</div>`}}
 function renderAnnMb(){const w=ANNMB.filter(r=>r.statut==='attente'),ok=ANNMB.filter(r=>r.type==='compte'&&r.statut==='accordee');
- $('annMbN').textContent=ok.length+' membre(s) · '+w.length+' en attente';const nb=$('nbAnn');nb.textContent=(ANNW.length+w.length)||'';
+ $('annMbN').textContent=ok.length+' membre(s) · '+w.length+' en attente';ANNMBW=w.length;annBadge();
  const row=(r,btns)=>`<div class="card" style="padding:12px 14px;margin-top:8px"><b>${r.type==='mdp'?'🔑 Nouveau mot de passe':'🆕 Inscription'} — ${esc(r.nom||r.email)}</b>
   <div style="opacity:.75;font-size:.85rem;margin:3px 0">✉ ${esc(r.email)}${r.tel?' · 📞 '+esc(r.tel):''}${r.ville?' · 📍 '+esc(r.ville):''} · ${fmtD(new Date(r.t))}</div>
   ${r.message&&r.message.includes('\n\n')?`<div style="font-size:.85rem;opacity:.85;white-space:pre-wrap">${esc(r.message.split('\n\n').slice(1).join('\n\n'))}</div>`:''}<div class="acts2" style="margin-top:8px">${btns}</div></div>`;
