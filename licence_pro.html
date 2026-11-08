@@ -626,6 +626,10 @@ html[data-light] .ax-vp.rv{color:#0f766e}
 .fch{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:11px;background:rgba(0,0,0,.18);border:1px solid var(--bd);color:inherit;text-decoration:none;font-size:.82rem;max-width:300px}
 .fch:hover{border-color:var(--ac,#6366f1)}.fch-i{font-size:1.3rem}.fch-t{min-width:0;flex:1;display:flex;flex-direction:column}
 .fch-t b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fch-t small{opacity:.7;font-size:.72rem}
+.gdp{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;font-size:.75rem;font-weight:700;border:1px solid var(--bd);cursor:pointer;background:transparent;color:inherit;margin-right:6px}
+.gdp.ok{border-color:rgba(16,185,129,.5);color:#10b981}.gdp.ko{border-color:rgba(245,158,11,.5);color:#f59e0b}
+.gd-st{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0}.gd-st div{padding:10px 12px;border:1px solid var(--bd);border-radius:12px}.gd-st b{display:block;font-size:1.15rem}.gd-st small{opacity:.7}
+.fch.cloud .fch-i::after{content:'☁️';font-size:.6rem;margin-left:-4px;vertical-align:top}
 .att-i img{width:100%;height:100%;object-fit:cover;cursor:zoom-in}
 .att-i button{position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;border:0;background:rgba(0,0,0,.65);color:#fff;font-size:.7rem;padding:0}
 .att-th{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.att-th img{width:74px;height:54px;object-fit:cover;border-radius:8px;border:1px solid var(--bd);cursor:zoom-in}
@@ -757,7 +761,7 @@ kbd{display:inline-block;padding:2px 7px;border-radius:6px;border:1px solid var(
     <div class="card"><h3>📨 Demandes de licence <span style="display:flex;gap:6px;margin-left:auto"><button class="ghost sm danger" onclick="openRefuse()">🚫 Refuser une demande reçue ailleurs</button><button class="ghost sm" onclick="loadReq().then(()=>toast('↻ Demandes actualisées'))">↻</button></span></h3>
       <p class="hint">Les clients font leur demande depuis l'écran de licence de tes logiciels. « Accorder » ouvre la création de licence : à la génération, la clé est envoyée et activée automatiquement sur l'appareil du client.</p>
       <div id="reqList"></div></div>
-    <div class="card" style="margin-top:16px"><h3>🛟 Demandes SAV <button class="ghost sm" style="margin-left:auto" onclick="loadSup().then(()=>toast('↻ SAV actualisé'))">↻</button></h3>
+    <div class="card" style="margin-top:16px"><h3>🛟 Demandes SAV <span id="gdPill" style="margin-left:auto"></span><button class="ghost sm" onclick="loadSup().then(()=>toast('↻ SAV actualisé'))">↻</button></h3>
       <p class="hint">Demandes d'assistance envoyées par les clients depuis le bouton 🛟 SAV de leurs logiciels.</p>
       <div id="supList"></div></div>
   </section>
@@ -880,6 +884,7 @@ kbd{display:inline-block;padding:2px 7px;border-radius:6px;border:1px solid var(
         <div class="g2"><div><label>WhatsApp (numéro international)</label><input id="svWa" placeholder="33612345678"></div><div><label>Horaires</label><input id="svH" placeholder="Lun–ven, 9 h–18 h"></div></div>
         <label>Message d'accueil</label><textarea id="svMsg" rows="3" placeholder="Notre équipe vous répond sous 24 h ouvrées."></textarea>
       </div>
+      <div class="card" style="grid-column:1/-1" id="gdCard"></div>
       <div class="card" style="grid-column:1/-1"><h3>🛡️ Protection anti-copie <button class="ghost sm" id="domSave" onclick="saveDomaines()">💾 Enregistrer</button></h3>
         <p class="hint">Les logiciels ne fonctionnent que sur les domaines listés ici. Une copie déposée sur un autre site affiche « Copie non autorisée » et reste bloquée. Un domaine par ligne (ex. <b>aliand0810.github.io</b> ou <b>*.covo-trv.fr</b>). Vide = aucune restriction.</p>
         <textarea id="domBox" rows="4" placeholder="aliand0810.github.io&#10;*.covo-trv.fr" style="font-family:'JetBrains Mono',monospace;font-size:.82rem"></textarea>
@@ -1427,7 +1432,7 @@ function noteCard(n,i=0){const ic=NTYPES[n.type]||'📝',pc={Haute:'#f59e0b',Urg
   const due=n.due&&n.status!=='done'?`<span class="badge ${isDue(n)?'b-ko':'b-w'}">📌 ${isDue(n)?'À relancer depuis le':'Rappel le'} ${dfr(n.due)}</span>`:'';
   return `<article class="note${n.status==='done'?' done':''}" style="--nc:${pc};animation-delay:${Math.min(i,10)*.03}s">
     <div class="nh"><span class="nic">${ic}</span><div class="nm"><b>${esc(n.title||n.type)}</b><small>${esc(n.type)}${n.client||n.email?' · 👤 '+esc(n.client||n.email):''}${n.prod?' · '+pi+' '+esc(n.prod):''} · ${fmtD(new Date(n.t))}${n.u&&n.u-n.t>6e4?' · modifiée':''}</small></div></div>
-    ${n.body?`<div class="nb2" onclick="this.classList.toggle('open')">${esc(n.body)}</div>`:''}${thumbs(n.att)}${fileChips(n.attf)}
+    ${n.body?`<div class="nb2" onclick="this.classList.toggle('open')">${esc(n.body)}</div>`:''}${thumbs(n.att)}${fileChips(n.attf)}${driveHTML(n.drive)}
     <div class="nf">${n.prio&&n.prio!=='Normale'?`<span class="badge" style="background:color-mix(in srgb,${pc} 20%,transparent);color:${pc}">${n.prio==='Urgente'?'🔴':'🟠'} ${n.prio}</span>`:''}${due}${n.motif?`<span class="badge b-ko">${esc(n.motif)}</span>`:''}${n.status==='done'?'<span class="badge b-ok">✓ Traitée</span>':''}
       <span class="nact"><button class="ghost sm" title="${n.status==='done'?'Rouvrir':'Marquer comme traitée'}" onclick="toggleNote('${n.id}')">${n.status==='done'?'↺':'✓'}</button><button class="ghost sm" title="Modifier" onclick="openNote('${n.id}')">✏️</button><button class="ghost sm" title="Exporter en PDF / imprimer" onclick="printNote('${n.id}')">🖨</button><button class="ghost sm" title="Supprimer" onclick="delNote('${n.id}')">🗑</button></span></div></article>`}
 function renderNotes(){const due=NOTES.filter(isDue).length;if($('nbNotes'))$('nbNotes').textContent=due||'';
@@ -1566,7 +1571,7 @@ async function loadSup(){SUP_ERR='';
   try{const t=await fbTok(),r=await fetch(`${FB()}/support.json?auth=${t}&t=${Date.now()}`);
     if(r.status===401)throw new Error('Règles Firebase à republier (nœud « support »)');if(!r.ok)throw new Error('Firebase '+r.status);
     SUP=Object.entries(await r.json()||{}).map(([tid,v])=>({tid,...v})).sort((a,b)=>(a.statut==='traite')-(b.statut==='traite')||b.t-a.t)}catch(e){SUP_ERR=e.message}
-  renderSup()}
+  renderSup();gdSoon()}
 function renderSup(){const n=SUP.filter(x=>x.statut!=='traite'&&supUnread(x)).length;if($('nbReq')){const rq=REQ.filter(r=>r.statut==='attente').length;$('nbReq').textContent=(rq+n)||''}
   if(!$('supList'))return;
   if(SUP_ERR){$('supList').innerHTML=`<div class="al" style="border-color:rgba(245,158,11,.45);background:rgba(245,158,11,.08)"><div class="pi" style="--pc:#f59e0b">🔥</div><div><b>SAV indisponible</b><small>${esc(SUP_ERR)}. Les règles à jour sont dans Réglages → 📜 Règles Firebase.</small></div></div>`;return}
@@ -1575,7 +1580,7 @@ function renderSup(){const n=SUP.filter(x=>x.statut!=='traite'&&supUnread(x)).le
       <b>${esc(x.sujet||'Demande SAV')} · ${esc(x.produit)}${x.module?' · '+esc(x.module):''}<span class="rqst ${x.statut==='traite'?'accordee':x.statut==='repondu'?'':'attente'}">${x.statut==='traite'?'Traitée':x.statut==='repondu'?'Répondu':supUnread(x)?'Nouveau message':'En attente'}</span></b>
       <small>✉️ ${esc(x.email||'—')}${x.tel?' · 📞 '+esc(x.tel):''} · ${fmtD(new Date(x.t))} · ${u.ic} ${esc(u.txt)}</small>
       ${l&&!savActive(l)?'<small style="color:#fbbf24">⚠️ Le SAV de ce client n\'est plus actif</small>':''}
-      <div class="rqm">${esc((supMsgs(x).slice(-1)[0]||{}).text||x.message||'')}</div><small>${supMsgs(x).length} message${supMsgs(x).length>1?'s':''}${(()=>{const n=supMsgs(x).reduce((a,m)=>a+(Array.isArray(m.img)?m.img.length:0)+(Array.isArray(m.files)?m.files.length:0),0);return n?` · 📎 ${n} pièce${n>1?'s':''} jointe${n>1?'s':''}`:''})()} · dernier ${fmtD(new Date((supMsgs(x).slice(-1)[0]||x).t))}</small>
+      <div class="rqm">${esc((supMsgs(x).slice(-1)[0]||{}).text||x.message||'')}</div><small>${supMsgs(x).length} message${supMsgs(x).length>1?'s':''}${(()=>{const n=supMsgs(x).reduce((a,m)=>a+(Array.isArray(m.img)?m.img.length:0)+(Array.isArray(m.files)?m.files.length:0)+(Array.isArray(m.drive)?m.drive.length:0),0);return n?` · 📎 ${n} pièce${n>1?'s':''} jointe${n>1?'s':''}`:''})()} · dernier ${fmtD(new Date((supMsgs(x).slice(-1)[0]||x).t))}</small>
       <div class="acts2"><button class="btn sm" onclick="openSup('${x.tid}')">💬 Ouvrir l'échange${supUnread(x)?' · '+supUnread(x)+' nouveau'+(supUnread(x)>1?'x':''):''}</button>${x.statut!=='traite'?`<button class="ghost sm" onclick="doneSup('${x.tid}')">✓ Traitée</button>`:''}<button class="ghost sm" onclick="noteSup('${x.tid}')">📝 Note</button><button class="ghost sm" onclick="delSup('${x.tid}')">🗑️</button></div></div></div>`}).join(''):'<div class="empty sm">📭 Aucune demande SAV</div>'}
 function replySup(tid){const x=SUP.find(k=>k.tid===tid);if(!x)return;const sign=localStorage.getItem('licSign')||'ALIANDpro';
   mailTo(x.email,'Re : '+(x.sujet||'Votre demande SAV')+' — '+x.produit,`Bonjour,\n\nNous avons bien reçu votre demande concernant ${x.produit} et nous vous en remercions.\n\n[Votre réponse]\n\nNous restons à votre disposition pour toute question complémentaire.\n\nCordialement,\n${sign}\n\n— Votre message du ${fmtD(new Date(x.t))} —\n${x.message||''}`)}
@@ -1619,7 +1624,7 @@ async function doImport(){const parts=$('iCode').value.trim().replace(/\s+/g,'')
 
 
 /* ── Conversation SAV (dans l'application + WhatsApp / e-mail) ── */
-const supMsgs=x=>[{from:'client',text:x.message,t:x.t,img:x.img,files:x.files},...Object.values(x.msgs||{})].filter(m=>m&&m.text).sort((a,b)=>a.t-b.t);
+const supMsgs=x=>[{from:'client',text:x.message,t:x.t,img:x.img,files:x.files,drive:x.drive},...Object.values(x.msgs||{})].filter(m=>m&&m.text).sort((a,b)=>a.t-b.t);
 const supUnread=x=>supMsgs(x).filter(m=>m.from==='client'&&m.t>(x.seenAdmin||0)).length;
 const waNum=v=>{let d=String(v||'').replace(/[^\d]/g,'');if(/^0\d{9}$/.test(d))d='33'+d.slice(1);return d};
 let SUPT=null,supPoll=null;
@@ -1628,7 +1633,7 @@ async function refreshSup(first){try{const t=await fbTok(),r=await fetch(`${FB()
   const i=SUP.findIndex(k=>k.tid===SUPT);if(i>=0)SUP[i]=x;
   const m=supMsgs(x),wa=waNum(x.tel),l=LIC.find(k=>k.email===x.email&&k.produit===x.produit);
   const html=`<div class="md-h"><div class="pi" style="--pc:${pm(x.produit)[1]}">${pm(x.produit)[0]}</div><div><h2>${esc(x.sujet||'Demande SAV')}</h2><span>${esc(x.email||'—')}${x.tel?' · 📞 '+esc(x.tel):''} · ${esc(x.produit)}${x.module?' · '+esc(x.module):''}</span></div><button class="x" onclick="closeModal()">✕</button></div>
-    <div class="md-b chatB" id="supTh">${m.map(k=>{const me=k.from==='sav';return `<div class="bub ${me?'me':''}"><div>${esc(k.text)}${thumbs(k.img,'att-th bub-img')}${fileChips(k.files)}</div><small>${me?'🛟 Toi':k.who==='vendeur'?'🏷️ Vendeur':'👤 Client'}${k.via&&k.via!=='app'?' · via '+({whatsapp:'WhatsApp','e-mail':'e-mail'}[k.via]||esc(k.via)):''} · ${fmtD(new Date(k.t))}</small></div>`}).join('')}
+    <div class="md-b chatB" id="supTh">${m.map(k=>{const me=k.from==='sav';return `<div class="bub ${me?'me':''}"><div>${esc(k.text)}${thumbs(k.img,'att-th bub-img')}${fileChips(k.files)}${driveHTML(k.drive,'att-th bub-img')}</div><small>${me?'🛟 Toi':k.who==='vendeur'?'🏷️ Vendeur':'👤 Client'}${k.via&&k.via!=='app'?' · via '+({whatsapp:'WhatsApp','e-mail':'e-mail'}[k.via]||esc(k.via)):''} · ${fmtD(new Date(k.t))}</small></div>`}).join('')}
       ${l&&!savActive(l)?'<p class="hint" style="color:#fbbf24;text-align:center">⚠️ Le SAV de ce client n\'est plus actif</p>':''}</div>
     <div class="chatF"><textarea id="supRep" rows="3" placeholder="Ta réponse au client…"></textarea>${attBox('sup')}
       <div class="chatA"><button class="btn" onclick="sendSup('app')">📨 Envoyer dans l'app</button>${wa?`<button class="ghost" onclick="sendSup('whatsapp')">💬 + WhatsApp</button>`:''}${x.email?`<button class="ghost" onclick="sendSup('e-mail')">✉️ + E-mail</button>`:''}
@@ -1643,7 +1648,7 @@ async function sendSup(via){const imgs=(ATT.sup||[]).slice(),fls=(ATTF.sup||[]).
     const full=`Bonjour,\n\n${v}\n\nCordialement,\n${sign}\n\n(Réponse à votre demande SAV « ${x.sujet||''} » — ${x.produit||''}. Vous pouvez aussi répondre depuis le bouton 🛟 SAV de votre logiciel.)`;
     if(via==='whatsapp')window.open('https://wa.me/'+waNum(x.tel)+'?text='+encodeURIComponent(full),'_blank');
     if(via==='e-mail')mailTo(x.email,'Re : '+(x.sujet||'Votre demande SAV')+' — '+(x.produit||''),full);
-    $('supRep').value='';toast(via==='app'?'📨 Réponse envoyée — le client la voit dans son logiciel':'📨 Envoyé dans l\'app + '+(via==='whatsapp'?'WhatsApp':'e-mail'));await refreshSup(false);loadSup()}catch(e){toast(e.message.includes('401')?'Règles Firebase à republier (conversation SAV)':e.message,'ko')}}
+    $('supRep').value='';gdSoon();toast(via==='app'?'📨 Réponse envoyée — le client la voit dans son logiciel':'📨 Envoyé dans l\'app + '+(via==='whatsapp'?'WhatsApp':'e-mail'));await refreshSup(false);loadSup()}catch(e){toast(e.message.includes('401')?'Règles Firebase à republier (conversation SAV)':e.message,'ko')}}
 async function setSupSt(st){try{await fbPut(`support/${SUPT}/statut`,st);toast(st==='traite'?'✓ Demande résolue':'↺ Demande rouverte');await refreshSup(false);loadSup()}catch(e){toast(e.message,'ko')}}
 
 
@@ -2438,6 +2443,87 @@ function imgView(key,i,list){const A=list||ATT[key]||[];let k=i;const o=document
   draw();o.onclick=e=>{const a=e.target.dataset.a;if(a==='p'){k=(k-1+A.length)%A.length;draw()}else if(a==='n'){k=(k+1)%A.length;draw()}else if(a==='x'||e.target===o)o.remove()};document.body.appendChild(o)}
 window._imgSets={};const imgSet=A=>{const id='s'+Math.random().toString(36).slice(2,8);window._imgSets[id]=A;return id};
 const thumbs=(A,cls)=>{A=(A||[]).filter(isImg);if(!A.length)return'';const id=imgSet(A);return `<div class="${cls||'att-th'}">${A.map((u,i)=>`<img src="${u}" alt="" onclick="event.stopPropagation();imgView(null,${i},window._imgSets['${id}'])">`).join('')}</div>`};
+
+// ══ ☁️ Stockage Google Drive des pièces jointes ══
+// Les clients envoient leurs pièces jointes dans Firebase (aucun secret dans leurs logiciels).
+// Dès que Licence Pro est ouvert et connecté à TON Google Drive, elles sont déplacées automatiquement
+// dans le dossier « Licence Pro — Pièces jointes », et Firebase ne garde qu'un lien léger.
+const GD={tok:null,exp:0,busy:false,timer:null,last:null,err:''};
+const gdGet=(k,d)=>{try{const v=localStorage.getItem('gd_'+k);return v===null?d:v}catch(e){return d}},gdSet=(k,v)=>{try{localStorage.setItem('gd_'+k,v)}catch(e){}};
+const gdCid=()=>gdGet('cid','')||GDEF['COVO Pro']||Object.values(GDEF||{}).find(x=>GCID_RE.test(x||''))||'';
+const gdAuto=()=>gdGet('auto','1')==='1',gdShare=()=>gdGet('share','1')==='1';
+try{const t=JSON.parse(sessionStorage.getItem('gdTok')||'null');if(t&&t.exp>Date.now()){GD.tok=t.t;GD.exp=t.exp}}catch(e){}
+const gdOk=()=>!!GD.tok&&GD.exp>Date.now()+60000;
+const GDID=/^[\w-]{10,120}$/;
+const gdThumb=id=>'https://drive.google.com/thumbnail?id='+id+'&sz=w1600',gdView=id=>'https://drive.google.com/file/d/'+id+'/view';
+const driveSafe=A=>(Array.isArray(A)?A:[]).filter(x=>x&&GDID.test(x.id||''));
+function driveHTML(A,cls){A=driveSafe(A);if(!A.length)return'';const im=A.filter(x=>x.img),fl=A.filter(x=>!x.img);let h='';
+  if(im.length){const id=imgSet(im.map(x=>gdThumb(x.id)));h+=`<div class="${cls||'att-th'}">${im.map((x,i)=>`<img src="${gdThumb(x.id)}" alt="" loading="lazy" referrerpolicy="no-referrer" title="☁️ Google Drive" onclick="event.stopPropagation();imgView(null,${i},window._imgSets['${id}'])">`).join('')}</div>`}
+  if(fl.length)h+=`<div class="fch-l">${fl.map(x=>`<a class="fch cloud" href="${gdView(x.id)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Ouvrir sur Google Drive"><span class="fch-i">${fIcon(x.n,x.t)}</span><span class="fch-t"><b>${esc(x.n||'fichier')}</b><small>${fSize(+x.s||0)} · Google Drive</small></span>↗</a>`).join('')}</div>`;
+  return h}
+let gisP=null;const loadGis=()=>window.google&&google.accounts&&google.accounts.oauth2?Promise.resolve():gisP||(gisP=new Promise((ok,ko)=>{const sc=document.createElement('script');sc.src='https://accounts.google.com/gsi/client';sc.onload=ok;sc.onerror=()=>{gisP=null;ko(new Error('Google indisponible'))};document.head.appendChild(sc)}));
+async function gdConnect(){const inp=$('gdCidIn');if(inp&&inp.value.trim()){if(!GCID_RE.test(inp.value.trim()))return toast('Client ID invalide — format …apps.googleusercontent.com','ko');gdSet('cid',inp.value.trim())}
+  const cid=gdCid();if(!cid)return toast('Indique ton Client ID Google (Réglages → ☁️ Google Drive)','ko');
+  try{await loadGis()}catch(e){return toast(e.message,'ko')}
+  google.accounts.oauth2.initTokenClient({client_id:cid,scope:'https://www.googleapis.com/auth/drive.file',callback:r=>{
+    if(!r||r.error){GD.err=(r&&r.error)||'refus';gdUI();return toast('Connexion Drive refusée : '+GD.err,'ko')}
+    GD.tok=r.access_token;GD.exp=Date.now()+((+r.expires_in||3600)-60)*1000;GD.err='';try{sessionStorage.setItem('gdTok',JSON.stringify({t:GD.tok,exp:GD.exp}))}catch(e){}
+    gdSet('was','1');toast('☁️ Google Drive connecté');gdUI();gdArchive(true)}}).requestAccessToken()}
+function gdDisconnect(){if(GD.tok&&window.google&&google.accounts)try{google.accounts.oauth2.revoke(GD.tok,()=>{})}catch(e){}
+  GD.tok=null;GD.exp=0;gdSet('was','0');try{sessionStorage.removeItem('gdTok')}catch(e){}gdUI();toast('Google Drive déconnecté')}
+async function gdApi(url,opt={}){if(!gdOk())throw new Error('DRIVE_AUTH');const r=await fetch(url,{...opt,headers:{...(opt.headers||{}),Authorization:'Bearer '+GD.tok}});
+  if(r.status===401){GD.tok=null;GD.exp=0;try{sessionStorage.removeItem('gdTok')}catch(e){}gdUI();throw new Error('DRIVE_AUTH')}
+  if(!r.ok)throw new Error('Drive '+r.status+' '+(await r.text()).slice(0,140));return r.status===204?null:r.json()}
+async function gdFolder(){let id=gdGet('folder','');
+  if(id){try{const f=await gdApi(`https://www.googleapis.com/drive/v3/files/${id}?fields=id,trashed`);if(f&&!f.trashed)return id}catch(e){if(e.message==='DRIVE_AUTH')throw e}}
+  const f=await gdApi('https://www.googleapis.com/drive/v3/files?fields=id',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:'Licence Pro — Pièces jointes',mimeType:'application/vnd.google-apps.folder'})});
+  gdSet('folder',f.id);return f.id}
+async function gdUpload(folder,name,mime,data,desc){const blob=await (await fetch(data)).blob(),fd=new FormData();
+  fd.append('metadata',new Blob([JSON.stringify({name,parents:[folder],description:desc||''})],{type:'application/json'}));fd.append('file',new Blob([blob],{type:mime||blob.type||'application/octet-stream'}));
+  const f=await gdApi('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,size',{method:'POST',body:fd});
+  if(gdShare())try{await gdApi(`https://www.googleapis.com/drive/v3/files/${f.id}/permissions?fields=id`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:'reader',type:'anyone'})})}catch(e){if(e.message==='DRIVE_AUTH')throw e}
+  return {id:f.id,s:+f.size||blob.size}}
+// déplace les images/fichiers d'un objet (message, note) vers Drive → renvoie le nouveau tableau « drive » ou null
+async function gdMove(folder,o,label,st){const im=(Array.isArray(o.img)?o.img:Array.isArray(o.att)?o.att:[]).filter(isImg),fl=(Array.isArray(o.files)?o.files:Array.isArray(o.attf)?o.attf:[]).map(fSafe).filter(Boolean);
+  if(!im.length&&!fl.length)return null;const out=driveSafe(o.drive).slice(),d=new Date(o.t||Date.now()).toISOString().slice(0,10);
+  for(let i=0;i<im.length;i++){const ext=(im[i].match(/^data:image\/(\w+)/)||[])[1]||'jpg',n=`${label} · ${d} · capture-${i+1}.${ext.replace('jpeg','jpg')}`,u=await gdUpload(folder,n,'image/'+ext,im[i],label);out.push({id:u.id,n,t:'image/'+ext,s:u.s,img:1});st.n++;st.b+=u.s}
+  for(const x of fl){const n=`${label} · ${d} · ${x.n}`,u=await gdUpload(folder,n,x.t,x.d,label);out.push({id:u.id,n:x.n,t:x.t,s:u.s});st.n++;st.b+=u.s}
+  return out}
+function gdSoon(){gdUI();clearTimeout(GD.timer);GD.timer=setTimeout(()=>gdArchive(false),1500)}
+async function gdArchive(manual){if(GD.busy)return;if(!gdOk()){if(manual)toast('Connecte d\'abord Google Drive','ko');gdUI();return}if(!manual&&!gdAuto())return;
+  GD.busy=true;gdUI();const st={n:0,b:0};
+  try{const folder=await gdFolder(),t=await fbTok();
+    const sup=await (await fetch(`${FB()}/support.json?auth=${t}&t=${Date.now()}`)).json()||{};
+    for(const[tid,x]of Object.entries(sup)){if(!x)continue;const lab=`SAV ${x.produit||''} · ${x.email||''}`.replace(/[\\/:*?"<>|]/g,'_');
+      const dr=await gdMove(folder,x,lab,st);if(dr){await fbPut(`support/${tid}/drive`,dr);await fbPut(`support/${tid}/img`,null);await fbPut(`support/${tid}/files`,null)}
+      for(const[mid,m]of Object.entries(x.msgs||{})){if(!m)continue;const d2=await gdMove(folder,m,lab+(m.from==='sav'?' · réponse':''),st);
+        if(d2){const{img:_i,files:_f,...rest}=m;await fbPut(`support/${tid}/msgs/${mid}`,{...rest,drive:d2})}}}
+    let notes=null;try{const r=await fetch(`${FB()}/crm/notes.json?auth=${t}&t=${Date.now()}`);if(r.ok)notes=await r.json()}catch(e){}
+    for(const[id,n]of Object.entries(notes||{})){if(!n)continue;const d3=await gdMove(folder,n,`Note ${n.client||n.email||''} · ${n.title||''}`.replace(/[\\/:*?"<>|]/g,'_').slice(0,80),st);
+      if(d3){const{att:_a,attf:_b,...rest}=n;await fbPut('crm/notes/'+id,{...rest,drive:d3})}}
+    GD.err='';const tot=JSON.parse(gdGet('stats','{"n":0,"b":0}'));tot.n+=st.n;tot.b+=st.b;tot.last=Date.now();gdSet('stats',JSON.stringify(tot));GD.last=st;
+    if(st.n){toast(`☁️ ${st.n} pièce${st.n>1?'s':''} jointe${st.n>1?'s':''} déplacée${st.n>1?'s':''} sur Google Drive (${fSize(st.b)})`);loadSup();if(typeof loadNotes==='function')loadNotes()}
+    else if(manual)toast('☁️ Rien à déplacer — tout est déjà sur Google Drive')}
+  catch(e){GD.err=e.message==='DRIVE_AUTH'?'Session Google expirée':e.message;if(manual||e.message!=='DRIVE_AUTH')toast('☁️ '+GD.err,'ko')}
+  finally{GD.busy=false;gdUI()}}
+function gdUI(){const ok=gdOk(),was=gdGet('was','0')==='1',p=$('gdPill');
+  if(p)p.innerHTML=ok?`<button class="gdp ok" onclick="gdArchive(true)" title="Pièces jointes stockées automatiquement sur Google Drive — cliquer pour archiver maintenant">${GD.busy?'⏳ Envoi vers Drive…':'☁️ Drive connecté'}</button>`
+    :gdCid()?`<button class="gdp ko" onclick="gdConnect()" title="Les pièces jointes restent dans Firebase tant que Drive n'est pas connecté">☁️ ${was?'Reconnecter Drive':'Connecter Drive'}</button>`:'';
+  const c=$('gdCard');if(!c)return;const tot=JSON.parse(gdGet('stats','{"n":0,"b":0}')),fo=gdGet('folder','');
+  c.innerHTML=`<h3>☁️ Stockage Google Drive des pièces jointes ${ok?'<span class="rqst accordee" style="margin-left:8px">Connecté</span>':'<span class="rqst attente" style="margin-left:8px">Non connecté</span>'}</h3>
+    <p class="hint">Captures d'écran, PDF, Word, Excel… envoyés au SAV ou ajoutés aux notes sont <b>déplacés automatiquement</b> dans ton Google Drive (dossier « Licence Pro — Pièces jointes ») dès que Licence Pro est ouvert. Firebase ne garde qu'un lien léger : la base reste rapide et gratuite.</p>
+    <p class="hint" style="color:var(--mu)">ℹ️ Une <b>clé API</b> Google ne permet que de <i>lire</i> des fichiers publics : pour <i>écrire</i> dans ton Drive, Google exige une connexion à ton compte (OAuth) avec ton <b>Client ID</b>. Elle dure 1 h ; au-delà, un clic sur « Reconnecter Drive » suffit. Rien n'est jamais mis dans le code de tes clients.</p>
+    <label>Client ID Google (OAuth)</label><input id="gdCidIn" value="${esc(gdGet('cid',''))}" placeholder="${esc(gdCid()||'123456-abc.apps.googleusercontent.com')}" autocomplete="off" spellcheck="false">
+    <label style="display:flex;gap:8px;align-items:center;text-transform:none;letter-spacing:0;margin-top:12px"><input type="checkbox" style="width:18px;height:18px" ${gdAuto()?'checked':''} onchange="gdSet('auto',this.checked?'1':'0');gdUI()"> Déplacer automatiquement les pièces jointes vers Drive</label>
+    <label style="display:flex;gap:8px;align-items:center;text-transform:none;letter-spacing:0"><input type="checkbox" style="width:18px;height:18px" ${gdShare()?'checked':''} onchange="gdSet('share',this.checked?'1':'0')"> Le client garde l'accès à ses fichiers (partage « toute personne ayant le lien »)</label>
+    <div class="gd-st"><div><small>Pièces déplacées</small><b>${tot.n||0}</b></div><div><small>Espace libéré dans Firebase</small><b>${fSize(tot.b||0)}</b></div><div><small>Dernier passage</small><b>${tot.last?fmtD(new Date(tot.last)):'—'}</b></div></div>
+    ${GD.err?`<p class="hint" style="color:#f59e0b">⚠️ ${esc(GD.err)}</p>`:''}
+    <div class="acts2">${ok?`<button class="btn sm" onclick="gdArchive(true)" ${GD.busy?'disabled':''}>${GD.busy?'⏳ Envoi en cours…':'☁️ Archiver maintenant'}</button><button class="ghost sm" onclick="gdDisconnect()">Déconnecter</button>`:`<button class="btn sm" onclick="gdConnect()">🔗 Connecter Google Drive</button>`}
+      ${fo?`<a class="ghost sm" style="text-decoration:none" target="_blank" rel="noopener" href="https://drive.google.com/drive/folders/${esc(fo)}">📂 Ouvrir le dossier</a>`:''}</div>
+    <p class="hint" style="margin-top:10px">Dans Google Cloud Console → ton Client ID → « Origines JavaScript autorisées », ajoute <b>${esc(location.origin)}</b>. L'API Google Drive doit être activée sur le projet.</p>`}
+setInterval(()=>{gdUI();if(gdOk())gdArchive(false)},5*60*1000);
+setTimeout(()=>{gdUI();if(gdCid())loadGis().catch(()=>{})},1500);
+
 // ── bouton 📸 de l'en-tête : capture rapide puis choix de l'action ──
 let QSHOT=null;
 async function quickShot(){if(document.querySelector('#mdl.on .att'))return attShot(document.querySelector('#mdl.on .att').dataset.k);
