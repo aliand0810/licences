@@ -190,6 +190,25 @@ canvas{max-height:270px}
 .mg.no{background:var(--glass);opacity:.5}.mg.no i{color:var(--tko)}
 
 /* alerts */
+.rqA{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.rqAng{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:16px;border:1.5px solid var(--bd);background:var(--glass);color:inherit;cursor:pointer;text-align:left;font:inherit;transition:border-color .2s,transform .15s,box-shadow .2s;position:relative}
+.rqAng:hover{transform:translateY(-1px)}.rqAng.on{border-color:var(--ac,#7c3aed);box-shadow:0 0 0 3px color-mix(in srgb,var(--ac,#7c3aed) 22%,transparent)}
+.rqAi{font-size:1.6rem;width:46px;height:46px;border-radius:13px;display:grid;place-items:center;background:color-mix(in srgb,var(--ac,#7c3aed) 16%,transparent);flex:none}
+.rqAt{flex:1;min-width:0}.rqAt b{display:block;font-size:1rem}.rqAt small{display:block;color:var(--mut);font-size:.78rem;margin-top:2px}
+.rqAn{font-style:normal;min-width:30px;height:30px;padding:0 9px;border-radius:999px;display:grid;place-items:center;font-weight:900;font-size:.9rem;background:#ef4444;color:#fff;box-shadow:0 4px 14px rgba(239,68,68,.45)}
+.rqAn:empty{display:none}.rqAn.z{background:transparent;color:var(--mut);box-shadow:none;border:1px solid var(--bd)}
+.rqP{display:none}.rqP.on{display:block;animation:up .3s both}
+.rqN{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;margin-bottom:12px;border:1px solid}
+.rqN.new{background:color-mix(in srgb,#f59e0b 12%,transparent);border-color:color-mix(in srgb,#f59e0b 45%,transparent)}
+.rqN.ok{background:color-mix(in srgb,#10b981 10%,transparent);border-color:color-mix(in srgb,#10b981 40%,transparent)}
+.rqN .rqNi{font-size:1.5rem}.rqN b{display:block;font-size:.98rem}.rqN small{display:block;color:var(--mut);font-size:.8rem;margin-top:2px}
+.rqN.new .rqNi{animation:rqRing 1.6s ease-in-out infinite}@keyframes rqRing{0%,60%,100%{transform:rotate(0)}10%,30%{transform:rotate(-14deg)}20%,40%{transform:rotate(14deg)}}
+.rqTb{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+.rqCh{display:flex;gap:6px;flex-wrap:wrap}.rqCh button{border:1px solid var(--bd);background:transparent;color:inherit;border-radius:999px;padding:6px 11px;font:inherit;font-size:.8rem;font-weight:700;cursor:pointer}
+.rqCh button.on{background:var(--ac,#7c3aed);border-color:transparent;color:#fff}.rqCh button i{font-style:normal;opacity:.75;margin-left:4px}
+.rqQ{flex:1;min-width:160px;max-width:280px;padding:8px 12px!important;border-radius:999px!important;font-size:.85rem}
+.rq.isnew{border-left:4px solid #f59e0b}.rqNew{display:inline-block;font-size:.62rem;font-weight:900;letter-spacing:.04em;padding:2px 7px;border-radius:999px;background:#f59e0b;color:#111;margin-right:6px;vertical-align:middle}
+@media(max-width:640px){.rqA{grid-template-columns:1fr 1fr;gap:8px}.rqAng{flex-direction:column;align-items:flex-start;gap:6px;padding:12px}.rqAi{width:38px;height:38px;font-size:1.3rem}.rqAn{position:absolute;top:10px;right:10px}.rqAt b{font-size:.88rem}.rqQ{max-width:none}}
 .rq{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:1px solid var(--bd);border-radius:14px;background:var(--glass);margin-bottom:8px;animation:up .35s both}
 .rq.wait{border-color:color-mix(in srgb,var(--a1) 50%,transparent);background:color-mix(in srgb,var(--a1) 8%,transparent)}
 .rq .rqb{flex:1;min-width:0}.rq .rqb b{display:block}.rq .rqb small{display:block;color:var(--mut);font-size:.78rem;margin-top:2px;word-break:break-word}
@@ -758,10 +777,20 @@ kbd{display:inline-block;padding:2px 7px;border-radius:6px;border:1px solid var(
 
   <!-- DEMANDES -->
   <section id="v-req" class="view">
-    <div class="card"><h3>📨 Demandes de licence <span style="display:flex;gap:6px;margin-left:auto"><button class="ghost sm danger" onclick="openRefuse()">🚫 Refuser une demande reçue ailleurs</button><button class="ghost sm" onclick="loadReq().then(()=>toast('↻ Demandes actualisées'))">↻</button></span></h3>
+    <div class="rqA" id="rqAngles">
+      <button class="rqAng" data-a="lic" onclick="rqAngle('lic')"><span class="rqAi">📨</span><span class="rqAt"><b>Demandes de licence</b><small id="rqAsLic">—</small></span><i class="rqAn" id="rqAnLic"></i></button>
+      <button class="rqAng" data-a="sav" onclick="rqAngle('sav')"><span class="rqAi">🛟</span><span class="rqAt"><b>Demandes SAV</b><small id="rqAsSav">—</small></span><i class="rqAn" id="rqAnSav"></i></button>
+    </div>
+    <div class="card rqP" id="rqPLic">
+      <div id="rqNotLic"></div>
+      <div class="rqTb"><div class="rqCh" id="rqChLic"></div><input class="rqQ" id="rqQLic" type="search" placeholder="🔎 Nom, e-mail, logiciel…" oninput="RQQ.lic=this.value;renderReq()">
+        <span style="display:flex;gap:6px;margin-left:auto"><button class="ghost sm danger" onclick="openRefuse()">🚫 Refuser une demande reçue ailleurs</button><button class="ghost sm" onclick="loadReq().then(()=>toast('↻ Demandes actualisées'))">↻</button></span></div>
       <p class="hint">Les clients font leur demande depuis l'écran de licence de tes logiciels. « Accorder » ouvre la création de licence : à la génération, la clé est envoyée et activée automatiquement sur l'appareil du client.</p>
       <div id="reqList"></div></div>
-    <div class="card" style="margin-top:16px"><h3>🛟 Demandes SAV <span id="gdPill" style="margin-left:auto"></span><button class="ghost sm" onclick="loadSup().then(()=>toast('↻ SAV actualisé'))">↻</button></h3>
+    <div class="card rqP" id="rqPSav">
+      <div id="rqNotSav"></div>
+      <div class="rqTb"><div class="rqCh" id="rqChSav"></div><input class="rqQ" id="rqQSav" type="search" placeholder="🔎 Sujet, e-mail, logiciel…" oninput="RQQ.sav=this.value;renderSup()">
+        <span style="display:flex;gap:6px;margin-left:auto"><span id="gdPill"></span><button class="ghost sm" onclick="loadSup().then(()=>toast('↻ SAV actualisé'))">↻</button></span></div>
       <p class="hint">Demandes d'assistance envoyées par les clients depuis le bouton 🛟 SAV de leurs logiciels.</p>
       <div id="supList"></div></div>
   </section>
@@ -1330,13 +1359,36 @@ async function loadReq(){REQ_ERR='';
     const j=await r.json()||{};REQ=Object.entries(j).map(([rid,v])=>({rid,...v})).filter(r=>!(r.produit==='Annonces'&&(r.type==='compte'||r.type==='mdp'))).sort((a,b)=>(a.statut==='attente'?0:1)-(b.statut==='attente'?0:1)||b.t-a.t)}
   catch(e){REQ_ERR=e.message}
   renderReq()}
-function renderReq(){const n=REQ.filter(r=>r.statut==='attente').length;if($('nbReq'))$('nbReq').textContent=n||'';
+// ── Demandes : deux angles (licence / SAV), notification en tête, filtres et recherche ──
+let RQANG=(()=>{try{return localStorage.getItem('rqAng')||''}catch(e){return''}})(),RQF={lic:'attente',sav:'new'},RQQ={lic:'',sav:''};
+const supNew=x=>x.statut!=='traite'&&(supUnread(x)>0||x.statut==='nouveau');
+const plur=(n,a,b)=>n>1?b:a;
+function rqAngle(a){RQANG=a;try{localStorage.setItem('rqAng',a)}catch(e){}rqHead()}
+function rqMatch(q,o){q=(q||'').trim().toLowerCase();if(!q)return true;return Object.values(o).some(v=>typeof v==='string'&&v.toLowerCase().includes(q))}
+function rqChips(id,key,list,rr){const el=$(id);if(!el)return;el.innerHTML=list.map(([k,l,n])=>`<button class="${RQF[key]===k?'on':''}" onclick="RQF.${key}='${k}';${rr}()">${l}<i>${n}</i></button>`).join('')}
+function rqHead(){const nl=REQ.filter(r=>r.statut==='attente').length,ns=SUP.filter(supNew).length,nm=SUP.reduce((a,x)=>a+(x.statut!=='traite'?supUnread(x):0),0);
+  if(!RQANG)RQANG=ns&&!nl?'sav':'lic';
+  document.querySelectorAll('.rqAng').forEach(b=>b.classList.toggle('on',b.dataset.a===RQANG));
+  if($('rqPLic'))$('rqPLic').classList.toggle('on',RQANG==='lic');if($('rqPSav'))$('rqPSav').classList.toggle('on',RQANG==='sav');
+  const set=(id,v,z)=>{const e=$(id);if(e){e.textContent=v;e.classList.toggle('z',!!z)}};
+  set('rqAnLic',nl||'✓',!nl);set('rqAnSav',ns||'✓',!ns);
+  if($('rqAsLic'))$('rqAsLic').textContent=nl?`${nl} nouvelle${plur(nl,'','s')} demande${plur(nl,'','s')} à traiter`:`${REQ.length} demande${plur(REQ.length,'','s')} · tout est traité`;
+  if($('rqAsSav'))$('rqAsSav').textContent=ns?`${ns} nouvelle${plur(ns,'','s')} demande${plur(ns,'','s')}${nm?` · ${nm} message${plur(nm,'','s')} non lu${plur(nm,'','s')}`:''}`:`${SUP.filter(x=>x.statut!=='traite').length} en cours · rien de nouveau`;
+  const ins=REQ.filter(r=>r.statut==='attente'&&r.type==='inscription').length,acc=REQ.filter(r=>r.statut==='attente'&&r.onglet).length;
+  if($('rqNotLic'))$('rqNotLic').innerHTML=nl?`<div class="rqN new"><span class="rqNi">🔔</span><div style="flex:1"><b>Demande de licence : tu as ${nl} nouvelle${plur(nl,'','s')} demande${plur(nl,'','s')}</b><small>${[nl-ins-acc>0?`${nl-ins-acc} licence${plur(nl-ins-acc,'','s')}`:'',ins?`${ins} inscription${plur(ins,'','s')}`:'',acc?`${acc} accès onglet`:''].filter(Boolean).join(' · ')} — à accorder ou refuser ci-dessous.</small></div>${RQF.lic!=='attente'?`<button class="btn sm" onclick="RQF.lic='attente';renderReq()">Voir</button>`:''}</div>`
+    :`<div class="rqN ok"><span class="rqNi">✅</span><div><b>Demande de licence : aucune nouvelle demande</b><small>Toutes les demandes reçues ont été traitées.</small></div></div>`;
+  if($('rqNotSav'))$('rqNotSav').innerHTML=ns?`<div class="rqN new"><span class="rqNi">🔔</span><div style="flex:1"><b>Demande SAV : tu as ${ns} nouvelle${plur(ns,'','s')} demande${plur(ns,'','s')}</b><small>${nm?`${nm} message${plur(nm,'','s')} client non lu${plur(nm,'','s')} · `:''}Ouvre l'échange pour répondre, puis marque « Traitée ».</small></div>${RQF.sav!=='new'?`<button class="btn sm" onclick="RQF.sav='new';renderSup()">Voir</button>`:''}</div>`
+    :`<div class="rqN ok"><span class="rqNi">✅</span><div><b>Demande SAV : aucune nouvelle demande</b><small>Aucun message client en attente de réponse.</small></div></div>`;
+  if($('nbReq'))$('nbReq').textContent=(nl+ns)||''}
+function renderReq(){rqHead();
+  rqChips('rqChLic','lic',[['attente','🆕 Nouvelles',REQ.filter(r=>r.statut==='attente').length],['accordee','✅ Accordées',REQ.filter(r=>r.statut==='accordee').length],['refusee','🚫 Refusées',REQ.filter(r=>r.statut==='refusee').length],['all','Toutes',REQ.length]],'renderReq');
+  const RL=REQ.filter(r=>(RQF.lic==='all'||r.statut===RQF.lic)&&rqMatch(RQQ.lic,r));
   if(!$('reqList'))return;
   if(REQ_ERR){$('reqList').innerHTML=`<div class="al" style="border-color:rgba(245,158,11,.45);background:rgba(245,158,11,.08)"><div class="pi" style="--pc:#f59e0b">🔥</div><div><b>Demandes indisponibles</b><small>${esc(REQ_ERR)}. Vérifie ton compte admin Firebase dans Réglages et publie le contenu de firebase-rules.json dans Firebase → Realtime Database → Règles.</small></div></div>`;return}
-  $('reqList').innerHTML=REQ.length?REQ.map((r,i)=>{const[ic,col]=pm(r.produit),u=shortUA(r.ua||''),ins=r.type==='inscription';const lbl={attente:'En attente',accordee:ins?'Acceptée':'Accordée',refusee:'Refusée'}[r.statut]||r.statut;
+  $('reqList').innerHTML=RL.length?RL.map((r,i)=>{const[ic,col]=pm(r.produit),u=shortUA(r.ua||''),ins=r.type==='inscription';const lbl={attente:'En attente',accordee:ins?'Acceptée':'Accordée',refusee:'Refusée'}[r.statut]||r.statut;
     const deja=LIC.find(l=>l.email===norm(r.email)&&l.produit===r.produit);
-    return `<div class="rq ${r.statut==='attente'?'wait':''}" style="animation-delay:${i*.03}s"><div class="pi" style="--pc:${col}">${ic}</div><div class="rqb">
-      <b>${r.onglet?'🔓 Accès à l\'onglet « '+esc(r.ongletNom||r.onglet)+' » · ':''}${ins?'<span class="rqins">🆕 Inscription</span> ':''}${esc(r.nom||'—')} · ${esc(r.produit)}${r.module?' · '+esc(r.module):''}<span class="rqst ${esc(r.statut)}">${esc(lbl)}</span></b>
+    return `<div class="rq ${r.statut==='attente'?'wait isnew':''}" style="animation-delay:${i*.03}s"><div class="pi" style="--pc:${col}">${ic}</div><div class="rqb">
+      <b>${r.statut==='attente'?'<span class="rqNew">NOUVEAU</span>':''}${r.onglet?'🔓 Accès à l\'onglet « '+esc(r.ongletNom||r.onglet)+' » · ':''}${ins?'<span class="rqins">🆕 Inscription</span> ':''}${esc(r.nom||'—')} · ${esc(r.produit)}${r.module?' · '+esc(r.module):''}<span class="rqst ${esc(r.statut)}">${esc(lbl)}</span></b>
       ${ins?`<small>👤 Identifiant : <b style="display:inline">${esc(r.ident||'—')}</b></small>`:''}
       <small>✉️ ${esc(r.email)}${r.tel?' · 📞 '+esc(r.tel):''} · reçue le ${fmtD(new Date(r.t))}</small>
       <small>${u.ic} ${esc(u.txt)}${r.page?' · '+esc(r.page.replace(/^https?:\/\//,'')):''}</small>
@@ -1346,7 +1398,7 @@ function renderReq(){const n=REQ.filter(r=>r.statut==='attente').length;if($('nb
       ${r.statut==='refusee'&&r.motif?`<small>Motif : ${esc(r.motif)}</small>`:''}
       <div class="acts2">${r.statut==='attente'?(ins?`<button class="btn sm" onclick="grantReq('${r.rid}')">✅ Accepter + licence</button><button class="ghost sm" onclick="acceptSansLic('${r.rid}')" title="Le client a déjà une licence sur son appareil">👤 Compte seul</button>`:`<button class="btn sm" onclick="grantReq('${r.rid}')">✅ Accorder</button>`)+`<button class="ghost sm" onclick="refuseReq('${r.rid}')">❌ Refuser</button>`:''}
         <button class="ghost sm" onclick="noteReq('${r.rid}')">📝 Note</button><button class="ghost sm" onclick="delReq('${r.rid}')">🗑️ Supprimer</button></div>
-    </div></div>`}).join(''):'<div class="empty">📭 Aucune demande pour le moment</div>'}
+    </div></div>`}).join(''):`<div class="empty">📭 ${REQ.length?'Aucune demande dans ce filtre':'Aucune demande pour le moment'}</div>`}
 function grantReq(rid){const r=REQ.find(x=>x.rid===rid);if(!r)return;
   const L=r.onglet&&LIC.find(l=>l.email===norm(r.email)&&l.produit===r.produit);
   if(L){editLic(L.id);REQP=rid;setTimeout(()=>{const i=[...document.querySelectorAll('#tabs input')].find(x=>x.value===r.onglet);if(i&&!i.disabled){i.checked=true;updPrev()}},60);
@@ -1572,16 +1624,18 @@ async function loadSup(){SUP_ERR='';
     if(r.status===401)throw new Error('Règles Firebase à republier (nœud « support »)');if(!r.ok)throw new Error('Firebase '+r.status);
     SUP=Object.entries(await r.json()||{}).map(([tid,v])=>({tid,...v})).sort((a,b)=>(a.statut==='traite')-(b.statut==='traite')||b.t-a.t)}catch(e){SUP_ERR=e.message}
   renderSup();gdSoon()}
-function renderSup(){const n=SUP.filter(x=>x.statut!=='traite'&&supUnread(x)).length;if($('nbReq')){const rq=REQ.filter(r=>r.statut==='attente').length;$('nbReq').textContent=(rq+n)||''}
+function renderSup(){rqHead();
+  rqChips('rqChSav','sav',[['new','🆕 Nouvelles',SUP.filter(supNew).length],['repondu','💬 Répondues',SUP.filter(x=>x.statut==='repondu'&&!supNew(x)).length],['traite','✓ Traitées',SUP.filter(x=>x.statut==='traite').length],['all','Toutes',SUP.length]],'renderSup');
+  const SL=SUP.filter(x=>(RQF.sav==='all'||(RQF.sav==='new'?supNew(x):RQF.sav==='repondu'?(x.statut==='repondu'&&!supNew(x)):x.statut===RQF.sav))&&rqMatch(RQQ.sav,x)).sort((a,b)=>supNew(b)-supNew(a)||((supMsgs(b).slice(-1)[0]||b).t-(supMsgs(a).slice(-1)[0]||a).t));
   if(!$('supList'))return;
   if(SUP_ERR){$('supList').innerHTML=`<div class="al" style="border-color:rgba(245,158,11,.45);background:rgba(245,158,11,.08)"><div class="pi" style="--pc:#f59e0b">🔥</div><div><b>SAV indisponible</b><small>${esc(SUP_ERR)}. Les règles à jour sont dans Réglages → 📜 Règles Firebase.</small></div></div>`;return}
-  $('supList').innerHTML=SUP.length?SUP.map((x,i)=>{const[ic,col]=pm(x.produit),u=shortUA(x.ua||''),l=LIC.find(k=>k.email===x.email&&k.produit===x.produit);
-    return `<div class="rq ${x.statut!=='traite'?'wait':''}" style="animation-delay:${i*.03}s"><div class="pi" style="--pc:${col}">${ic}</div><div class="rqb">
-      <b>${esc(x.sujet||'Demande SAV')} · ${esc(x.produit)}${x.module?' · '+esc(x.module):''}<span class="rqst ${x.statut==='traite'?'accordee':x.statut==='repondu'?'':'attente'}">${x.statut==='traite'?'Traitée':x.statut==='repondu'?'Répondu':supUnread(x)?'Nouveau message':'En attente'}</span></b>
+  $('supList').innerHTML=SL.length?SL.map((x,i)=>{const[ic,col]=pm(x.produit),u=shortUA(x.ua||''),l=LIC.find(k=>k.email===x.email&&k.produit===x.produit);
+    return `<div class="rq ${supNew(x)?'wait isnew':''}" style="animation-delay:${i*.03}s"><div class="pi" style="--pc:${col}">${ic}</div><div class="rqb">
+      <b>${supNew(x)?'<span class="rqNew">NOUVEAU</span>':''}${esc(x.sujet||'Demande SAV')} · ${esc(x.produit)}${x.module?' · '+esc(x.module):''}<span class="rqst ${x.statut==='traite'?'accordee':x.statut==='repondu'?'':'attente'}">${x.statut==='traite'?'Traitée':x.statut==='repondu'?'Répondu':supUnread(x)?'Nouveau message':'En attente'}</span></b>
       <small>✉️ ${esc(x.email||'—')}${x.tel?' · 📞 '+esc(x.tel):''} · ${fmtD(new Date(x.t))} · ${u.ic} ${esc(u.txt)}</small>
       ${l&&!savActive(l)?'<small style="color:#fbbf24">⚠️ Le SAV de ce client n\'est plus actif</small>':''}
       <div class="rqm">${esc((supMsgs(x).slice(-1)[0]||{}).text||x.message||'')}</div><small>${supMsgs(x).length} message${supMsgs(x).length>1?'s':''}${(()=>{const n=supMsgs(x).reduce((a,m)=>a+(Array.isArray(m.img)?m.img.length:0)+(Array.isArray(m.files)?m.files.length:0)+(Array.isArray(m.drive)?m.drive.length:0),0);return n?` · 📎 ${n} pièce${n>1?'s':''} jointe${n>1?'s':''}`:''})()} · dernier ${fmtD(new Date((supMsgs(x).slice(-1)[0]||x).t))}</small>
-      <div class="acts2"><button class="btn sm" onclick="openSup('${x.tid}')">💬 Ouvrir l'échange${supUnread(x)?' · '+supUnread(x)+' nouveau'+(supUnread(x)>1?'x':''):''}</button>${x.statut!=='traite'?`<button class="ghost sm" onclick="doneSup('${x.tid}')">✓ Traitée</button>`:''}<button class="ghost sm" onclick="noteSup('${x.tid}')">📝 Note</button><button class="ghost sm" onclick="delSup('${x.tid}')">🗑️</button></div></div></div>`}).join(''):'<div class="empty sm">📭 Aucune demande SAV</div>'}
+      <div class="acts2"><button class="btn sm" onclick="openSup('${x.tid}')">💬 Ouvrir l'échange${supUnread(x)?' · '+supUnread(x)+' nouveau'+(supUnread(x)>1?'x':''):''}</button>${x.statut!=='traite'?`<button class="ghost sm" onclick="doneSup('${x.tid}')">✓ Traitée</button>`:''}<button class="ghost sm" onclick="noteSup('${x.tid}')">📝 Note</button><button class="ghost sm" onclick="delSup('${x.tid}')">🗑️</button></div></div></div>`}).join(''):`<div class="empty sm">📭 ${SUP.length?'Aucune demande SAV dans ce filtre':'Aucune demande SAV'}</div>`}
 function replySup(tid){const x=SUP.find(k=>k.tid===tid);if(!x)return;const sign=localStorage.getItem('licSign')||'ALIANDpro';
   mailTo(x.email,'Re : '+(x.sujet||'Votre demande SAV')+' — '+x.produit,`Bonjour,\n\nNous avons bien reçu votre demande concernant ${x.produit} et nous vous en remercions.\n\n[Votre réponse]\n\nNous restons à votre disposition pour toute question complémentaire.\n\nCordialement,\n${sign}\n\n— Votre message du ${fmtD(new Date(x.t))} —\n${x.message||''}`)}
 async function doneSup(tid){const x=SUP.find(k=>k.tid===tid);if(!x)return;const{tid:_,...v}=x;try{await fbPut('support/'+tid,{...v,statut:'traite',traite:Date.now()});await loadSup();toast('✓ Demande SAV traitée')}catch(e){toast(e.message,'ko')}}
