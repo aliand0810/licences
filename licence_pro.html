@@ -343,6 +343,36 @@ textarea:focus{border-color:var(--a2);box-shadow:0 0 0 4px color-mix(in srgb,var
  .accs{grid-template-columns:1fr}
  .toast{bottom:90px}
 }
+/* ═══ Affichage adapté à chaque écran ═══ */
+.side{overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:var(--bd) transparent}
+.side::-webkit-scrollbar{width:6px}.side::-webkit-scrollbar-thumb{background:var(--bd);border-radius:6px}
+.navMore{display:none!important}
+main{min-width:0}
+/* écrans d'ordinateur peu hauts (portables, zoom Windows 125-150 %) */
+@media(min-width:861px) and (max-height:820px){.side{padding:14px 12px;gap:12px}.brand img{width:34px;height:34px}nav{gap:2px}nav button{padding:8px 11px;font-size:.88rem}.conn{padding:9px;gap:5px;font-size:.7rem}}
+@media(min-width:861px) and (max-height:660px){nav button{padding:6px 10px;font-size:.84rem}.brand small{display:none}.conn{display:none}}
+/* écrans moyens (petit portable, tablette paysage) : barre latérale en icônes */
+@media(min-width:861px) and (max-width:1180px){.app{grid-template-columns:76px 1fr}.side{padding:14px 8px;align-items:center}.brand{padding:0}.brand>div,.conn{display:none}
+  nav{width:100%}nav button{justify-content:center;padding:11px 0}nav button span:not(.ni){display:none}nav button .ni{font-size:1.25rem;width:auto}
+  .nb{position:absolute;top:3px;right:6px;margin:0;font-size:.6rem;padding:1px 5px}main{padding-left:22px;padding-right:22px}}
+/* téléphone : 4 raccourcis + « Menu » qui ouvre toutes les sections */
+@media(max-width:860px){nav{overflow:visible}nav button{min-width:0}nav button:not([data-v=dash]):not([data-v=apps]):not([data-v=acc]):not([data-v=req]):not(.navMore){display:none}.navMore{display:flex!important}
+  .top{flex-wrap:wrap;gap:10px}.topR{flex-wrap:wrap}}
+.mrG{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.mrG button{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 6px;border-radius:14px;border:1px solid var(--bd);background:var(--glass);color:inherit;font:inherit;font-size:.78rem;font-weight:700;position:relative;cursor:pointer}
+.mrG button .ni{font-size:1.5rem}.mrG button.act{border-color:var(--a1);box-shadow:0 0 0 3px color-mix(in srgb,var(--a1) 20%,transparent)}.mrG .nb{position:absolute;top:6px;right:8px;margin:0}
+/* ═══ Applications ═══ */
+.apTb{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px}.apTb input{max-width:340px;flex:1;min-width:180px;border-radius:999px!important}
+.apG{margin-bottom:22px}.apG h3{display:flex;align-items:center;gap:8px;font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);margin:0 0 10px}.apG h3 i{font-style:normal;opacity:.6}
+.apL{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.apT{position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;padding:18px 10px 14px;border-radius:18px;border:1px solid var(--bd);background:var(--glass);color:inherit;text-decoration:none;text-align:center;transition:transform .15s,border-color .2s,box-shadow .2s;cursor:pointer;animation:up .3s both}
+.apT:hover{transform:translateY(-3px);border-color:var(--pc);box-shadow:0 14px 34px color-mix(in srgb,var(--pc) 25%,transparent)}
+.apI{width:64px;height:64px;border-radius:18px;display:grid;place-items:center;font-size:2rem;background:linear-gradient(145deg,color-mix(in srgb,var(--pc) 35%,transparent),color-mix(in srgb,var(--pc) 12%,transparent));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--pc) 45%,transparent),0 8px 22px color-mix(in srgb,var(--pc) 25%,transparent)}
+.apT b{font-size:.9rem;line-height:1.2}.apT small{font-size:.7rem;color:var(--mut);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.apT .apC{font-size:.66rem;font-weight:800;padding:2px 8px;border-radius:999px;background:color-mix(in srgb,var(--pc) 18%,transparent);color:var(--txt)}
+.apT.off{opacity:.55;border-style:dashed}.apT.hid{opacity:.35}
+.apE{position:absolute;top:6px;right:6px;display:flex;gap:4px}.apE button{width:28px;height:28px;border-radius:9px;border:1px solid var(--bd);background:var(--panel,#111827);color:inherit;font-size:.8rem;padding:0;cursor:pointer}
+@media(max-width:640px){.apL{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.apT{padding:12px 4px 10px;border-radius:14px}.apI{width:50px;height:50px;font-size:1.55rem;border-radius:14px}.apT b{font-size:.74rem}.apT small{display:none}}
 /* ═══ Thèmes de couleur ═══ */
 nav button.act{color:var(--txt);background:linear-gradient(135deg,color-mix(in srgb,var(--a1) 26%,transparent),color-mix(in srgb,var(--a2) 12%,transparent));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--a1) 45%,transparent)}
 .chips button.act{background:color-mix(in srgb,var(--a1) 22%,transparent);border-color:var(--a1);color:var(--txt)}
@@ -674,6 +704,7 @@ kbd{display:inline-block;padding:2px 7px;border-radius:6px;border:1px solid var(
   <div class="brand"><img src="icon.svg" alt=""><div>Licence Pro<small>Gestion des comptes</small></div></div>
   <nav>
     <button data-v="dash" class="act"><span class="ni">📊</span><span class="dl">Vue d'ensemble</span><span class="ds">Accueil</span></button>
+    <button data-v="apps"><span class="ni">🧩</span><span>Applications</span></button>
     <button data-v="acc"><span class="ni">👥</span><span>Comptes</span></button>
     <button data-v="new"><span class="ni">➕</span><span>Nouvelle licence</span></button>
     <button data-v="req"><span class="ni">📨</span><span>Demandes</span><i class="nb" id="nbReq"></i></button>
@@ -684,6 +715,7 @@ kbd{display:inline-block;padding:2px 7px;border-radius:6px;border:1px solid var(
     <button data-v="alerts"><span class="ni">⚠️</span><span>Alertes</span><i class="nb" id="nbAl"></i></button>
     <button data-v="ip"><span class="ni">🌐</span><span>Adresses IP</span></button>
     <button data-v="set"><span class="ni">⚙️</span><span>Réglages</span></button>
+    <button data-v="more" class="navMore"><span class="ni">☰</span><span>Menu</span><i class="nb" id="nbMore"></i></button>
   </nav>
   <div class="conn"><div><span class="dot" id="dGh"></span><span id="tGh">GitHub non configuré</span></div><div><span class="dot" id="dFb"></span><span id="tFb">Firebase non connecté</span></div></div>
 </aside>
@@ -694,6 +726,11 @@ kbd{display:inline-block;padding:2px 7px;border-radius:6px;border:1px solid var(
     <div class="topR"><button class="ghost" title="Capture d'écran (Ctrl+Alt+S)" onclick="quickShot()">📸</button><button class="ghost" title="Thème de couleur" onclick="openTheme()">🎨</button><button class="ghost" title="Injecter un code du coffre" onclick="VAULT.length?openInject():loadVault().then(()=>openInject())">💉</button><button class="ghost" title="Actualiser" onclick="load(true)">↻</button><button class="btn hideM" onclick="newLic()">+ Licence</button></div>
   </header>
 
+  <section id="v-apps" class="view">
+    <div class="apTb"><input id="apQ" type="search" placeholder="🔎 Rechercher une application…" oninput="renderApps()"><span style="flex:1"></span>
+      <button class="ghost sm" id="apEdBtn" onclick="APED=!APED;renderApps()">✏️ Modifier</button><button class="btn sm" onclick="appEdit()">＋ Ajouter une application</button></div>
+    <div id="apList"></div>
+  </section>
   <!-- VUE D'ENSEMBLE -->
   <div id="secWarn" class="secWarn" hidden></div>
   <section id="v-dash" class="view on">
@@ -1003,12 +1040,13 @@ function MODS(){let m;try{m=C().mods?JSON.parse(C().mods):DEF_MODS}catch(e){m=DE
 const pm=p=>PMETA[p]||['📦',PAL[Math.max(0,prods().indexOf(p))%PAL.length]];
 
 /* ── navigation ── */
-const TITLES={ann:["Annonces","Autoriser ou refuser la publication sur Maison des Annonces"],dash:["Vue d'ensemble","Tes licences et tes clients en un coup d'œil"],acc:['Comptes clients','Chaque client, ses licences, ses appareils et ses modules'],new:['Nouvelle licence','Crée ou modifie une licence en quelques secondes'],alerts:['Licences en trop','Appareils refusés car la limite est atteinte'],req:['Demandes','Demandes de licence et inscriptions envoyées par tes clients'],act:["Suivi d'activité","Les pages et logiciels consultés par tes clients, en direct"],vault:['Coffre à codes','Tes clés, configurations et informations — prêtes à injecter'],notes:['Notes','Journal professionnel : appels, échanges, suivis et refus'],set:['Réglages','Connexions GitHub et Firebase'],ip:['Adresses IP','Qui se connecte, depuis quelle adresse, sur quel logiciel']};
-function go(v){if(v!=='set'&&UNLOCKED)lockSet();if(v==='set'&&!UNLOCKED)showLock();document.querySelectorAll('.view').forEach(x=>x.classList.toggle('on',x.id==='v-'+v));
+const TITLES={apps:['Applications','Toutes tes applications — un clic pour les ouvrir'],more:['Menu','Toutes les sections de Licence Pro'],ann:["Annonces","Autoriser ou refuser la publication sur Maison des Annonces"],dash:["Vue d'ensemble","Tes licences et tes clients en un coup d'œil"],acc:['Comptes clients','Chaque client, ses licences, ses appareils et ses modules'],new:['Nouvelle licence','Crée ou modifie une licence en quelques secondes'],alerts:['Licences en trop','Appareils refusés car la limite est atteinte'],req:['Demandes','Demandes de licence et inscriptions envoyées par tes clients'],act:["Suivi d'activité","Les pages et logiciels consultés par tes clients, en direct"],vault:['Coffre à codes','Tes clés, configurations et informations — prêtes à injecter'],notes:['Notes','Journal professionnel : appels, échanges, suivis et refus'],set:['Réglages','Connexions GitHub et Firebase'],ip:['Adresses IP','Qui se connecte, depuis quelle adresse, sur quel logiciel']};
+function go(v){if(v==='more')return openMore();if(v!=='set'&&UNLOCKED)lockSet();if(v==='set'&&!UNLOCKED)showLock();document.querySelectorAll('.view').forEach(x=>x.classList.toggle('on',x.id==='v-'+v));
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('act',b.dataset.v===v));
   $('vTitle').textContent=TITLES[v][0];$('vSub').textContent=TITLES[v][1];
-  document.body.className='on'+v[0].toUpperCase()+v.slice(1);if(v==='ip')renderIpView();if(v==='ann')loadAnn();if(v==='act')renderActView();{const nb=document.querySelector(`nav button[data-v="${v}"]`);if(nb&&innerWidth<=860)nb.scrollIntoView({inline:'center',block:'nearest'})}if(v==='dash')drawCharts();window.scrollTo({top:0})}
+  document.body.className='on'+v[0].toUpperCase()+v.slice(1);if(v==='ip')renderIpView();if(v==='ann')loadAnn();if(v==='act')renderActView();if(v==='apps')renderApps();{const nb=document.querySelector(`nav button[data-v="${v}"]`);if(nb&&innerWidth<=860)nb.scrollIntoView({inline:'center',block:'nearest'})}if(v==='dash')drawCharts();window.scrollTo({top:0})}
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>b.dataset.v==='new'?newLic():go(b.dataset.v));
+document.querySelectorAll('nav button').forEach(b=>{const t=b.querySelector('span:not(.ni)');if(t&&!b.title)b.title=t.textContent});
 
 /* ── crypto ── */
 const enc=new TextEncoder();
@@ -1817,7 +1855,7 @@ async function doInject(){const{v,val,mail}=injValue(),t=$('iT').value;if(!val)r
 
 /* ── chargement ── */
 async function load(manual){if(!C().tok){renderAll();if(manual)go('set');return}
-  try{const d=(await ghGet()).data;LIC=d.licences||[];BAN=d.bannis||[];SAVCFG=d.sav||{};mergeTabs(d.tabsCat);GDEF=d.google||{};if($('gCid')&&PROD)$('gCid').placeholder=GDEF[PROD]?'Par défaut : '+GDEF[PROD]:'123456-abc.apps.googleusercontent.com';await loadFB();checkSecret();if(manual)toast('↻ Données actualisées')}catch(e){toast(e.message,'ko')}
+  try{const d=(await ghGet()).data;LIC=d.licences||[];BAN=d.bannis||[];SAVCFG=d.sav||{};mergeTabs(d.tabsCat);GDEF=d.google||{};if(Array.isArray(d.apps)){APPS=d.apps;try{localStorage.setItem('licApps',JSON.stringify(APPS))}catch(e){}}if($('gCid')&&PROD)$('gCid').placeholder=GDEF[PROD]?'Par défaut : '+GDEF[PROD]:'123456-abc.apps.googleusercontent.com';await loadFB();checkSecret();if(manual)toast('↻ Données actualisées')}catch(e){toast(e.message,'ko')}
   if(C().fbMail&&C().fbPass){loadReq().then(()=>loadSup());loadNotes();loadVault()}else{renderNotes();renderVault()}}
 
 /* ── PWA ── */
@@ -2497,6 +2535,69 @@ function imgView(key,i,list){const A=list||ATT[key]||[];let k=i;const o=document
   draw();o.onclick=e=>{const a=e.target.dataset.a;if(a==='p'){k=(k-1+A.length)%A.length;draw()}else if(a==='n'){k=(k+1)%A.length;draw()}else if(a==='x'||e.target===o)o.remove()};document.body.appendChild(o)}
 window._imgSets={};const imgSet=A=>{const id='s'+Math.random().toString(36).slice(2,8);window._imgSets[id]=A;return id};
 const thumbs=(A,cls)=>{A=(A||[]).filter(isImg);if(!A.length)return'';const id=imgSet(A);return `<div class="${cls||'att-th'}">${A.map((u,i)=>`<img src="${u}" alt="" onclick="event.stopPropagation();imgView(null,${i},window._imgSets['${id}'])">`).join('')}</div>`};
+
+
+// ══ 🧩 Applications : catalogue cliquable ══
+const GH='https://aliand0810.github.io/';
+const APPS_DEF=[
+ {id:'covo',n:'COVO Pro',ic:'🛒',c:'#7c3aed',u:GH+'Covo-pro/',g:'Suite COVO Pro',d:'Caisse & gestion commerciale',p:'COVO Pro'},
+ {id:'caisse',n:'Caisse Pro',ic:'💳',c:'#0ea5e9',u:GH+'Caisse-Pro/',g:'Suite COVO Pro',m:'Caisse'},
+ {id:'gestion',n:'Gestion Pro',ic:'📦',c:'#f59e0b',u:GH+'Gestion-Pro/',g:'Suite COVO Pro',m:'Gestion'},
+ {id:'invest',n:'Investissement Pro',ic:'📈',c:'#22c55e',u:GH+'Investissement-Pro/',g:'Suite COVO Pro',m:'Investissement'},
+ {id:'fin',n:'Finances Pro',ic:'💰',c:'#eab308',u:GH+'Finances-Pro/',g:'Suite COVO Pro',m:'Finances'},
+ {id:'hist',n:'Historique Pro',ic:'🕘',c:'#64748b',u:GH+'Historique-Pro/',g:'Suite COVO Pro',m:'Historique'},
+ {id:'clo',n:'Clôtures Pro',ic:'🔒',c:'#ef4444',u:GH+'Cloture-COVO/',g:'Suite COVO Pro',m:'Clôtures'},
+ {id:'fid',n:'Fidélité Pro',ic:'🎁',c:'#ec4899',u:GH+'Fid-lit-Pro/',g:'Suite COVO Pro',m:'Fidélité'},
+ {id:'admin',n:'Admin Pro',ic:'🛡️',c:'#8b5cf6',u:GH+'Admins-PRO/',g:'Suite COVO Pro',m:'Admin'},
+ {id:'proj',n:'Projets Pro',ic:'📁',c:'#2a78d6',u:GH+'Projets-Pro/',g:'Suite COVO Pro',m:'Projets',p:'Projets Pro'},
+ {id:'visites',n:'Visites Pro',ic:'👁️',c:'#14b8a6',u:GH+'Visites-Pro/',g:'Suite COVO Pro'},
+ {id:'planning',n:'Mon Planning Pro',ic:'📅',c:'#3b82f6',u:GH+'Agendpro/',g:'Logiciels',p:'Mon Planning Pro'},
+ {id:'bureau',n:'Bureau Virtuel Pro',ic:'🖥️',c:'#06b6d4',u:GH+'plate-forme-professionnelle-/',g:'Logiciels',p:'Bureau Virtuel Pro'},
+ {id:'onda',n:'Onda Player',ic:'📺',c:'#ec4899',u:GH+'Onda-player/',g:'Logiciels',p:'Onda Player'},
+ {id:'portail',n:'Portail Fidélité',ic:'🎟️',c:'#f472b6',u:GH+'Portail-fidelite/',g:'Logiciels'},
+ {id:'site',n:'Site web COVO',ic:'🌐',c:'#0ea5e9',u:GH+'site-web-covo/',g:'Logiciels'},
+ {id:'pub',n:'Pub Promo 360',ic:'📣',c:'#f97316',u:GH+'Pub-Promo-360/',g:'Logiciels'},
+ {id:'adstudio',n:'Ad Studio',ic:'🎬',c:'#a855f7',u:GH+'Ad-studio/',g:'Studios IA'},
+ {id:'bev',n:'Beverage Ad Studio',ic:'🥤',c:'#10b981',u:GH+'Beverage-ad-studio/',g:'Studios IA'},
+ {id:'dessin',n:'Dessin Animé Enfants',ic:'🎨',c:'#f43f5e',u:GH+'dessin-anime-enfants/',g:'Studios IA'},
+ {id:'licence',n:'Licence Pro',ic:'🔑',c:'#7c3aed',u:GH+'licences/',g:'Outils',d:'Cette application'}];
+let APPS=null,APED=false;
+try{const a=JSON.parse(localStorage.getItem('licApps')||'null');if(Array.isArray(a))APPS=a}catch(e){}
+const appsAll=()=>{const L=(APPS||APPS_DEF).slice(),have=new Set(L.map(a=>a.p||a.n));
+  prods().forEach(p=>{if(!have.has(p)&&!L.some(a=>a.n===p))L.push({id:'p_'+p.replace(/\W+/g,'_'),n:p,ic:pm(p)[0],c:pm(p)[1],u:'',g:'Logiciels',p,auto:1})});return L};
+const appHost=u=>{try{const x=new URL(u);return x.host+(x.pathname.length>1?x.pathname.replace(/\/$/,''):'')}catch(e){return''}};
+const okUrl=u=>/^https:\/\/[^\s"'<>]+$/i.test(u||'');
+function appCount(a){if(a.m)return LIC.filter(l=>l.produit==='COVO Pro'&&(modsOf(l)||DEF_MODS['COVO Pro']).includes(a.m)).length+(a.p?LIC.filter(l=>l.produit===a.p).length:0);
+  return a.p?LIC.filter(l=>l.produit===a.p).length:0}
+function renderApps(){const el=$('apList');if(!el)return;const q=($('apQ')?.value||'').trim().toLowerCase();
+  if($('apEdBtn'))$('apEdBtn').textContent=APED?'✓ Terminer':'✏️ Modifier';
+  const L=appsAll().filter(a=>(APED||!a.hide)&&(!q||(a.n+' '+(a.u||'')+' '+(a.g||'')).toLowerCase().includes(q))),G=[...new Set(L.map(a=>a.g||'Autres'))];
+  el.innerHTML=L.length?G.map(g=>{const A=L.filter(a=>(a.g||'Autres')===g);return `<div class="apG"><h3>${esc(g)} <i>· ${A.length}</i></h3><div class="apL">${A.map((a,i)=>{const n=appCount(a),off=!okUrl(a.u);
+    return `<div class="apT ${off?'off':''} ${a.hide?'hid':''}" style="--pc:${esc(a.c||'#7c3aed')};animation-delay:${i*.02}s" role="link" tabindex="0" title="${off?'Adresse à renseigner':'Ouvrir '+esc(a.n)}" onclick="appOpen('${esc(a.id)}')" onkeydown="event.key==='Enter'&&appOpen('${esc(a.id)}')">
+      ${APED?`<span class="apE"><button title="Modifier" onclick="event.stopPropagation();appEdit('${esc(a.id)}')">✏️</button><button title="${a.hide?'Afficher':'Masquer'}" onclick="event.stopPropagation();appHide('${esc(a.id)}')">${a.hide?'👁':'🙈'}</button></span>`:''}
+      <span class="apI">${esc(a.ic||'📦')}</span><b>${esc(a.n)}</b><small>${off?'➕ Ajouter l\'adresse':esc(a.d||appHost(a.u))}</small>${n?`<span class="apC">🔑 ${n} licence${n>1?'s':''}</span>`:''}</div>`}).join('')}</div></div>`}).join('')
+    :'<div class="empty">Aucune application trouvée</div>'}
+function appOpen(id){const a=appsAll().find(x=>x.id===id);if(!a)return;if(APED||!okUrl(a.u))return appEdit(id);window.open(a.u,'_blank','noopener')}
+function appEdit(id){const a=id?appsAll().find(x=>x.id===id):{id:'',n:'',ic:'📦',c:'#7c3aed',u:'https://',g:'Logiciels'};if(!a)return;
+  const G=[...new Set(appsAll().map(x=>x.g||'Autres'))];
+  openModal(`<div class="md-h"><div class="pi" style="--pc:${esc(a.c||'#7c3aed')}">${esc(a.ic||'📦')}</div><div><h2>${id?'Modifier l\'application':'Nouvelle application'}</h2><span>Icône, nom et adresse d'ouverture</span></div><button class="x" onclick="closeModal()">✕</button></div>
+   <div class="md-b"><div class="g2"><div><label>Nom</label><input id="apN" value="${esc(a.n)}" maxlength="40"></div><div><label>Icône (emoji)</label><input id="apIc" value="${esc(a.ic||'')}" maxlength="4" style="font-size:1.3rem"></div></div>
+    <label>Adresse (https://…)</label><input id="apU" value="${esc(a.u||'')}" placeholder="https://aliand0810.github.io/MonApp/" spellcheck="false">
+    <div class="g2"><div><label>Groupe</label><input id="apG" list="apGl" value="${esc(a.g||'')}"><datalist id="apGl">${G.map(g=>`<option value="${esc(g)}">`).join('')}</datalist></div><div><label>Couleur</label><input id="apC" type="color" value="${esc(/^#[0-9a-f]{6}$/i.test(a.c||'')?a.c:'#7c3aed')}" style="height:44px;padding:4px"></div></div>
+    <label>Description (facultatif)</label><input id="apD" value="${esc(a.d||'')}" maxlength="60" placeholder="Laisser vide pour afficher l'adresse">
+    <div class="acts2" style="margin-top:16px"><button class="btn" onclick="appSave('${esc(a.id)}')">💾 Enregistrer</button>${id&&!a.auto?`<button class="ghost danger" onclick="appDel('${esc(a.id)}')">🗑️ Retirer</button>`:''}${id?`<button class="ghost" style="margin-left:auto" onclick="APPS=null;appPersist('Catalogue des applications réinitialisé')">↺ Catalogue d'origine</button>`:''}</div></div>`)}
+function appSave(id){const n=$('apN').value.trim(),u=$('apU').value.trim();if(!n)return toast('Indique un nom','ko');if(u&&u!=='https://'&&!okUrl(u))return toast('Adresse invalide — elle doit commencer par https://','ko');
+  const L=appsAll().map(x=>{const{auto,...r}=x;return r}),o={id:id||('a'+Date.now().toString(36)),n,ic:$('apIc').value.trim()||'📦',c:$('apC').value,u:okUrl(u)?u:'',g:$('apG').value.trim()||'Autres',d:$('apD').value.trim()};
+  const i=L.findIndex(x=>x.id===id);if(i>=0)L[i]={...L[i],...o};else L.push(o);APPS=L;closeModal();appPersist('🧩 Application enregistrée')}
+function appHide(id){const L=appsAll().map(x=>{const{auto,...r}=x;return r}),a=L.find(x=>x.id===id);if(!a)return;a.hide=!a.hide;if(!a.hide)delete a.hide;APPS=L;appPersist(a.hide?'🙈 Application masquée':'👁 Application affichée')}
+function appDel(id){if(!confirm('Retirer cette application du catalogue ?'))return;APPS=appsAll().filter(x=>x.id!==id).map(x=>{const{auto,...r}=x;return r});closeModal();appPersist('Application retirée')}
+async function appPersist(msg){try{APPS?localStorage.setItem('licApps',JSON.stringify(APPS)):localStorage.removeItem('licApps')}catch(e){}renderApps();toast(msg);
+  try{if(!C().tok)return;const{data,sha}=await ghGet();if(APPS)data.apps=APPS;else delete data.apps;await ghPut(data,sha,'Catalogue des applications')}catch(e){toast('Enregistré sur cet appareil (GitHub : '+e.message+')','ko')}}
+// menu complet (téléphone)
+function openMore(){const B=[...document.querySelectorAll('nav button[data-v]')].filter(b=>b.dataset.v!=='more'),cur=(document.querySelector('.view.on')||{}).id||'';
+  openModal(`<div class="md-h"><div class="pi" style="--pc:var(--a1)">☰</div><div><h2>Menu</h2><span>Toutes les sections de Licence Pro</span></div><button class="x" onclick="closeModal()">✕</button></div>
+   <div class="md-b"><div class="mrG">${B.map(b=>{const nb=b.querySelector('.nb');return `<button class="${cur==='v-'+b.dataset.v?'act':''}" onclick="closeModal();${b.dataset.v==='new'?'newLic()':`go('${b.dataset.v}')`}">${b.querySelector('.ni').outerHTML}<span>${esc(b.querySelector('span:not(.ni)').textContent)}</span>${nb&&nb.textContent?`<i class="nb">${esc(nb.textContent)}</i>`:''}</button>`}).join('')}</div></div>`)}
+setInterval(()=>{const e=$('nbMore');if(!e)return;const n=['nbAnn','nbNotes','nbAl'].reduce((a,id)=>a+(+($(id)?.textContent)||0),0);e.textContent=n||''},2000);
 
 // ══ ☁️ Stockage Google Drive des pièces jointes ══
 // Les clients envoient leurs pièces jointes dans Firebase (aucun secret dans leurs logiciels).
