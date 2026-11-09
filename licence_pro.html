@@ -373,6 +373,44 @@ main{min-width:0}
 .apT.off{opacity:.55;border-style:dashed}.apT.hid{opacity:.35}
 .apE{position:absolute;top:6px;right:6px;display:flex;gap:4px}.apE button{width:28px;height:28px;border-radius:9px;border:1px solid var(--bd);background:var(--panel,#111827);color:inherit;font-size:.8rem;padding:0;cursor:pointer}
 @media(max-width:640px){.apL{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.apT{padding:12px 4px 10px;border-radius:14px}.apI{width:50px;height:50px;font-size:1.55rem;border-radius:14px}.apT b{font-size:.74rem}.apT small{display:none}}
+/* ═══ Annonces ═══ */
+.rqN strong{color:#f59e0b;font-size:1.05em}
+.anK{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:14px}
+.anK div{padding:14px 16px;border-radius:16px;border:1px solid var(--bd);background:var(--glass);position:relative;overflow:hidden}
+.anK div::before{content:'';position:absolute;inset:0 auto 0 0;width:4px;background:var(--kc)}
+.anK small{display:block;color:var(--mut);font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em}.anK b{display:block;font-size:1.55rem;margin-top:4px;font-family:'JetBrains Mono',monospace}.anK em{font-style:normal;font-size:.74rem;color:var(--mut)}
+.anTabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.anTabs button{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;border:1.5px solid var(--bd);background:var(--glass);color:inherit;font:inherit;text-align:left;cursor:pointer;position:relative}
+.anTabs button .ni{font-size:1.35rem}.anTabs button>span:nth-child(2){flex:1;min-width:0}.anTabs b{display:block;font-size:.92rem}.anTabs small{display:block;font-size:.72rem;color:var(--mut)}
+.anTabs button.on{border-color:var(--a1);box-shadow:0 0 0 3px color-mix(in srgb,var(--a1) 22%,transparent)}
+.anTb{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}.anTb input{flex:1;min-width:180px;max-width:320px;border-radius:999px!important;padding:8px 14px!important}.anTb select{width:auto;padding:8px 12px!important;border-radius:999px!important}
+.anP{display:none}.anP.on{display:block;animation:up .3s both}
+.anG{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px}
+.anC{border:1px solid var(--bd);border-radius:18px;background:var(--glass);overflow:hidden;display:flex;flex-direction:column;animation:up .3s both;transition:border-color .2s,transform .15s}
+.anC:hover{border-color:var(--cc);transform:translateY(-2px)}
+.anPh{position:relative;aspect-ratio:16/10;background:color-mix(in srgb,var(--cc) 14%,#0b1020);cursor:zoom-in;display:grid;place-items:center;font-size:2.6rem}
+.anPh img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.anPh .bd{position:absolute;padding:3px 9px;border-radius:999px;font-size:.72rem;font-weight:800;backdrop-filter:blur(8px)}
+.anPh .cat{top:10px;left:10px;background:color-mix(in srgb,var(--cc) 85%,#000);color:#fff}.anPh .nph{top:10px;right:10px;background:rgba(0,0,0,.6);color:#fff}
+.anPh .pr{bottom:10px;left:10px;background:rgba(0,0,0,.72);color:#fff;font-size:.95rem;padding:5px 11px}.anPh .pr s{opacity:.6;font-weight:600;font-size:.75rem;margin-left:5px}
+.anPh .pc{bottom:10px;right:10px;background:#ef4444;color:#fff}
+.anB{padding:12px 14px 14px;display:flex;flex-direction:column;gap:8px;flex:1}
+.anB h4{margin:0;font-size:1rem;line-height:1.25;cursor:pointer}.anM{font-size:.78rem;color:var(--mut);display:flex;flex-wrap:wrap;gap:4px 10px}
+.anW{display:flex;gap:10px;align-items:center;padding:9px 10px;border-radius:12px;background:color-mix(in srgb,var(--txt) 5%,transparent);border:1px solid var(--bd)}
+.anAv{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-weight:900;color:#fff;background:linear-gradient(135deg,var(--a1),var(--a2));flex:none}
+.anW b{display:block;font-size:.86rem}.anW small{display:block;font-size:.74rem;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.anW>div{min-width:0;flex:1}
+.anTag{display:inline-block;font-size:.66rem;font-weight:800;padding:2px 7px;border-radius:999px;margin-left:4px;vertical-align:middle}
+.anTag.mb{background:color-mix(in srgb,#10b981 22%,transparent);color:#10b981}.anTag.vi{background:color-mix(in srgb,#94a3b8 22%,transparent);color:var(--mut)}
+.anTag.op{background:color-mix(in srgb,#10b981 18%,transparent);color:#10b981}.anTag.cl{background:color-mix(in srgb,#f59e0b 18%,transparent);color:#f59e0b}
+.anRef{font:600 .7rem 'JetBrains Mono',monospace;color:var(--mut)}
+.anA{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto}.anA .btn,.anA .ghost{flex:1 1 auto;justify-content:center}
+.anL{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;border:1px solid var(--bd);background:var(--glass);margin-top:8px;cursor:pointer}
+.anL.unr{border-color:#ef4444;box-shadow:inset 4px 0 0 #ef4444}.anL img,.anL .ph{width:52px;height:52px;border-radius:10px;object-fit:cover;flex:none;display:grid;place-items:center;background:var(--glass2);font-size:1.4rem}
+.anL>div{flex:1;min-width:0}.anL b{display:block}.anL small{display:block;color:var(--mut);font-size:.8rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.anGal{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}.anGal img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;cursor:zoom-in}
+.anKV{display:grid;grid-template-columns:140px 1fr;gap:6px 12px;font-size:.88rem;margin:12px 0}.anKV span{color:var(--mut)}
+@media(max-width:1100px){.anK{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:700px){.anK div:last-child{grid-column:1/-1}.anK{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.anK b{font-size:1.25rem}.anTabs{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.anTabs button{padding:10px}.anTabs small{display:none}.anTabs .rqAn{position:absolute;top:6px;right:6px;min-width:22px;height:22px;font-size:.72rem}.anG{grid-template-columns:1fr}.anKV{grid-template-columns:1fr}}
 /* ═══ Thèmes de couleur ═══ */
 nav button.act{color:var(--txt);background:linear-gradient(135deg,color-mix(in srgb,var(--a1) 26%,transparent),color-mix(in srgb,var(--a2) 12%,transparent));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--a1) 45%,transparent)}
 .chips button.act{background:color-mix(in srgb,var(--a1) 22%,transparent);border-color:var(--a1);color:var(--txt)}
@@ -834,16 +872,24 @@ kbd{display:inline-block;padding:2px 7px;border-radius:6px;border:1px solid var(
 
   <!-- ANNONCES -->
   <section id="v-ann" class="view">
-    <div class="card"><h3>🏷️ Annonces à valider <span style="display:flex;gap:6px;margin-left:auto"><a class="ghost sm" href="annonces/" target="_blank" style="text-decoration:none">Ouvrir le site ↗</a><button class="ghost sm" onclick="loadAnn().then(()=>toast('↻ Annonces actualisées'))">↻</button></span></h3>
-      <p class="hint">Annonces déposées sur Maison des Annonces. Rien n'est visible sur le site tant que tu n'as pas autorisé la publication. Les coordonnées du vendeur ne s'affichent que si tu choisis « Publier + coordonnées ».</p>
-      <div id="annList"></div></div>
-    <div class="card" style="margin-top:16px"><h3>💬 Messages des acheteurs <span id="annMsgN" style="margin-left:auto"></span></h3>
-      <p class="hint">Messages envoyés depuis les annonces. Le chiffre rouge indique les messages non lus.</p>
-      <div id="annMsg"></div></div>
-    <div class="card" style="margin-top:16px"><h3>👤 Comptes membres <span style="margin-left:auto;font-weight:400;opacity:.7" id="annMbN"></span></h3>
-      <p class="hint">Inscriptions et demandes de nouveau mot de passe envoyées depuis le site. Aucune licence à générer : un clic suffit.</p>
-      <div id="annMb"></div></div>
-    <div class="card" style="margin-top:16px"><h3>✅ Annonces en ligne <span id="annOnN" style="margin-left:auto;font-weight:400;opacity:.7"></span></h3><div id="annOn"></div></div>
+    <div class="anK" id="anK"></div>
+    <div id="anNot"></div>
+    <div class="anTabs" id="anTabs">
+      <button data-t="wait" onclick="anTab('wait')"><span class="ni">🕒</span><span><b>À valider</b><small>Annonces reçues</small></span><i class="rqAn" id="anTnWait"></i></button>
+      <button data-t="on" onclick="anTab('on')"><span class="ni">✅</span><span><b>En ligne</b><small>Disponibles sur le site</small></span><i class="rqAn z" id="anTnOn"></i></button>
+      <button data-t="msg" onclick="anTab('msg')"><span class="ni">💬</span><span><b>Messages</b><small>Acheteurs</small></span><i class="rqAn" id="anTnMsg"></i></button>
+      <button data-t="mb" onclick="anTab('mb')"><span class="ni">👤</span><span><b>Membres</b><small>Comptes vendeurs</small></span><i class="rqAn" id="anTnMb"></i></button>
+    </div>
+    <div class="card">
+      <div class="anTb"><input id="anQ" type="search" placeholder="🔎 Titre, vendeur, ville, e-mail…" oninput="anDraw()">
+        <select id="anSort" onchange="anDraw()"><option value="new">Plus récentes</option><option value="old">Plus anciennes</option><option value="pd">Prix décroissant</option><option value="pa">Prix croissant</option></select>
+        <span style="display:flex;gap:6px;margin-left:auto"><a class="ghost sm" href="annonces/" target="_blank" rel="noopener" style="text-decoration:none">🌐 Ouvrir le site ↗</a><button class="ghost sm" onclick="loadAnn().then(()=>toast('↻ Annonces actualisées'))">↻</button></span></div>
+      <div class="rqCh" id="anCat" style="margin-bottom:12px"></div>
+      <div class="anP" data-p="wait"><p class="hint">Rien n'est visible sur le site tant que tu n'as pas autorisé la publication. « Publier + coordonnées » affiche le téléphone et l'e-mail du vendeur ; sinon les acheteurs passent par la messagerie.</p><div id="annList" class="anG"></div></div>
+      <div class="anP" data-p="on"><p class="hint">Annonces actuellement disponibles sur Maison des Annonces. <span id="annOnN"></span></p><div id="annOn" class="anG"></div></div>
+      <div class="anP" data-p="msg"><p class="hint">Messages envoyés par les acheteurs depuis les annonces. <span id="annMsgN"></span></p><div id="annMsg"></div></div>
+      <div class="anP" data-p="mb"><p class="hint">Inscriptions et nouveaux mots de passe demandés sur le site — un clic suffit, aucune licence à générer. <span id="annMbN"></span></p><div id="annMb"></div></div>
+    </div>
   </section>
 
   <!-- NOTES -->
@@ -1869,37 +1915,78 @@ let ANNW=[],ANNON=[];
 const ANCAT={auto:'🚗 Voiture',moto:'🏍 Moto',immo:'🏠 Immobilier',tech:'📱 High-Tech',maison:'🛋 Maison',mode:'👜 Mode',loisirs:'🎮 Loisirs',promo:'🔥 Promotion',autre:'📦 Autre'};
 const annEur=n=>Number(n||0).toLocaleString('fr-FR',{style:'currency',currency:'EUR',maximumFractionDigits:0});
 async function annGet(p){const t=await fbTok(),r=await fetch(`${FB()}/${p}.json?auth=${t}&t=${Date.now()}`);if(r.status===401||r.status===403)throw new Error('Règles Firebase à republier (nœuds « annonces »)');if(!r.ok)throw new Error('Firebase '+r.status);return await r.json()||{}}
-async function loadAnn(){loadAnnMb();loadAnnMsg();try{const w=await annGet('annoncesWait'),o=await fetch(`${FB()}/annonces.json?t=${Date.now()}`).then(r=>r.ok?r.json():{})||{};
+async function loadAnn(){loadAnnMb();loadAnnMsg();try{annGet('crm/annoncesPriv').then(d=>{ANNPRIV=d||{};anDraw()}).catch(()=>{});const w=await annGet('annoncesWait'),o=await fetch(`${FB()}/annonces.json?t=${Date.now()}`).then(r=>r.ok?r.json():{})||{};
   ANNW=Object.entries(w).map(([id,a])=>({...a,id})).sort((a,b)=>b.t-a.t);ANNON=Object.entries(o).map(([id,a])=>({...a,id})).sort((a,b)=>b.t-a.t);renderAnn()}
  catch(e){$('annList').innerHTML=`<div class="empty">⚠️ ${esc(e.message)}</div>`}}
-function annCard(a,on){const p=a.priv||a.contact||{},img=(a.imgs||[])[0];
- return `<div class="card" style="display:grid;grid-template-columns:110px 1fr;gap:14px;padding:14px;margin-top:10px">
-  ${img?`<img src="${img}" style="width:110px;height:110px;object-fit:cover;border-radius:12px;cursor:zoom-in" onclick="annImgs('${a.id}',${on})">`:'<div style="width:110px;height:110px;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.06);font-size:2rem">🏷️</div>'}
-  <div><b style="font-size:1.05rem">${esc(a.title)}</b> — <b>${annEur(a.price)}</b>${a.oldPrice>a.price?` <s style="opacity:.6">${annEur(a.oldPrice)}</s>`:''}
-   <div style="opacity:.75;font-size:.85rem;margin:4px 0">${ANCAT[a.cat]||''} · ${esc(a.cond||'')} · 📍 ${esc(a.sCity||'')} · ${fmtD(new Date(a.t))} · ${(a.imgs||[]).length} photo(s)${a.membre?' · 👤 membre':''}</div>
-   ${on?`<div style="font-size:.85rem">${a.contact?'🔓 Coordonnées affichées':'🔒 Coordonnées masquées'}</div>`:`<div style="font-size:.85rem">👤 ${esc(a.sName||'')} · 📞 ${esc(p.phone||'—')} · ✉ ${esc(p.mail||'—')}${p.wa?' · WhatsApp':''}</div>
-   <div style="font-size:.85rem;opacity:.8;margin-top:6px;white-space:pre-wrap;max-height:90px;overflow:auto">${esc(a.desc||'')}</div>`}
-   <div class="acts2" style="margin-top:10px">${on?`<button class="ghost sm danger" onclick="annDel('${a.id}')">🗑️ Retirer du site</button>`:`<button class="btn sm" onclick="annOk('${a.id}',true)">✅ Publier + coordonnées</button><button class="btn sm" onclick="annOk('${a.id}',false)">✅ Publier (coordonnées masquées)</button><button class="ghost sm danger" onclick="annNo('${a.id}')">❌ Refuser</button>`}</div>
-  </div></div>`}
-function renderAnn(){const n=ANNW.length;annBadge();$('annList').innerHTML=n?ANNW.map(a=>annCard(a,false)).join(''):'<div class="empty">📭 Aucune annonce en attente</div>';
- $('annOnN').textContent=ANNON.length+' en ligne';$('annOn').innerHTML=ANNON.length?ANNON.map(a=>annCard(a,true)).join(''):'<div class="empty">Aucune annonce publiée</div>'}
+const ANCOL={auto:'#3b82f6',moto:'#f97316',immo:'#10b981',tech:'#8b5cf6',maison:'#eab308',mode:'#ec4899',loisirs:'#06b6d4',promo:'#ef4444',autre:'#64748b'};
+let ANTAB=(()=>{try{return localStorage.getItem('anTab')||''}catch(e){return''}})(),ANCATF='',ANNPRIV={};
+const anAgo=t=>{const m=Math.round((Date.now()-t)/60000);return m<1?'à l\'instant':m<60?`il y a ${m} min`:m<1440?`il y a ${Math.round(m/60)} h`:m<43200?`il y a ${Math.round(m/1440)} j`:fmtD(new Date(t))};
+const anIni=n=>(String(n||'?').trim()[0]||'?').toUpperCase();
+const anWho=a=>{const p=a.priv||ANNPRIV[a.id]||a.contact||{};return{n:a.sName||p.name||'Vendeur',ph:p.phone||'',ml:p.mail||'',wa:!!p.wa,city:a.sCity||''}};
+const anImg=u=>typeof u==='string'&&/^(data:image\/(png|jpe?g|webp|gif);base64,|https:\/\/)/.test(u)?u:'';
+function anTab(t){ANTAB=t;ANCATF='';try{localStorage.setItem('anTab',t)}catch(e){}anHead();anDraw()}
+function anHead(){const un=ANNMSG.reduce((x,m)=>x+m.unread,0),mbw=ANNMB.filter(r=>r.statut==='attente').length,mbok=ANNMB.filter(r=>r.type==='compte'&&r.statut==='accordee').length;
+  if(!ANTAB)ANTAB='wait';
+  document.querySelectorAll('#anTabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===ANTAB));document.querySelectorAll('.anP').forEach(p=>p.classList.toggle('on',p.dataset.p===ANTAB));
+  const st=(id,n,z)=>{const e=$(id);if(e){e.textContent=n;e.classList.toggle('z',!!z)}};
+  st('anTnWait',ANNW.length||'✓',!ANNW.length);st('anTnOn',ANNON.length,true);st('anTnMsg',un||'✓',!un);st('anTnMb',mbw||'✓',!mbw);
+  const val=ANNON.reduce((x,a)=>x+(+a.price||0),0);
+  if($('anK'))$('anK').innerHTML=[['À valider',ANNW.length,'#f59e0b',ANNW.length?`dernière ${anAgo(ANNW[0].t)}`:'rien en attente'],['En ligne',ANNON.length,'#10b981',`${ANNON.filter(a=>a.contact).length} avec coordonnées`],['Messages non lus',un,'#ef4444',`${ANNMSG.length} conversation${ANNMSG.length>1?'s':''}`],['Membres',mbok,'#3b82f6',mbw?`${mbw} en attente`:'aucune demande'],['Valeur en ligne',annEur(val),'#8b5cf6',ANNON.length?`moy. ${annEur(val/ANNON.length)}`:'—']]
+    .map(([l,v,c,e])=>`<div style="--kc:${c}"><small>${l}</small><b>${v}</b><em>${e}</em></div>`).join('');
+  const parts=[ANNW.length?`<strong>${ANNW.length}</strong> annonce${ANNW.length>1?'s':''} à valider`:'',un?`<strong>${un}</strong> message${un>1?'s':''} non lu${un>1?'s':''}`:'',mbw?`<strong>${mbw}</strong> demande${mbw>1?'s':''} de compte`:''].filter(Boolean);
+  if($('anNot'))$('anNot').innerHTML=parts.length?`<div class="rqN new"><span class="rqNi">🔔</span><div style="flex:1"><b>Annonces : tu as ${parts.join(' · ')}</b><small>${ANNW.length?`Dernière annonce reçue de ${esc(anWho(ANNW[0]).n)} — « ${esc(ANNW[0].title||'')} »`:'Ouvre l\'onglet concerné pour traiter.'}</small></div></div>`
+    :`<div class="rqN ok"><span class="rqNi">✅</span><div><b>Annonces : tout est traité</b><small>${ANNON.length} annonce${ANNON.length>1?'s':''} disponible${ANNON.length>1?'s':''} sur le site.</small></div></div>`}
+function anList(on){const q=($('anQ')?.value||'').trim().toLowerCase(),so=$('anSort')?.value||'new';
+  return (on?ANNON:ANNW).filter(a=>{if(ANCATF&&a.cat!==ANCATF)return false;if(!q)return true;const w=anWho(a);return [a.title,a.desc,a.sCity,w.n,w.ml,w.ph,ANCAT[a.cat],a.id].join(' ').toLowerCase().includes(q)})
+    .sort((x,y)=>so==='old'?x.t-y.t:so==='pd'?(+y.price||0)-(+x.price||0):so==='pa'?(+x.price||0)-(+y.price||0):y.t-x.t)}
+function annCard(a,on,i){const img=anImg((a.imgs||[])[0]),w=anWho(a),cc=ANCOL[a.cat]||'#64748b',pc=a.oldPrice>a.price?Math.round((1-a.price/a.oldPrice)*100):0;
+ return `<div class="anC" style="--cc:${cc};animation-delay:${(i||0)*.03}s">
+  <div class="anPh" onclick="annView('${a.id}',${on})">${img?`<img src="${img}" alt="" loading="lazy">`:(ANCAT[a.cat]||'🏷️').split(' ')[0]}
+   <span class="bd cat">${esc(ANCAT[a.cat]||'📦 Autre')}</span><span class="bd nph">📷 ${(a.imgs||[]).length}</span><span class="bd pr">${annEur(a.price)}${pc?`<s>${annEur(a.oldPrice)}</s>`:''}</span>${pc?`<span class="bd pc">-${pc} %</span>`:''}</div>
+  <div class="anB"><h4 onclick="annView('${a.id}',${on})">${esc(a.title||'Sans titre')}</h4>
+   <div class="anM"><span>📍 ${esc(a.sCity||'—')}</span>${a.cond?`<span>🏷 ${esc(a.cond)}</span>`:''}<span title="${fmtD(new Date(a.t))}">🕒 ${anAgo(a.t)}</span></div>
+   <div class="anW"><span class="anAv">${esc(anIni(w.n))}</span><div><b>${esc(w.n)}${a.membre?'<span class="anTag mb">Membre ✓</span>':'<span class="anTag vi">Visiteur</span>'}</b><small>${w.ph?'📞 '+esc(w.ph):''}${w.ph&&w.ml?' · ':''}${w.ml?'✉ '+esc(w.ml):''}${!w.ph&&!w.ml?'Coordonnées non renseignées':''}${w.wa?' · WhatsApp':''}</small></div></div>
+   <div class="anRef">Réf. ${esc(String(a.id).slice(-8).toUpperCase())}${on?(a.contact?' <span class="anTag op">🔓 Coordonnées publiques</span>':' <span class="anTag cl">🔒 Coordonnées masquées</span>'):' <span class="anTag cl">⏳ En attente</span>'}</div>
+   <div class="anA">${on?`<a class="ghost sm" style="text-decoration:none" href="annonces/#${encodeURIComponent(a.id)}" target="_blank" rel="noopener">👁 Voir sur le site</a><button class="ghost sm danger" onclick="annDel('${a.id}')">🗑️ Retirer</button>`
+     :`<button class="btn sm" onclick="annOk('${a.id}',true)">✅ Publier + coordonnées</button><button class="ghost sm" onclick="annOk('${a.id}',false)">✅ Publier masqué</button><button class="ghost sm danger" onclick="annNo('${a.id}')">❌ Refuser</button>`}</div></div></div>`}
+function annView(id,on){const a=(on?ANNON:ANNW).find(x=>x.id===id);if(!a)return;const w=anWho(a),I=(a.imgs||[]).map(anImg).filter(Boolean),sid=I.length?imgSet(I):'';
+  openModal(`<div class="md-h"><div class="pi" style="--pc:${ANCOL[a.cat]||'#64748b'}">${(ANCAT[a.cat]||'🏷️').split(' ')[0]}</div><div><h2>${esc(a.title||'')}</h2><span>${annEur(a.price)} · ${esc(ANCAT[a.cat]||'')} · ${on?'En ligne':'À valider'}</span></div><button class="x" onclick="closeModal()">✕</button></div>
+   <div class="md-b">${I.length?`<div class="anGal">${I.map((u,i)=>`<img src="${u}" onclick="imgView(null,${i},window._imgSets['${sid}'])">`).join('')}</div>`:''}
+    <div class="anKV"><span>Envoyée par</span><b>${esc(w.n)} ${a.membre?'<span class="anTag mb">Membre ✓</span>':'<span class="anTag vi">Visiteur</span>'}</b><span>Téléphone</span><div>${w.ph?`<a href="tel:${esc(w.ph)}">${esc(w.ph)}</a>${w.wa?' · WhatsApp':''}`:'—'}</div><span>E-mail</span><div>${w.ml?`<a href="mailto:${esc(w.ml)}">${esc(w.ml)}</a>`:'—'}</div>
+     <span>Ville</span><div>📍 ${esc(a.sCity||'—')}</div><span>État</span><div>${esc(a.cond||'—')}</div><span>Prix</span><div><b>${annEur(a.price)}</b>${a.oldPrice>a.price?` <s style="opacity:.6">${annEur(a.oldPrice)}</s>`:''}</div>
+     <span>Déposée le</span><div>${fmtD(new Date(a.t))} (${anAgo(a.t)})</div><span>Référence</span><div class="anRef">${esc(a.id)}</div>${on?`<span>Coordonnées</span><div>${a.contact?'🔓 visibles sur le site':'🔒 masquées (messagerie)'}</div>`:''}</div>
+    <label>Description</label><div style="white-space:pre-wrap;font-size:.9rem;line-height:1.5;padding:12px;border-radius:12px;border:1px solid var(--bd);max-height:260px;overflow:auto">${esc(a.desc||'—')}</div>
+    <div class="acts2" style="margin-top:14px">${on?`<a class="btn" style="text-decoration:none" href="annonces/#${encodeURIComponent(a.id)}" target="_blank" rel="noopener">👁 Voir sur le site</a><button class="ghost danger" onclick="closeModal();annDel('${a.id}')">🗑️ Retirer du site</button>`
+      :`<button class="btn" onclick="closeModal();annOk('${a.id}',true)">✅ Publier + coordonnées</button><button class="ghost" onclick="closeModal();annOk('${a.id}',false)">✅ Publier masqué</button><button class="ghost danger" onclick="closeModal();annNo('${a.id}')">❌ Refuser</button>`}</div></div>`)}
+function anDraw(){const on=ANTAB==='on',isAd=ANTAB==='wait'||on,src=on?ANNON:ANNW;
+  if($('anCat')){$('anCat').style.display=isAd?'':'none';const cats=[...new Set(src.map(a=>a.cat||'autre'))];
+    $('anCat').innerHTML=isAd&&src.length?[`<button class="${!ANCATF?'on':''}" onclick="ANCATF='';anDraw()">Toutes<i>${src.length}</i></button>`,...cats.map(c=>`<button class="${ANCATF===c?'on':''}" onclick="ANCATF='${c}';anDraw()">${esc(ANCAT[c]||c)}<i>${src.filter(a=>(a.cat||'autre')===c).length}</i></button>`)].join(''):''}
+  if($('anSort'))$('anSort').style.display=isAd?'':'none';
+  const L=anList(false),O=anList(true),flt=($('anQ')?.value||'').trim()||ANCATF;
+  if($('annList'))$('annList').innerHTML=L.length?L.map((a,i)=>annCard(a,false,i)).join(''):`<div class="empty" style="grid-column:1/-1">${ANNW.length&&flt?'🔎 Aucune annonce ne correspond':'📭 Aucune annonce en attente'}</div>`;
+  if($('annOn'))$('annOn').innerHTML=O.length?O.map((a,i)=>annCard(a,true,i)).join(''):`<div class="empty" style="grid-column:1/-1">${ANNON.length&&flt?'🔎 Aucune annonce ne correspond':'Aucune annonce publiée'}</div>`;
+  if($('annOnN'))$('annOnN').textContent=ANNON.length+' en ligne';
+  if(ANTAB==='msg'||ANTAB==='mb'){const q=($('anQ')?.value||'').trim().toLowerCase();document.querySelectorAll(`#annMsg .anL,#annMb .anL,#annMb details .card`).forEach(e=>{e.style.display=!q||e.textContent.toLowerCase().includes(q)?'':'none'})}}
+function renderAnn(){annBadge();anDraw()}
 let ANNMB=[],ANNMBW=0,ANNMSG=[];
 const annRed=n=>n?`<span style="background:#ef4444;color:#fff;border-radius:99px;min-width:22px;height:22px;padding:0 7px;display:inline-grid;place-items:center;font-size:.75rem;font-weight:800">${n}</span>`:'';
-function annBadge(){const u=ANNMSG.reduce((a,x)=>a+x.unread,0);$('nbAnn').textContent=(ANNW.length+ANNMBW+u)||''}
+function annBadge(){const u=ANNMSG.reduce((a,x)=>a+x.unread,0);$('nbAnn').textContent=(ANNW.length+ANNMBW+u)||'';anHead()}
 async function loadAnnMsg(){try{const d=await annGet('support');
   ANNMSG=Object.entries(d).filter(([,x])=>x&&x.produit==='Annonces').map(([tid,x])=>{const ms=[{from:'client',t:x.t},...Object.values(x.msgs||{})].sort((a,b)=>a.t-b.t);
    const seen=x.seenAdmin||0,lastSav=Math.max(0,...ms.filter(m=>m.from==='sav').map(m=>m.t)),ref=Math.max(seen,lastSav);
    return{...x,tid,last:ms.at(-1).t,unread:ms.filter(m=>m.from==='client'&&m.who!=='vendeur'&&m.t>ref).length}}).sort((a,b)=>b.last-a.last);
   const u=ANNMSG.reduce((a,x)=>a+x.unread,0);$('annMsgN').innerHTML=annRed(u);annBadge();
-  $('annMsg').innerHTML=ANNMSG.length?ANNMSG.map(x=>`<div class="card" style="padding:12px 14px;margin-top:8px;cursor:pointer;display:flex;gap:10px;align-items:center;${x.unread?'border-color:#ef4444':''}" onclick="annOpenMsg('${x.tid}')">
-   <div style="flex:1;min-width:0"><b>${esc((x.sujet||'').replace(/^Annonce : /,''))}</b><div style="opacity:.75;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">✉ ${esc(x.email)} · ${fmtD(new Date(x.last))}</div></div>${annRed(x.unread)||'<span style="opacity:.5">›</span>'}</div>`).join(''):'<div class="empty">📭 Aucun message</div>'}
+  $('annMsg').innerHTML=ANNMSG.length?ANNMSG.map(x=>{const ti=(x.sujet||'').replace(/^Annonce : /,''),ad=[...ANNON,...ANNW].find(a=>a.title===ti),im=ad&&anImg((ad.imgs||[])[0]);
+   return `<div class="anL ${x.unread?'unr':''}" onclick="annOpenMsg('${x.tid}')">${im?`<img src="${im}" alt="">`:'<span class="ph">💬</span>'}
+   <div><b>${esc(ti||'Message')}</b><small>✉ ${esc(x.email)}${ad?` · ${annEur(ad.price)}`:''} · ${anAgo(x.last)}</small><small>${ad?(ANNON.includes(ad)?'✅ Annonce en ligne':'🕒 Annonce à valider'):'Annonce retirée ou introuvable'}</small></div>${annRed(x.unread)||'<span style="opacity:.5">›</span>'}</div>`}).join(''):'<div class="empty">📭 Aucun message</div>';anDraw()}
  catch(e){$('annMsg').innerHTML=`<div class="empty">⚠️ ${esc(e.message)}</div>`}}
 async function annOpenMsg(tid){try{await fbPut(`support/${tid}/seenAdmin`,Date.now())}catch(e){}await openSup(tid);loadAnnMsg()}
 async function loadAnnMb(){try{const d=await annGet('requests');ANNMB=Object.entries(d).map(([rid,r])=>({...r,rid})).filter(r=>r.produit==='Annonces'&&(r.type==='compte'||r.type==='mdp')).sort((a,b)=>b.t-a.t);renderAnnMb()}catch(e){$('annMb').innerHTML=`<div class="empty">⚠️ ${esc(e.message)}</div>`}}
 function renderAnnMb(){const w=ANNMB.filter(r=>r.statut==='attente'),ok=ANNMB.filter(r=>r.type==='compte'&&r.statut==='accordee');
  $('annMbN').textContent=ok.length+' membre(s) · '+w.length+' en attente';ANNMBW=w.length;annBadge();
- const row=(r,btns)=>`<div class="card" style="padding:12px 14px;margin-top:8px"><b>${r.type==='mdp'?'🔑 Nouveau mot de passe':'🆕 Inscription'} — ${esc(r.nom||r.email)}</b>
-  <div style="opacity:.75;font-size:.85rem;margin:3px 0">✉ ${esc(r.email)}${r.tel?' · 📞 '+esc(r.tel):''}${r.ville?' · 📍 '+esc(r.ville):''} · ${fmtD(new Date(r.t))}</div>
+ const nAds=em=>[...ANNW,...ANNON].filter(a=>(anWho(a).ml||'').toLowerCase()===String(em||'').toLowerCase()).length;
+ const row=(r,btns)=>`<div class="card anL" style="cursor:default;display:block"><div style="display:flex;gap:12px;align-items:center"><span class="anAv">${esc(anIni(r.nom||r.email))}</span><div style="flex:1;min-width:0"><b>${r.type==='mdp'?'🔑 Nouveau mot de passe':r.statut==='accordee'?'✅ Membre':'🆕 Inscription'} — ${esc(r.nom||r.email)}</b>
+  <small>✉ ${esc(r.email)}${r.tel?' · 📞 '+esc(r.tel):''}${r.ville?' · 📍 '+esc(r.ville):''} · ${anAgo(r.t)}${nAds(r.email)?` · 🏷️ ${nAds(r.email)} annonce${nAds(r.email)>1?'s':''}`:''}</small></div></div>
   ${r.message&&r.message.includes('\n\n')?`<div style="font-size:.85rem;opacity:.85;white-space:pre-wrap">${esc(r.message.split('\n\n').slice(1).join('\n\n'))}</div>`:''}<div class="acts2" style="margin-top:8px">${btns}</div></div>`;
  $('annMb').innerHTML=(w.length?w.map(r=>row(r,r.type==='mdp'?`<button class="btn sm" onclick="mbPwd('${r.rid}')">✅ Valider le nouveau mot de passe</button><button class="ghost sm danger" onclick="mbNo('${r.rid}')">❌ Refuser</button>`:`<button class="btn sm" onclick="mbOk('${r.rid}')">✅ Valider le compte</button><button class="ghost sm danger" onclick="mbNo('${r.rid}')">❌ Refuser</button>`)).join(''):'<div class="empty">📭 Aucune demande de compte en attente</div>')
   +(ok.length?`<details style="margin-top:12px"><summary style="cursor:pointer">Membres validés (${ok.length})</summary>${ok.map(r=>row(r,`<button class="ghost sm danger" onclick="mbOff('${r.rid}')">⛔ Désactiver</button>`)).join('')}</details>`:'')}
