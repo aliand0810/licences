@@ -448,6 +448,67 @@ const FIELDS={
  emploi:[['contract','Type de contrat','s',S('CDI','CDD','Intérim','Alternance','Stage','Freelance','Saisonnier')],['time','Temps de travail','s',S('Temps plein','Temps partiel','Horaires flexibles')],['company','Entreprise','t'],['sector','Secteur d\'activité','t'],['exp','Expérience','s',S('Débutant accepté','1 à 2 ans','3 à 5 ans','5 ans et plus')],['remote','Télétravail','s',S('Non','Partiel','Total')],['start','Date de début','d'],['quals','Qualifications requises','a','Diplômes, permis, compétences…']]
 };
 const NOCOND=['immo','emploi'];
+/* Marques & modèles (liste de base — saisie libre toujours possible) */
+const BRANDS={
+ auto:{'Peugeot':['106','107','108','206','207','208','e-208','2008','e-2008','301','306','307','308','3008','405','406','407','408','5008','508','Partner','Rifter','Expert','Traveller','Boxer','Bipper'],
+  'Renault':['Twingo','Clio','Clio V','Captur','Mégane','Mégane E-Tech','Scénic','Kangoo','Kadjar','Austral','Arkana','Koleos','Espace','Talisman','Laguna','Modus','Zoé','Trafic','Master','Rafale'],
+  'Citroën':['C1','C2','C3','C3 Aircross','C4','C4 Picasso','C4 Cactus','C4 X','C5','C5 Aircross','C5 X','DS3','Berlingo','Jumpy','Jumper','Xsara Picasso','Saxo','Ami','SpaceTourer','Nemo'],
+  'Dacia':['Sandero','Sandero Stepway','Logan','Duster','Jogger','Spring','Lodgy','Dokker','Bigster'],
+  'DS':['DS 3','DS 3 Crossback','DS 4','DS 5','DS 7','DS 9'],
+  'Volkswagen':['Polo','Golf','Golf GTI','T-Roc','T-Cross','Tiguan','Touran','Passat','Arteon','Up!','ID.3','ID.4','ID.5','ID. Buzz','Touareg','Caddy','Transporter','Sharan','Scirocco','Taigo'],
+  'Toyota':['Aygo','Aygo X','Yaris','Yaris Cross','Corolla','C-HR','RAV4','Prius','Auris','Land Cruiser','Hilux','Proace','Supra','bZ4X','GR86'],
+  'Ford':['Fiesta','Focus','Puma','Kuga','EcoSport','Mondeo','Mustang','Mustang Mach-E','Ranger','Transit','Transit Custom','Galaxy','S-Max','C-Max','Ka'],
+  'Opel':['Corsa','Astra','Mokka','Crossland','Grandland','Insignia','Zafira','Meriva','Adam','Combo','Vivaro','Movano'],
+  'Fiat':['500','500X','500L','500e','Panda','Tipo','Punto','Grande Punto','Doblò','Ducato','Fiorino','Scudo','600'],
+  'Nissan':['Micra','Juke','Qashqai','X-Trail','Leaf','Ariya','Note','Navara','NV200','Townstar'],
+  'Hyundai':['i10','i20','i30','Kona','Tucson','Santa Fe','Ioniq','Ioniq 5','Ioniq 6','Bayon'],
+  'Kia':['Picanto','Rio','Ceed','XCeed','Stonic','Niro','Sportage','Sorento','EV6','EV9','Soul'],
+  'BMW':['Série 1','Série 2','Série 3','Série 4','Série 5','Série 7','X1','X2','X3','X4','X5','X6','X7','i3','i4','iX','iX1','iX3','Z4','M3','M4'],
+  'Mercedes-Benz':['Classe A','Classe B','Classe C','Classe E','Classe S','CLA','CLS','GLA','GLB','GLC','GLE','GLS','Classe G','EQA','EQB','EQC','EQE','EQS','Classe V','Vito','Sprinter','Citan'],
+  'Audi':['A1','A3','A4','A5','A6','A7','A8','Q2','Q3','Q4 e-tron','Q5','Q7','Q8','e-tron','e-tron GT','TT','RS3','RS6'],
+  'Skoda':['Fabia','Scala','Octavia','Superb','Kamiq','Karoq','Kodiaq','Enyaq','Citigo'],
+  'Seat':['Ibiza','Leon','Arona','Ateca','Tarraco','Alhambra','Mii'],
+  'Cupra':['Born','Formentor','Leon','Ateca','Tavascan'],
+  'Suzuki':['Swift','Ignis','Vitara','S-Cross','Jimny','Celerio','Baleno','Swace','Across'],
+  'Mazda':['Mazda2','Mazda3','Mazda6','CX-3','CX-30','CX-5','CX-60','MX-5','MX-30'],
+  'Honda':['Jazz','Civic','HR-V','CR-V','ZR-V','e:Ny1','Honda e'],
+  'Mitsubishi':['Space Star','ASX','Eclipse Cross','Outlander','L200','Colt'],
+  'Tesla':['Model 3','Model Y','Model S','Model X'],
+  'Volvo':['XC40','XC60','XC90','EX30','V40','V60','V90','S60','S90','C40'],
+  'Mini':['Cooper','One','Countryman','Clubman','Cabrio','Paceman'],
+  'Jeep':['Renegade','Compass','Avenger','Wrangler','Cherokee','Grand Cherokee'],
+  'Land Rover':['Defender','Discovery','Discovery Sport','Range Rover','Range Rover Evoque','Range Rover Sport','Range Rover Velar'],
+  'Alfa Romeo':['MiTo','Giulietta','Giulia','Stelvio','Tonale','Junior'],
+  'Lexus':['CT','UX','NX','RX','ES','LBX'],
+  'Porsche':['911','Cayenne','Macan','Panamera','Taycan','Boxster','Cayman'],
+  'MG':['MG3','MG4','MG5','ZS','HS','Marvel R'],
+  'BYD':['Dolphin','Atto 3','Seal','Seal U','Han','Tang'],
+  'Smart':['ForTwo','ForFour','#1','#3'],
+  'Isuzu':['D-Max'],'Lancia':['Ypsilon','Delta'],'Subaru':['Impreza','XV','Forester','Outback'],'SsangYong':['Tivoli','Korando','Rexton'],
+  'Aixam':['City','Coupé','Crossline','Minauto'],'Ligier':['JS50','Myli'],'Chevrolet':['Spark','Aveo','Cruze','Captiva','Camaro'],'Dodge':['Ram','Challenger','Charger']},
+ moto:{'Yamaha':['MT-03','MT-07','MT-09','MT-10','MT-125','XSR 125','XSR 700','XSR 900','Tracer 7','Tracer 9','Ténéré 700','YZF-R1','YZF-R3','YZF-R6','YZF-R7','YZF-R125','TMAX','XMAX 125','XMAX 300','NMAX 125','Aerox','BW\'s','FZ6','Fazer','WR 125','YZ 250F','YZ 450F'],
+  'Honda':['CB125R','CB300R','CB500F','CB500X','CB500 Hornet','CB650R','CB750 Hornet','CB1000R','CBR500R','CBR650R','CBR1000RR Fireblade','NC750X','Africa Twin','Transalp','X-ADV','Forza 125','Forza 350','PCX 125','SH 125','SH 350','Rebel 500','Rebel 1100','Gold Wing','Deauville','CRF 250','CRF 450','MSX 125 Grom','Monkey','Vision 110','Dax'],
+  'Kawasaki':['Z125','Z400','Z500','Z650','Z900','Z900RS','Z H2','Ninja 400','Ninja 500','Ninja 650','ZX-6R','ZX-10R','Versys 650','Versys 1000','Vulcan S','ER-6n','KX 250','KX 450'],
+  'Suzuki':['GSX-S125','GSX-8S','GSX-S750','GSX-S950','GSX-S1000','GSX-R600','GSX-R750','GSX-R1000','SV650','V-Strom 650','V-Strom 800DE','V-Strom 1050','Hayabusa','Burgman 125','Burgman 400','Bandit 650','RM-Z 450'],
+  'BMW Motorrad':['G 310 R','G 310 GS','F 750 GS','F 800 GS','F 850 GS','F 900 R','F 900 XR','R 1250 GS','R 1250 GS Adventure','R 1300 GS','R 1250 RT','R nineT','S 1000 RR','S 1000 R','S 1000 XR','M 1000 RR','K 1600 GT','C 400 X','C 400 GT','CE 04'],
+  'Ducati':['Monster','Monster SP','Scrambler Icon','Scrambler Full Throttle','Multistrada V2','Multistrada V4','Panigale V2','Panigale V4','Streetfighter V2','Streetfighter V4','Diavel V4','XDiavel','Hypermotard 950','DesertX','SuperSport 950'],
+  'KTM':['125 Duke','390 Duke','790 Duke','890 Duke','990 Duke','1290 Super Duke R','RC 125','RC 390','390 Adventure','790 Adventure','890 Adventure','1290 Super Adventure','250 EXC','300 EXC','450 SX-F','SMC 690'],
+  'Triumph':['Trident 660','Street Triple','Speed Triple','Tiger 660','Tiger 900','Tiger 1200','Bonneville T100','Bonneville T120','Speed Twin','Scrambler 900','Scrambler 1200','Thruxton','Rocket 3','Speed 400','Daytona 660'],
+  'Harley-Davidson':['Sportster S','Nightster','Iron 883','Forty-Eight','Street Bob','Fat Bob','Fat Boy','Low Rider','Softail Standard','Road King','Street Glide','Road Glide','Pan America','X350','X500'],
+  'Aprilia':['RS 125','RS 457','RS 660','Tuono 660','Tuono V4','RSV4','Tuareg 660','SR GT 125','SX 125'],
+  'Piaggio':['Vespa Primavera','Vespa Sprint','Vespa GTS 125','Vespa GTS 300','Liberty 125','Beverly 300','Beverly 400','MP3 300','MP3 400','MP3 530','Medley 125','Zip','Typhoon'],
+  'Royal Enfield':['Hunter 350','Classic 350','Meteor 350','Bullet 350','Himalayan','Scram 411','Interceptor 650','Continental GT 650','Super Meteor 650','Shotgun 650'],
+  'Moto Guzzi':['V7','V85 TT','V100 Mandello','Stelvio'],'MV Agusta':['Brutale','Dragster','F3','Turismo Veloce','Lucky Explorer'],
+  'Husqvarna':['Svartpilen 401','Vitpilen 401','Svartpilen 801','Norden 901','TE 300','FE 350','701 Supermoto'],
+  'Kymco':['Agility 125','People S 125','Like 125','X-Town 125','Xciting 400','AK 550','DT X360'],'Sym':['Symphony 125','Jet 14','Cruisym 125','Joymax Z 300','Maxsym TL 508'],
+  'Peugeot Motocycles':['Kisbee','Django','Tweet','Pulsion','Metropolis','XP400','Speedfight'],'Benelli':['TRK 502','TRK 702','Leoncino 500','752S'],'CFMoto':['300NK','450NK','700CL-X','800MT','450SR'],
+  'Zero':['FX','S','SR/F','DSR/X'],'Super Soco':['TC Max','CPx','CUx'],'Mash':['Seventy 125','Five Hundred','Black Seven'],'Rieju':['MRT 50','Marathon 125'],'Beta':['RR 125','RR 300','Alp']}
+};
+const bKey=(c,b)=>Object.keys(BRANDS[c]||{}).find(k=>k.toLowerCase()===String(b||'').trim().toLowerCase());
+function fillModels(){const c=$('fCat').value,bi=form.elements.x_brand,dl=$('dlModel');if(!bi||!dl||!BRANDS[c])return;
+ const k=bKey(c,bi.value),ms=k?BRANDS[c][k]:[];dl.innerHTML=ms.map(m=>`<option value="${esc(m)}">`).join('');
+ const mi=form.elements.x_model;if(mi){mi.placeholder=k?`${ms.length} modèles ${k} — ou saisissez le vôtre`:bi.value?'Saisissez le modèle':'Choisissez d\'abord la marque';
+  const h=$('mHint');if(h)h.textContent=k?'':bi.value.trim()?`« ${bi.value.trim()} » n'est pas dans la liste : saisie libre`:''}}
 const isJob=a=>a.cat==='emploi';
 const xOf=a=>{const x={...(a.x||{})};['brand','model','year','km','fuel','gear'].forEach(k=>{if(a[k]&&x[k]==null)x[k]=a[k]});return x};
 function fmtX(k,v,cat){if(k==='km')return Number(v).toLocaleString('fr-FR')+' km';if(k==='surf'||k==='land')return v+' m²';if(k==='cc')return v+' cm³';if(k==='power'&&cat!=='tech')return v+' ch';if(k==='start')return new Date(v).toLocaleDateString('fr-FR');return v}
@@ -631,12 +692,13 @@ function vehToggle(vals){const c=$('fCat').value,fs=FIELDS[c]||[],cur0=vals||rea
  $('dynH').style.display=fs.length?'':'none';
  $('dyn').innerHTML=fs.map(([k,l,t,o])=>{const v=esc(cur0[k]??''),nm=`name="x_${k}"`;
   if(t==='s')return`<label>${l}<select class="f" ${nm}><option value=""></option>${o.map(x=>`<option${String(cur0[k])===x?' selected':''}>${x}</option>`).join('')}</select></label>`;
+  if(BRANDS[c]&&(k==='brand'||k==='model'))return`<label>${l}<input class="f" ${nm} type="text" maxlength="60" list="${k==='brand'?'dlBrand':'dlModel'}" autocomplete="off" placeholder="${k==='brand'?'Tapez ou choisissez…':''}" value="${v}" ${k==='brand'?'oninput="fillModels()" onchange="fillModels()"':''}>${k==='model'?'<small id="mHint" style="text-transform:none;letter-spacing:0;font-weight:500;color:var(--ink2)"></small>':''}</label>`;
   if(t==='a')return`<label class="full">${l}<textarea class="f" ${nm} maxlength="1500" placeholder="${o||''}">${v}</textarea></label>`;
-  return`<label>${l}<input class="f" ${nm} type="${t==='n'?'number':t==='d'?'date':'text'}" ${t==='n'?'min="0"':''} maxlength="80" placeholder="${o||''}" value="${v}"></label>`}).join('');
+  return`<label>${l}<input class="f" ${nm} type="${t==='n'?'number':t==='d'?'date':'text'}" ${t==='n'?'min="0"':''} maxlength="80" placeholder="${o||''}" value="${v}"></label>`}).join('')+(BRANDS[c]?`<datalist id="dlBrand">${Object.keys(BRANDS[c]).sort((a,b)=>a.localeCompare(b,'fr')).map(b=>`<option value="${esc(b)}">`).join('')}</datalist><datalist id="dlModel"></datalist>`:'');fillModels();
  const job=c==='emploi';$('condL').style.display=NOCOND.includes(c)?'none':'';
  $('priceLbl').textContent=job?'Salaire brut (€ / mois)':c==='immo'?'Prix ou loyer (€) *':'Prix (€) *';form.elements.price.required=!job;
  $('oldL').style.display=$('promoRow').style.display=job?'none':'';promoLive()}
-function readDyn(){const o={};document.querySelectorAll('#dyn [name^="x_"]').forEach(e=>{const v=e.value.trim();if(v)o[e.name.slice(2)]=e.type==='number'?Number(v):v});return o}
+function readDyn(){const o={},c=$('fCat').value;document.querySelectorAll('#dyn [name^="x_"]').forEach(e=>{const v=e.value.trim();if(v)o[e.name.slice(2)]=e.type==='number'?Number(v):v});if(o.brand&&bKey(c,o.brand))o.brand=bKey(c,o.brand);if(o.model&&o.brand&&BRANDS[c]&&BRANDS[c][o.brand]){const m=BRANDS[c][o.brand].find(x=>x.toLowerCase()===o.model.toLowerCase());if(m)o.model=m}return o}
 function promoLive(){const p=parseFloat(form.elements.price.value),o=parseFloat(form.elements.oldPrice.value),el=$('promoLive');if(!el)return;
  el.textContent=o>p&&p>=0?`🔥 −${Math.round((1-p/o)*100)} % · économie de ${eur(o-p)}${form.elements.promoEnd.value?' · jusqu\'au '+new Date(form.elements.promoEnd.value).toLocaleDateString('fr-FR'):''}`:o&&o<=p?'⚠ Le prix avant promo doit être supérieur au prix':''}
 /* --- Mode avancé (membres autorisés) --- */
