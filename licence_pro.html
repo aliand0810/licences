@@ -1615,7 +1615,7 @@ function mdSize(){const m=$('md');if(!m)return;const small=!!m.querySelector('.n
 function mdToggle(){try{localStorage.setItem('mdFull',mdFullPref()?'0':'1')}catch(e){}mdSize()}
 new MutationObserver(()=>mdSize()).observe(document.getElementById('md')||document.body,{childList:true});
 function openModal(html,o){const m=$('md');m.classList.remove('pop');void m.offsetWidth;m.dataset.small=o&&o.small?'1':'';m.innerHTML=html;mdSize();m.classList.add('pop');$('mdl').classList.add('on');document.documentElement.classList.add('mdOpen');setTimeout(()=>{const f=$('md').querySelector('input:not([type=checkbox]),textarea');if(f&&innerWidth>860)f.focus()},150)}
-function closeModal(){$('mdl').classList.remove('on');document.documentElement.classList.remove('mdOpen')}
+function closeModal(){$('mdl').classList.remove('on');$('md').classList.remove('pop');document.documentElement.classList.remove('mdOpen')}
 document.addEventListener('keydown',e=>e.key==='Escape'&&closeModal());
 function chips(id,cb){$(id).querySelectorAll('button').forEach(b=>b.onclick=()=>{$(id).querySelectorAll('button').forEach(x=>x.classList.remove('act'));b.classList.add('act');cb(b)})}
 function mailTo(to,subj,body){location.href=`mailto:${to}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`}
