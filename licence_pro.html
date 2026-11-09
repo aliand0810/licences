@@ -2918,12 +2918,14 @@ async function gdAnnArchive(st){const t=await fbTok(),root=await gdSub('annRoot'
       for(let i=0;i<imgs.length;i++){const u=imgs[i];if(typeof u==='string'&&u.startsWith('data:image/')){const ext=(u.match(/^data:image\/(\w+)/)||[])[1]||'jpg',
         up=await gdUpload(fPh,`${nm(a.title)} · ${id} · photo-${i+1}.${ext.replace('jpeg','jpg')}`,'image/'+ext,u,`Maison des Annonces — ${a.title||''}`);
         if(!gdShare())await gdPublic(up.id);out.push(gdThumb(up.id));st.n++;st.b+=up.s;changed=true}else out.push(u)}
-      const{driveFiche:_df,driveSig:_ds,...a0}=a,sig=JSON.stringify({...a0,imgs:out}).length+':'+(a.title||'')+':'+(a.price||0);
-      if(changed||a.driveSig!==sig){const fiche={id,etat:node==='annonces'?'en ligne':'en attente de validation',...a,imgs:out,coordonnees:a.priv||priv[id]||a.contact||null,archive:new Date().toISOString()};delete fiche.driveFiche;delete fiche.driveSig;
+      const sp=Array.isArray(a.spin)?a.spin:[],sOut=[];for(let i=0;i<sp.length;i++){const u=sp[i];if(typeof u==='string'&&u.startsWith('data:image/')){const up=await gdUpload(fPh,`${nm(a.title)} · ${id} · 360-${String(i+1).padStart(2,'0')}.jpg`,'image/jpeg',u,`Vue 360° — ${a.title||''}`);if(!gdShare())await gdPublic(up.id);sOut.push(gdThumb(up.id));st.n++;st.b+=up.s;changed=true}else sOut.push(u)}
+      const spinP=sp.length?{spin:sOut}:{};
+      const{driveFiche:_df,driveSig:_ds,...a0}=a,sig=JSON.stringify({...a0,imgs:out,...spinP}).length+':'+(a.title||'')+':'+(a.price||0);
+      if(changed||a.driveSig!==sig){const fiche={id,etat:node==='annonces'?'en ligne':'en attente de validation',...a,imgs:out,...spinP,coordonnees:a.priv||priv[id]||a.contact||null,archive:new Date().toISOString()};delete fiche.driveFiche;delete fiche.driveSig;
         const blob='data:application/json;base64,'+btoa(unescape(encodeURIComponent(JSON.stringify(fiche,null,2))));
         if(a.driveFiche)try{await gdApi(`https://www.googleapis.com/drive/v3/files/${a.driveFiche}`,{method:'DELETE'})}catch(e){if(e.message==='DRIVE_AUTH')throw e}
         const fu=await gdUpload(fFi,`${nm(a.title)} · ${id}.json`,'application/json',blob,`Fiche complète — ${a.title||''}`,true);
-        await fbPut(`${node}/${id}`,{...a,imgs:out,driveFiche:fu.id,driveSig:sig});n++}}}
+        await fbPut(`${node}/${id}`,{...a,imgs:out,...spinP,driveFiche:fu.id,driveSig:sig});n++}}}
   return n}
 // déplace les images/fichiers d'un objet (message, note) vers Drive → renvoie le nouveau tableau « drive » ou null
 async function gdMove(folder,o,label,st){const im=(Array.isArray(o.img)?o.img:Array.isArray(o.att)?o.att:[]).filter(isImg),fl=(Array.isArray(o.files)?o.files:Array.isArray(o.attf)?o.attf:[]).map(fSafe).filter(Boolean);
