@@ -180,6 +180,30 @@ textarea.f{min-height:120px;resize:vertical}
 .prev button{position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;background:rgba(27,24,20,.75);color:#fff;font-size:.75rem}
 .prev .first::after{content:"Couverture";position:absolute;left:0;right:0;bottom:0;background:var(--ink);color:var(--paper);font-size:.62rem;text-align:center;padding:3px}
 .veh{display:none}
+#mD3 .sheet{max-width:min(1400px,96vw);display:flex;flex-direction:column;height:92vh;height:92dvh}
+.d3w{flex:1;display:grid;grid-template-columns:1fr 320px;min-height:0}
+.d3cv{position:relative;display:flex;background:radial-gradient(ellipse at 50% 35%,#fffdf8,#e7dfd0 70%);min-height:300px;overflow:hidden}
+.d3cv canvas{width:100%!important;height:100%!important;cursor:grab;display:block}
+.d3cv canvas:active{cursor:grabbing}
+.d3side{border-left:1px solid var(--line);padding:16px;overflow:auto;display:flex;flex-direction:column;gap:8px}
+.d3bar{display:flex;gap:6px;flex-wrap:wrap;padding:10px 16px;border-bottom:1px solid var(--line);align-items:center}
+.d3bar .btn{padding:8px 12px;font-size:.8rem}
+.d3pop{position:absolute;display:none;width:260px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;box-shadow:var(--sh);z-index:3;font-size:.88rem;display:none}
+.d3pop>b{font-family:var(--serif);font-size:1.05rem;display:block;margin-bottom:8px}
+.d3b{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
+.d3b button{border:1.5px solid var(--c);color:var(--ink);border-radius:99px;padding:5px 10px;font-size:.76rem;font-weight:700}
+.d3b button.on{background:var(--c);color:#fff}
+.d3pop .f{padding:9px 10px;font-size:.85rem}
+.d3a{display:flex;gap:6px;margin-top:8px;justify-content:flex-end}
+.d3a button{font-weight:700;font-size:.8rem;padding:6px 10px;border-radius:99px;border:1px solid var(--line)}
+.d3lg{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:.75rem;color:var(--ink2);margin-bottom:6px}
+.d3lg i,.d3it i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:middle}
+.d3it{text-align:left;display:grid;grid-template-columns:auto 1fr;gap:2px 6px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:var(--card)}
+.d3it span{grid-column:2;font-size:.8rem;color:var(--ink2)}
+.d3it:hover{border-color:var(--ink)}
+.d3sum{display:flex;align-items:center;gap:12px;padding:14px;border:1px solid var(--line);border-radius:16px;background:var(--card)}
+.d3sum .ic{font-size:2rem}
+@media(max-width:820px){.d3w{grid-template-columns:1fr;grid-template-rows:1fr auto}.d3side{border-left:0;border-top:1px solid var(--line);max-height:34vh}#mD3 .sheet{height:100dvh}}
 .dyn{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .dyn .full{grid-column:1/-1}
 .dyn:empty{display:none}
@@ -365,6 +389,7 @@ footer button{text-decoration:underline;color:var(--ink2)}
   <div class="dyn" id="dyn"></div>
   <label>Description *<textarea class="f" name="desc" required maxlength="3000"></textarea></label>
   <label class="ck"><input type="checkbox" name="nego"> Prix négociable</label>
+  <div id="d3Box"></div>
   <div id="advBox"></div>
   <div class="sec">Vos coordonnées</div>
   <div class="r2"><label>Nom *<input class="f" name="sName" required maxlength="60"></label><label>Ville *<input class="f" name="sCity" required maxlength="60"></label></div>
@@ -398,6 +423,14 @@ footer button{text-decoration:underline;color:var(--ink2)}
 <div class="modal" id="mA" onclick="if(event.target===this)closeM('mA')"><div class="sheet sm">
  <div class="shd"><h2 id="aH">Mon compte</h2><button class="x" onclick="closeM('mA')">✕</button></div>
  <div class="pad" id="aB"></div>
+</div></div>
+
+<!-- Vue 3D carrosserie -->
+<div class="modal" id="mD3" onclick="if(event.target===this)closeM('mD3')"><div class="sheet">
+ <div class="shd"><h2 id="d3H">Carrosserie en 3D</h2><div style="display:flex;gap:8px"><button class="btn btn-ink" id="d3Save" type="button">Valider les défauts</button><button class="x" onclick="closeM('mD3')">✕</button></div></div>
+ <div class="d3bar"><span id="d3Tools" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"></span><span style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap">
+  <button type="button" class="btn btn-line" onclick="C3.view('av')">Avant</button><button type="button" class="btn btn-line" onclick="C3.view('ar')">Arrière</button><button type="button" class="btn btn-line" onclick="C3.view('g')">Gauche</button><button type="button" class="btn btn-line" onclick="C3.view('d')">Droite</button><button type="button" class="btn btn-line" onclick="C3.view('top')">Dessus</button><button type="button" class="btn btn-line" onclick="C3.auto()" title="Rotation automatique du plateau">⟳ Plateau</button></span></div>
+ <div class="d3w"><div class="d3cv" id="d3Cv"></div><div class="d3side"><small style="color:var(--ink2)">👆 Glissez pour faire pivoter le plateau · pincez ou molette pour zoomer · touchez une pièce pour voir ou signaler un défaut.</small><div id="d3L" style="display:grid;gap:8px"></div></div></div>
 </div></div>
 
 <!-- Connexion membre -->
@@ -530,7 +563,7 @@ const catOf=id=>CATS.find(c=>c.id===id)||CATS.at(-1);
 const rid=()=>Date.now().toString(36)+Array.from(crypto.getRandomValues(new Uint8Array(10)),b=>b.toString(36).padStart(2,'0')).join('').slice(0,16);
 function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800)}
 function openM(id){$(id).classList.add('open');document.body.style.overflow='hidden'}
-function closeM(id){$(id).classList.remove('open');if(!document.querySelector('.modal.open'))document.body.style.overflow=''}
+function closeM(id){if(id==='mD3'&&C3){C3.dispose();C3=null}$(id).classList.remove('open');if(!document.querySelector('.modal.open'))document.body.style.overflow=''}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.modal.open').forEach(m=>closeM(m.id));if($('mD').classList.contains('open')){if(e.key==='ArrowRight')go(1);if(e.key==='ArrowLeft')go(-1)}});
 
 /* ===== Firebase (REST) ===== */
@@ -613,6 +646,7 @@ function openDetail(id,keep){
    <div><h3>${esc(a.title)}</h3><div class="price" style="margin-top:8px">${priceHtml(a)}</div>${p?`<div class="save" style="font-size:.95rem;margin-top:4px">Vous économisez ${eur(saving(a))}${daysLeft(a)!=null?' · '+cdTxt(daysLeft(a)):''}</div>`:''}</div>
    <div class="chips">${L.badge?`<span class="chip t" style="background:var(--gold)">${esc(L.badge)}</span>`:''}${p?`<span class="chip t">−${disc(a)} %</span>`:''}${a.nego?'<span class="chip">Négociable</span>':''}<span class="chip">📍 ${esc(a.sCity)}</span><span class="chip">${ago(a.t)}</span></div>
    ${(()=>{const sp=`<div class="specs">${specs.map(([k,v])=>`<div><small>${esc(k)}</small>${esc(v)}</div>`).join('')}</div>`,ds=`<div class="desc">${esc(a.desc)}</div>`,qu=quals?`<div><div class="eyebrow" style="margin-bottom:6px">Qualifications requises</div><div class="desc">${esc(quals)}</div></div>`:'';return L.specsFirst===false?ds+qu+sp:sp+qu+ds})()}
+   ${a.dmg?(()=>{const n=d3Cnt(a.dmg);return`<div class="d3sum"><span class="ic">🚗</span><div style="flex:1"><b style="font-family:var(--serif);font-size:1.05rem">Carrosserie en 3D</b><br><small style="color:var(--ink2)">${n?Object.values(a.dmg.parts).slice(0,3).map(v=>dmgT(v.t)[1]).join(', ')+(n>3?'…':''):'Aucun défaut signalé'}</small></div><button class="btn ${n?'btn-terra':'btn-line'}" onclick="car3dOpen(cur.dmg,false,'Carrosserie — '+cur.title)">${n?`Voir ${n} défaut${n>1?'s':''}`:'Voir en 3D'}</button></div>`})():''}
    <div class="seller"><div class="sr"><div class="av">${esc((a.sName||'?')[0].toUpperCase())}</div><div><b>${esc(a.sName)}</b><br><small style="color:var(--ink2)">${esc(a.sCity)}</small></div></div>
     <div class="cbx">
      <button class="btn btn-terra" style="grid-column:1/-1" onclick="openContact()">✉ Envoyer un message</button>
@@ -697,13 +731,16 @@ function vehToggle(vals){const c=$('fCat').value,fs=FIELDS[c]||[],cur0=vals||rea
   return`<label>${l}<input class="f" ${nm} type="${t==='n'?'number':t==='d'?'date':'text'}" ${t==='n'?'min="0"':''} maxlength="80" placeholder="${o||''}" value="${v}"></label>`}).join('')+(BRANDS[c]?`<datalist id="dlBrand">${Object.keys(BRANDS[c]).sort((a,b)=>a.localeCompare(b,'fr')).map(b=>`<option value="${esc(b)}">`).join('')}</datalist><datalist id="dlModel"></datalist>`:'');fillModels();
  const job=c==='emploi';$('condL').style.display=NOCOND.includes(c)?'none':'';
  $('priceLbl').textContent=job?'Salaire brut (€ / mois)':c==='immo'?'Prix ou loyer (€) *':'Prix (€) *';form.elements.price.required=!job;
- $('oldL').style.display=$('promoRow').style.display=job?'none':'';promoLive()}
+ $('oldL').style.display=$('promoRow').style.display=job?'none':'';promoLive();renderD3Box()}
 function readDyn(){const o={},c=$('fCat').value;document.querySelectorAll('#dyn [name^="x_"]').forEach(e=>{const v=e.value.trim();if(v)o[e.name.slice(2)]=e.type==='number'?Number(v):v});if(o.brand&&bKey(c,o.brand))o.brand=bKey(c,o.brand);if(o.model&&o.brand&&BRANDS[c]&&BRANDS[c][o.brand]){const m=BRANDS[c][o.brand].find(x=>x.toLowerCase()===o.model.toLowerCase());if(m)o.model=m}return o}
 function promoLive(){const p=parseFloat(form.elements.price.value),o=parseFloat(form.elements.oldPrice.value),el=$('promoLive');if(!el)return;
  el.textContent=o>p&&p>=0?`🔥 −${Math.round((1-p/o)*100)} % · économie de ${eur(o-p)}${form.elements.promoEnd.value?' · jusqu\'au '+new Date(form.elements.promoEnd.value).toLocaleDateString('fr-FR'):''}`:o&&o<=p?'⚠ Le prix avant promo doit être supérieur au prix':''}
 /* --- Mode avancé (membres autorisés) --- */
 const ACCENTS=['','#c4532f','#3f5a3c','#1f4e8c','#7a3fa0','#b8893b','#1b1814'];
-let ADV={custom:[],layout:{}};
+let ADV={custom:[],layout:{}},DMG=null;
+const d3Cnt=d=>d&&d.parts?Object.keys(d.parts).length:0;
+function renderD3Box(){const b=$('d3Box');if(!b)return;if($('fCat').value!=='auto'){b.innerHTML='';return}const n=d3Cnt(DMG);
+ b.innerHTML=`<div class="d3sum"><span class="ic">🚗</span><div style="flex:1"><b style="font-family:var(--serif);font-size:1.05rem">État de la carrosserie en 3D</b><br><small style="color:var(--ink2)">${DMG?(n?`${n} défaut${n>1?'s':''} signalé${n>1?'s':''}`:'Aucun défaut signalé'):'Indiquez les rayures, bosses ou pièces déformées sur une voiture en 3D'}</small></div><button type="button" class="btn btn-ink" onclick="car3dOpen(DMG,true,'Signaler les défauts',d=>{DMG=d;renderD3Box()})">${DMG?'Modifier':'Ouvrir la vue 3D'}</button>${DMG?`<button type="button" class="btn btn-line" onclick="DMG=null;renderD3Box()">✕</button>`:''}</div>`}
 const canAdv=()=>!!ADM||!!(ACC&&ACC.pro&&accOk());
 function renderAdv(){const b=$('advBox');if(!canAdv()){b.innerHTML='';return}const L=ADV.layout;
  b.innerHTML=`<div class="adv"><h4>⭐ Mode avancé</h4>
@@ -718,8 +755,8 @@ function renderAdv(){const b=$('advBox');if(!canAdv()){b.innerHTML='';return}con
  </div>`}
 $('fCat').addEventListener('change',()=>vehToggle());form.elements.price.addEventListener('input',promoLive);
 function openForm(id){if(!ADM&&!accOk()){openAcc();toast(ACC?'Votre compte est en attente de validation':'Connectez-vous pour déposer une annonce');return}
- form.reset();imgs=[];editId=id||null;ADV={custom:[],layout:{}};let xv={};
- if(id){const a=ads.find(x=>x.id===id)||queue.find(x=>x.id===id);imgs=[...(a.imgs||[])];xv=xOf(a);if(a.adv)ADV=JSON.parse(JSON.stringify({custom:a.adv.custom||[],layout:a.adv.layout||{}}));for(const k in a){const el=form.elements[k];if(!el)continue;el.type==='checkbox'?el.checked=!!a[k]:el.value=a[k]??''}
+ form.reset();imgs=[];editId=id||null;ADV={custom:[],layout:{}};DMG=null;let xv={};
+ if(id){const a=ads.find(x=>x.id===id)||queue.find(x=>x.id===id);imgs=[...(a.imgs||[])];xv=xOf(a);if(a.dmg)DMG=JSON.parse(JSON.stringify(a.dmg));if(a.adv)ADV=JSON.parse(JSON.stringify({custom:a.adv.custom||[],layout:a.adv.layout||{}}));for(const k in a){const el=form.elements[k];if(!el)continue;el.type==='checkbox'?el.checked=!!a[k]:el.value=a[k]??''}
   const c=a.contact||a.priv||{};if(ADM&&!a.priv)fget('crm/annoncesPriv/'+id,true).then(p=>{if(p&&editId===id){form.elements.sPhone.value=p.phone||'';form.elements.sMail.value=p.mail||'';form.elements.sWa.checked=!!p.wa}}).catch(()=>{});form.elements.sPhone.value=c.phone||'';form.elements.sMail.value=c.mail||'';form.elements.sWa.checked=!!c.wa}
  else{if(cat!=='all'&&cat!=='promo')$('fCat').value=cat;if(ACC){form.elements.sName.value=ACC.nom||'';form.elements.sCity.value=ACC.ville||'';form.elements.sPhone.value=ACC.tel||'';form.elements.sMail.value=ACC.email||''}}
  $('fH').textContent=id?'Modifier l\'annonce':'Déposer une annonce';$('fBtn').textContent=id?'Enregistrer':(ADM?'Publier':'Envoyer pour validation');
@@ -737,7 +774,7 @@ function readForm(){const f=form.elements,o={};
  ['title','cat','cond','desc','sName','sCity','promoEnd'].forEach(k=>o[k]=f[k].value.trim());
  o.price=parseFloat(f.price.value)||0;o.oldPrice=parseFloat(f.oldPrice.value)||0;o.nego=f.nego.checked;
  if(NOCOND.includes(o.cat))delete o.cond;if(o.cat==='emploi'){o.oldPrice=0;delete o.promoEnd}if(!(o.oldPrice>o.price))delete o.promoEnd;
- const x=readDyn();if(Object.keys(x).length)o.x=x;
+ const x=readDyn();if(Object.keys(x).length)o.x=x;if(o.cat==='auto'&&DMG)o.dmg={body:DMG.body,color:DMG.color,...(d3Cnt(DMG)?{parts:Object.fromEntries(Object.entries(DMG.parts).map(([k,v])=>[k,{t:v.t,...(v.n?{n:v.n.slice(0,80)}:{})}]))}:{})};
  if(canAdv()){const c=ADV.custom.filter(r=>r.k.trim()&&r.v.trim()).map(r=>({k:r.k.trim().slice(0,40),v:r.v.trim().slice(0,120)})),L={};Object.entries(ADV.layout).forEach(([k,v])=>{if(v!==''&&v!=null)L[k]=typeof v==='string'?v.slice(0,28):v});
   if(c.length||Object.keys(L).length)o.adv={...(c.length?{custom:c}:{}),...(Object.keys(L).length?{layout:L}:{})}}
  Object.keys(o).forEach(k=>o[k]===''&&delete o[k]);
@@ -865,6 +902,104 @@ document.querySelectorAll('option').forEach(o=>o.textContent=o.textContent.repla
 /* Logo 3D : inclinaison au survol */
 document.querySelector('.logo').addEventListener('mousemove',e=>{const r=e.currentTarget.getBoundingClientRect(),i=e.currentTarget.querySelector('img');i.style.setProperty('--ry',((e.clientX-r.left)/r.width-.5)*30+'deg');i.style.setProperty('--rx',(.5-(e.clientY-r.top)/r.height)*24+'deg')});
 document.querySelector('.logo').addEventListener('mouseleave',e=>{const i=e.currentTarget.querySelector('img');i.style.removeProperty('--ry');i.style.removeProperty('--rx')});
+/* ===== 🚗 Vue 3D de la carrosserie (plateau tournant + défauts par pièce) ===== */
+const DMGT=[['rayure','Rayure','#eab308'],['bosse','Bosse / pli','#f97316'],['deforme','Déformé','#dc2626'],['casse','Cassé / fissuré','#7c3aed'],['rouille','Rouille','#92400e'],['peinture','Défaut de peinture','#0ea5e9']];
+const dmgT=k=>DMGT.find(d=>d[0]===k)||DMGT[1];
+const BODIES=[['citadine','Citadine'],['berline','Berline'],['break','Break'],['suv','SUV / 4x4'],['coupe','Coupé'],['utilitaire','Utilitaire']];
+const PAINTS=['#e5e7eb','#111827','#9ca3af','#b91c1c','#1d4ed8','#f8fafc','#065f46','#a16207','#7c2d12','#f97316'];
+const PARTN={capot:'Capot',toit:'Toit',coffre:'Coffre / hayon',pcav:'Pare-chocs avant',pcar:'Pare-chocs arrière',pbrise:'Pare-brise',lunette:'Lunette arrière',
+ aileavg:'Aile avant gauche',aileavd:'Aile avant droite',ailearg:'Aile arrière gauche',aileard:'Aile arrière droite',porteavg:'Porte avant gauche',porteavd:'Porte avant droite',portearg:'Porte arrière gauche',porteard:'Porte arrière droite',
+ vitreg:'Vitres côté gauche',vitred:'Vitres côté droit',retrog:'Rétroviseur gauche',retrod:'Rétroviseur droit',pharg:'Phare avant gauche',phard:'Phare avant droit',feug:'Feu arrière gauche',feud:'Feu arrière droit',
+ rouavg:'Roue avant gauche',rouavd:'Roue avant droite',rouarg:'Roue arrière gauche',rouard:'Roue arrière droite',basg:'Bas de caisse gauche',basd:'Bas de caisse droit'};
+let threeP=null;const loadThree=()=>window.THREE?Promise.resolve():threeP||(threeP=new Promise((ok,ko)=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';s.onload=ok;s.onerror=()=>{threeP=null;ko(new Error('3D indisponible'))};document.head.appendChild(s)}));
+let C3=null; // instance courante
+function car3dOpen(data,edit,title,onSave){const D=JSON.parse(JSON.stringify(data||{}));D.body=D.body||'berline';D.color=D.color||'#e5e7eb';D.parts=D.parts||{};
+ $('d3H').textContent=title||'Carrosserie en 3D';$('d3Tools').innerHTML=edit?`<select class="f" style="width:auto;padding:8px 10px" onchange="C3.setBody(this.value)">${BODIES.map(([k,l])=>`<option value="${k}"${D.body===k?' selected':''}>${l}</option>`).join('')}</select>
+  <span class="sw">${PAINTS.map(c=>`<button type="button" style="background:${c}" title="Couleur" onclick="C3.setColor('${c}')"></button>`).join('')}<input type="color" value="${D.color}" oninput="C3.setColor(this.value)" style="width:32px;height:32px;border:0;padding:0;background:none" title="Autre couleur"></span>`:'';
+ $('d3Save').hidden=!edit;$('d3Save').onclick=()=>{onSave&&onSave(C3.data());closeM('mD3')};
+ openM('mD3');$('d3Cv').innerHTML='<div class="note" style="margin:auto">Chargement de la 3D…</div>';
+ loadThree().then(()=>{if(C3)C3.dispose();C3=new Car3D($('d3Cv'),D,edit);d3List()}).catch(e=>{$('d3Cv').innerHTML=`<div class="note" style="margin:auto">⚠ ${e.message}</div>`})}
+function d3List(){if(!C3)return;const P=C3.D.parts,ks=Object.keys(P);
+ $('d3L').innerHTML=`<div class="d3lg">${DMGT.map(([k,l,c])=>`<span><i style="background:${c}"></i>${l}</span>`).join('')}</div>`+(ks.length?ks.map(k=>{const d=dmgT(P[k].t);return`<button type="button" class="d3it" onclick="C3.focus('${k}')"><i style="background:${d[2]}"></i><b>${esc(PARTN[k]||k)}</b><span>${d[1]}${P[k].n?' — '+esc(P[k].n):''}</span></button>`}).join(''):`<div class="note">${C3.edit?'Touchez une pièce de la voiture pour signaler un défaut.':'✅ Aucun défaut signalé sur la carrosserie.'}</div>`)}
+function Car3D(host,D,edit){const T=THREE,me=this;this.D=D;this.edit=edit;host.innerHTML='';
+ const W0=()=>host.clientWidth||600,H0=()=>host.clientHeight||400;
+ const R=new T.WebGLRenderer({antialias:true,alpha:true});R.setPixelRatio(Math.min(devicePixelRatio,2));R.setSize(W0(),H0());R.outputEncoding=T.sRGBEncoding;host.appendChild(R.domElement);
+ const S=new T.Scene(),cam=new T.PerspectiveCamera(36,W0()/H0(),.1,100);
+ S.add(new T.HemisphereLight(0xffffff,0x8a7f6c,.85));const dl=new T.DirectionalLight(0xffffff,.7);dl.position.set(5,8,4);S.add(dl);const dl2=new T.DirectionalLight(0xfff1dd,.35);dl2.position.set(-6,3,-5);S.add(dl2);
+ const stage=new T.Group();S.add(stage);
+ // plateau tournant
+ const plat=new T.Mesh(new T.CylinderGeometry(3.4,3.5,.18,72),new T.MeshStandardMaterial({color:0x2b2722,metalness:.4,roughness:.45}));plat.position.y=-.09;stage.add(plat);
+ const ring=new T.Mesh(new T.TorusGeometry(3.42,.03,8,96),new T.MeshStandardMaterial({color:0xb8893b,metalness:.8,roughness:.3}));ring.rotation.x=Math.PI/2;ring.position.y=.005;stage.add(ring);
+ const sh=new T.Mesh(new T.CircleGeometry(2.6,48),new T.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.28}));sh.rotation.x=-Math.PI/2;sh.scale.set(1,.5,1);sh.position.y=.01;stage.add(sh);
+ const base=new T.Mesh(new T.CylinderGeometry(3.6,3.7,.06,72),new T.MeshStandardMaterial({color:0x1b1814}));base.position.y=-.2;S.add(base);
+ let car=null,parts={},sel=null;
+ const paint=()=>new T.MeshStandardMaterial({color:new T.Color(D.color),metalness:.35,roughness:.38});
+ function build(){if(car){stage.remove(car);car.traverse(o=>{o.geometry&&o.geometry.dispose()})}car=new T.Group();parts={};stage.add(car);
+  const b=D.body,P={citadine:[3.8,1.7,.62,.6,.95,.55,.3],berline:[4.6,1.8,.62,.6,1.25,1.0,.32],break:[4.7,1.8,.62,.62,1.2,.15,.32],suv:[4.55,1.88,.8,.68,1.15,.2,.38],coupe:[4.4,1.82,.55,.5,1.35,.9,.32],utilitaire:[5,1.95,1.05,.95,.95,.06,.34]}[b]||[4.6,1.8,.62,.6,1.25,1,.32];
+  const[L,W,bh,ch,fl,rl,r]=P,g=r*.85,top=g+bh,xF=L/2,xR=-L/2,xf=xF-fl,xr=xR+Math.max(rl,.06),dxw=b==='utilitaire'?.25:ch*1.05,dxr=rl>.5?ch*.8:.05,cw=W*.9;
+  const add=(id,geo,mat,x,y,z,rz,ry)=>{const m=new T.Mesh(geo,mat);m.position.set(x,y,z);if(rz)m.rotation.z=rz;if(ry)m.rotation.y=ry;if(id){m.userData.id=id;m.userData.base=mat.color.getHex();parts[id]=m}car.add(m);return m};
+  const bx=(id,lx,ly,lz,x,y,z,mat,rz)=>add(id,new T.BoxGeometry(lx,ly,lz),mat||paint(),x,y,z,rz);
+  const glass=()=>new T.MeshStandardMaterial({color:0x1e293b,metalness:.2,roughness:.08,transparent:true,opacity:.82});
+  bx(null,L-.24,bh*.9,W-.06,0,g+bh*.47,0);// caisse
+  bx('pcav',.16,bh*.5,W,xF-.08,g+bh*.25,0);bx('pcar',.16,bh*.5,W,xR+.08,g+bh*.25,0);
+  bx('capot',xF-.16-xf,.05,W*.94,(xF-.16+xf)/2,top+.005,0);
+  if(rl>.5)bx('coffre',xr-(xR+.16),.05,W*.94,(xr+xR+.16)/2,top+.005,0);
+  const mid=(xr+xf)/2,ph=bh*.86,py=g+bh*.5,zs=W/2+.012,fourD=b!=='coupe'&&b!=='citadine'&&b!=='utilitaire';
+  [['g',-1],['d',1]].forEach(([s,k])=>{const z=zs*k;
+   bx('aileav'+s,xF-.16-xf,ph,.03,(xF-.16+xf)/2,py,z);bx('ailear'+s,xr-(xR+.16),ph,.03,(xr+xR+.16)/2,py,z);
+   if(fourD){bx('porteav'+s,xf-mid-.02,ph,.03,(xf+mid)/2,py,z);bx('portear'+s,mid-xr-.02,ph,.03,(mid+xr)/2,py,z)}
+   else{const xm=b==='utilitaire'?xf-1.1:xr+.1;bx('porteav'+s,xf-xm-.02,ph,.03,(xf+xm)/2,py,z);if(b==='utilitaire')bx('portear'+s,xm-xr,ph,.03,(xm+xr)/2,py,z)}
+   bx('bas'+s,L-.6,.08,.05,0,g+.02,z*1.005,new T.MeshStandardMaterial({color:0x222222,roughness:.8}));
+   bx('retro'+s,.14,.1,.16,xf-dxw*.15,top+.12,(W/2+.1)*k);
+   bx('phar'+s,.04,.12,W*.3,xF-.005,g+bh*.68,W*.3*k,new T.MeshStandardMaterial({color:0xfefce8,emissive:0x5c5530,roughness:.2}));
+   bx('feu'+s,.04,.12,W*.26,xR+.005,g+bh*.7,W*.33*k,new T.MeshStandardMaterial({color:0xb91c1c,emissive:0x400606,roughness:.3}));
+   const wx=b==='utilitaire'?[xF-.75,xR+.95]:[xF-fl*.62,xR+Math.max(rl,.5)*.95+.25];
+   [['av',wx[0]],['ar',wx[1]]].forEach(([p,x])=>{const w=add('rou'+p+s,new T.CylinderGeometry(r,r,.24,28),new T.MeshStandardMaterial({color:0x15171a,roughness:.85}),x,r,(W/2-.1)*k);w.rotation.x=Math.PI/2;
+    const hub=new T.Mesh(new T.CylinderGeometry(r*.58,r*.58,.25,20),new T.MeshStandardMaterial({color:0xb8bcc4,metalness:.85,roughness:.25}));hub.rotation.x=Math.PI/2;hub.position.copy(w.position);hub.position.z+=.01*k;hub.userData.id='rou'+p+s;car.add(hub)})});
+  // habitacle
+  const rx0=xr+dxr,rx1=xf-dxw;bx('toit',rx1-rx0,.06,cw,(rx0+rx1)/2,top+ch,0);
+  const wl=Math.hypot(dxw,ch);bx('pbrise',wl,.04,cw*.98,xf-dxw/2,top+ch/2,0,glass(),Math.atan2(ch,-dxw)+Math.PI);
+  if(rl>.5){const rlL=Math.hypot(dxr,ch);bx('lunette',rlL,.04,cw*.98,xr+dxr/2,top+ch/2,0,glass(),Math.atan2(ch,dxr))}
+  else bx('coffre',.05,bh*.55+ch,cw*.98,xR+.1,g+bh*.45+(ch+bh*.55)/2-.05,0);
+  const prof=(ins)=>{const sp=new T.Shape();sp.moveTo(xr+ins,top);sp.lineTo(xr+dxr+ins*.6,top+ch-ins);sp.lineTo(xf-dxw-ins*.6,top+ch-ins);sp.lineTo(xf-ins,top);sp.lineTo(xr+ins,top);return sp};
+  const ext=(sp,d)=>{const g2=new T.ExtrudeGeometry(sp,{depth:d,bevelEnabled:false});g2.translate(0,0,-d/2);return g2};
+  add(null,ext(prof(0),cw-.04),new T.MeshStandardMaterial({color:0x2a2f38,roughness:.6}),0,0,0);
+  [['g',-1],['d',1]].forEach(([s,k])=>{add('vitre'+s,ext(prof(.07),.02),glass(),0,0,(cw/2-.005)*k)});
+  car.position.y=.0;paintDmg()}
+ function paintDmg(){Object.entries(parts).forEach(([id,m])=>{const d=D.parts[id];m.material.color.setHex(d?new T.Color(dmgT(d.t)[2]).getHex():m.userData.base);m.material.emissive&&m.material.emissive.setHex(d?new T.Color(dmgT(d.t)[2]).multiplyScalar(.35).getHex():(id.startsWith('phar')?0x5c5530:id.startsWith('feu')?0x400606:0))})}
+ // caméra orbitale
+ let az=.75,el=.4,dist=9,tAz=az,auto=!edit,drag=null,pinch=0,moved=0;
+ const place=()=>{cam.position.set(Math.sin(az)*Math.cos(el)*dist,Math.sin(el)*dist+.6,Math.cos(az)*Math.cos(el)*dist);cam.lookAt(0,.75,0)};
+ const cv=R.domElement;cv.style.touchAction='none';const ptrs=new Map();
+ cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);ptrs.set(e.pointerId,[e.clientX,e.clientY]);drag=[e.clientX,e.clientY];moved=0;auto=false;if(ptrs.size===2){const[a,b2]=[...ptrs.values()];pinch=Math.hypot(a[0]-b2[0],a[1]-b2[1])}});
+ cv.addEventListener('pointermove',e=>{if(!ptrs.has(e.pointerId))return;ptrs.set(e.pointerId,[e.clientX,e.clientY]);
+  if(ptrs.size===2){const[a,b2]=[...ptrs.values()],d=Math.hypot(a[0]-b2[0],a[1]-b2[1]);if(pinch)dist=Math.min(18,Math.max(6,dist*pinch/d));pinch=d;moved=99;return}
+  if(!drag)return;const dx=e.clientX-drag[0],dy=e.clientY-drag[1];moved+=Math.abs(dx)+Math.abs(dy);stage.rotation.y+=dx*.012;tAz=null;el=Math.min(1.35,Math.max(.05,el+dy*.006));drag=[e.clientX,e.clientY]});
+ const up=e=>{const wasTap=ptrs.size===1&&moved<7;ptrs.delete(e.pointerId);if(ptrs.size<2)pinch=0;if(!ptrs.size)drag=null;if(wasTap)pick(e)};
+ cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',e=>{ptrs.delete(e.pointerId);drag=null});
+ cv.addEventListener('wheel',e=>{e.preventDefault();dist=Math.min(18,Math.max(6,dist*(1+e.deltaY*.001)))},{passive:false});
+ const ray=new T.Raycaster(),v2=new T.Vector2();
+ function pick(e){const r=cv.getBoundingClientRect();v2.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(v2,cam);
+  const h=ray.intersectObjects(car.children,false).find(x=>x.object.userData.id);if(!h){pop(null);return}pop(h.object.userData.id,e.clientX-r.left,e.clientY-r.top)}
+ const tip=document.createElement('div');tip.className='d3pop';host.appendChild(tip);
+ function pop(id,x,y){sel=id;if(!id){tip.style.display='none';return}const d=D.parts[id];
+  tip.innerHTML=`<b>${esc(PARTN[id]||id)}</b>${edit?`<div class="d3b">${DMGT.map(([k,l,c])=>`<button type="button" style="--c:${c}" class="${d&&d.t===k?'on':''}" onclick="C3.mark('${id}','${k}')">${l}</button>`).join('')}</div>
+   <input class="f" placeholder="Précision (facultatif)" maxlength="80" value="${esc(d&&d.n||'')}" oninput="C3.note('${id}',this.value)">
+   <div class="d3a">${d?`<button type="button" onclick="C3.mark('${id}',null)">✓ Aucun défaut</button>`:''}<button type="button" onclick="C3.pop(null)">Fermer</button></div>`:d?`<div style="color:${dmgT(d.t)[2]};font-weight:800">● ${dmgT(d.t)[1]}</div>${d.n?`<div>${esc(d.n)}</div>`:''}`:'<div>✅ Aucun défaut signalé</div>'}`;
+  tip.style.display='block';const w=host.clientWidth,hh=host.clientHeight;tip.style.left=Math.min(Math.max(8,x-130),w-270)+'px';tip.style.top=Math.min(Math.max(8,y+14),hh-tip.offsetHeight-8)+'px'}
+ this.pop=pop;
+ this.mark=(id,t)=>{if(t)D.parts[id]={...(D.parts[id]||{}),t};else delete D.parts[id];paintDmg();d3List();const r=tip.getBoundingClientRect(),hr=host.getBoundingClientRect();pop(t?id:null,r.left-hr.left+130,r.top-hr.top-14)};
+ this.note=(id,n)=>{if(D.parts[id]){D.parts[id].n=n.slice(0,80);d3List()}};
+ this.setBody=b=>{D.body=b;build()};this.setColor=c=>{D.color=c;build()};
+ this.data=()=>({body:D.body,color:D.color,parts:D.parts});
+ this.view=a=>{auto=false;tAz=null;stage.rotation.y=0;az={av:Math.PI/2,ar:-Math.PI/2,g:Math.PI,d:0,'3q':.75}[a]??.75;el=a==='top'?1.32:.35};
+ this.auto=()=>{auto=!auto};
+ this.focus=id=>{const m=parts[id];if(!m)return;const p=m.position;stage.rotation.y=0;az=Math.atan2(p.x,p.z);el=p.y>1.1?.95:.35;auto=false;const old=m.material.emissive.getHex();let n=0;const iv=setInterval(()=>{m.material.emissive.setHex(n++%2?old:0xffffff);if(n>5){clearInterval(iv);paintDmg()}},160)};
+ let raf,alive=true;const ro=new ResizeObserver(()=>{R.setSize(W0(),H0());cam.aspect=W0()/H0();cam.updateProjectionMatrix()});ro.observe(host);
+ const loop=()=>{if(!alive)return;if(auto)stage.rotation.y+=.004;place();R.render(S,cam);raf=requestAnimationFrame(loop)};
+ this.dispose=()=>{alive=false;cancelAnimationFrame(raf);ro.disconnect();R.dispose();host.innerHTML=''};
+ build();loop()}
+
 /* ===== Information Flash ===== */
 const ssGet=k=>{try{return JSON.parse(sessionStorage.getItem(k))}catch(e){return null}},ssSet=(k,v)=>{try{sessionStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 let FLSIG='';
