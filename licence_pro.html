@@ -396,7 +396,7 @@ main{min-width:0}
 .anK div{padding:14px 16px;border-radius:16px;border:1px solid var(--bd);background:var(--glass);position:relative;overflow:hidden}
 .anK div::before{content:'';position:absolute;inset:0 auto 0 0;width:4px;background:var(--kc)}
 .anK small{display:block;color:var(--mut);font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em}.anK b{display:block;font-size:1.55rem;margin-top:4px;font-family:'JetBrains Mono',monospace}.anK em{font-style:normal;font-size:.74rem;color:var(--mut)}
-.anTabs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.anTabs{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px;margin-bottom:14px}
 @media(max-width:1400px){.anTabs{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:640px){.anTabs{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.anTabs button{padding:10px}.anTabs small{display:none}}
 .anX{display:grid;grid-template-columns:1.1fr 1fr;gap:12px;margin-bottom:14px}.anX>div{padding:14px 16px;border-radius:16px;border:1px solid var(--bd);background:var(--glass);min-width:0}
@@ -934,6 +934,7 @@ kbd{display:inline-block;padding:2px 7px;border-radius:6px;border:1px solid var(
       <button data-t="mb" onclick="anTab('mb')"><span class="ni">👤</span><span><b>Membres</b><small>Comptes vendeurs</small></span><i class="rqAn" id="anTnMb"></i></button>
       <button data-t="sel" onclick="anTab('sel')"><span class="ni">🧑‍💼</span><span><b>Vendeurs</b><small>Qui a envoyé quoi</small></span><i class="rqAn z" id="anTnSel"></i></button>
       <button data-t="log" onclick="anTab('log')"><span class="ni">📜</span><span><b>Historique</b><small>Publiées, refusées, retirées</small></span><i class="rqAn z" id="anTnLog"></i></button>
+      <button data-t="fl" onclick="anTab('fl')"><span class="ni">📣</span><span><b>Flash info</b><small>Bandeau du site</small></span><i class="rqAn z" id="anTnFl"></i></button>
     </div>
     <div class="card">
       <div class="anTb"><input id="anQ" type="search" placeholder="🔎 Titre, vendeur, ville, e-mail…" oninput="anDraw()">
@@ -946,6 +947,15 @@ kbd{display:inline-block;padding:2px 7px;border-radius:6px;border:1px solid var(
       <div class="anP" data-p="msg"><p class="hint">Messages envoyés par les acheteurs depuis les annonces. <span id="annMsgN"></span></p><div id="annMsg"></div></div>
       <div class="anP" data-p="sel"><p class="hint">Chaque personne qui a envoyé une annonce : coordonnées, statut de membre et ce qu'elle a déposé. « Voir ses annonces » filtre les autres fenêtres sur ce vendeur.</p><div id="annSel"></div></div>
       <div class="anP" data-p="log"><p class="hint">Journal des décisions prises depuis Licence Pro (à partir de maintenant) : annonce publiée, refusée ou retirée, avec le vendeur et la date.</p><div class="rqCh" id="anLogF" style="margin-bottom:10px"></div><div id="annLog"></div></div>
+      <div class="anP" data-p="fl"><p class="hint">Bandeau défilant affiché en haut du site : actualités, informations prioritaires, promotions. Plusieurs flashs défilent à la suite ; le plus important donne la couleur (⚠ Urgent → rouge, 🔥 Promo → orange, 📣 Info → noir).</p>
+        <div style="display:grid;gap:8px;grid-template-columns:2fr 1fr 1fr;align-items:end">
+          <label style="grid-column:1/-1">Message<input id="flTx" maxlength="220" placeholder="Ex. : Fermeture exceptionnelle le 11 novembre — nouvelles annonces auto chaque lundi"></label>
+          <label>Lien (facultatif)<input id="flLk" placeholder="https://…"></label>
+          <label>Type<select id="flLv"><option value="info">📣 Information</option><option value="promo">🔥 Promotion</option><option value="urgent">⚠ Urgent</option></select></label>
+          <label>Jusqu'au (facultatif)<input id="flUn" type="date"></label>
+        </div>
+        <button class="btn" style="margin-top:10px" onclick="flAdd()">📣 Publier le flash</button>
+        <div id="flList" style="margin-top:12px"></div></div>
       <div class="anP" data-p="mb"><p class="hint">Inscriptions et nouveaux mots de passe demandés sur le site — un clic suffit, aucune licence à générer. <span id="annMbN"></span></p><div id="annMb"></div></div>
     </div>
   </section>
@@ -1517,7 +1527,7 @@ let REQ=[],REQP=null,REQ_ERR='';
 async function loadReq(){REQ_ERR='';
   try{const t=await fbTok();const r=await fetch(`${FB()}/requests.json?auth=${t}&t=${Date.now()}`);
     if(r.status===401)throw new Error('Règles Firebase à republier (nœud « requests »)');if(!r.ok)throw new Error('Firebase '+r.status);
-    const j=await r.json()||{};REQ=Object.entries(j).map(([rid,v])=>({rid,...v})).filter(r=>!(r.produit==='Annonces'&&(r.type==='compte'||r.type==='mdp'))).sort((a,b)=>(a.statut==='attente'?0:1)-(b.statut==='attente'?0:1)||b.t-a.t)}
+    const j=await r.json()||{};REQ=Object.entries(j).map(([rid,v])=>({rid,...v})).filter(r=>!(r.produit==='Annonces'&&(r.type==='compte'||r.type==='mdp'||r.type==='pro'))).sort((a,b)=>(a.statut==='attente'?0:1)-(b.statut==='attente'?0:1)||b.t-a.t)}
   catch(e){REQ_ERR=e.message}
   renderReq()}
 // ── Demandes : deux angles (licence / SAV), notification en tête, filtres et recherche ──
@@ -1995,13 +2005,13 @@ if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceW
 mergeTabs({});initCfg();newLic();go('dash');setDev(0);
 if(C().fbMail&&C().fbPass)fbTok().then(()=>{FBOK=true;renderConn()}).catch(()=>{});
 let ANNW=[],ANNON=[];
-const ANCAT={auto:'🚗 Voiture',moto:'🏍 Moto',immo:'🏠 Immobilier',tech:'📱 High-Tech',maison:'🛋 Maison',mode:'👜 Mode',loisirs:'🎮 Loisirs',promo:'🔥 Promotion',autre:'📦 Autre'};
+const ANCAT={emploi:'💼 Emploi',auto:'🚗 Voiture',moto:'🏍 Moto',immo:'🏠 Immobilier',tech:'📱 High-Tech',maison:'🛋 Maison',mode:'👜 Mode',loisirs:'🎮 Loisirs',promo:'🔥 Promotion',autre:'📦 Autre'};
 const annEur=n=>Number(n||0).toLocaleString('fr-FR',{style:'currency',currency:'EUR',maximumFractionDigits:0});
 async function annGet(p){const t=await fbTok(),r=await fetch(`${FB()}/${p}.json?auth=${t}&t=${Date.now()}`);if(r.status===401||r.status===403)throw new Error('Règles Firebase à republier (nœuds « annonces »)');if(!r.ok)throw new Error('Firebase '+r.status);return await r.json()||{}}
-async function loadAnn(){loadAnnMb();loadAnnMsg();loadAnnLog();try{annGet('crm/annoncesPriv').then(d=>{ANNPRIV=d||{};anDraw()}).catch(()=>{});const w=await annGet('annoncesWait'),o=await fetch(`${FB()}/annonces.json?t=${Date.now()}`).then(r=>r.ok?r.json():{})||{};
+async function loadAnn(){loadAnnMb();loadAnnMsg();loadFl();loadAnnLog();try{annGet('crm/annoncesPriv').then(d=>{ANNPRIV=d||{};anDraw()}).catch(()=>{});const w=await annGet('annoncesWait'),o=await fetch(`${FB()}/annonces.json?t=${Date.now()}`).then(r=>r.ok?r.json():{})||{};
   ANNW=Object.entries(w).map(([id,a])=>({...a,id})).sort((a,b)=>b.t-a.t);ANNON=Object.entries(o).map(([id,a])=>({...a,id})).sort((a,b)=>b.t-a.t);renderAnn()}
  catch(e){$('annList').innerHTML=`<div class="empty">⚠️ ${esc(e.message)}</div>`}}
-const ANCOL={auto:'#3b82f6',moto:'#f97316',immo:'#10b981',tech:'#8b5cf6',maison:'#eab308',mode:'#ec4899',loisirs:'#06b6d4',promo:'#ef4444',autre:'#64748b'};
+const ANCOL={emploi:'#0ea5e9',auto:'#3b82f6',moto:'#f97316',immo:'#10b981',tech:'#8b5cf6',maison:'#eab308',mode:'#ec4899',loisirs:'#06b6d4',promo:'#ef4444',autre:'#64748b'};
 let ANTAB=(()=>{try{return localStorage.getItem('anTab')||''}catch(e){return''}})(),ANCATF='',ANNPRIV={},ANVW=(()=>{try{return localStorage.getItem('anVw')||'g'}catch(e){return'g'}})(),ANSELF='',ANLOG=[],ANLOGF='';
 let ANALIAS={};const anKey=a=>{const w=anWho(a),k=(w.ml||w.ph||w.n||'?').toLowerCase().trim();return ANALIAS[k]||k};
 function anView(v){ANVW=v;try{localStorage.setItem('anVw',v)}catch(e){}anDraw()}
@@ -2035,14 +2045,14 @@ function annCard(a,on,i){const img=anImg((a.imgs||[])[0]),w=anWho(a),cc=ANCOL[a.
    <span class="bd cat">${esc(ANCAT[a.cat]||'📦 Autre')}</span><span class="bd nph">📷 ${(a.imgs||[]).length}</span><span class="bd pr">${annEur(a.price)}${pc?`<s>${annEur(a.oldPrice)}</s>`:''}</span>${pc?`<span class="bd pc">-${pc} %</span>`:''}</div>
   <div class="anB"><h4 onclick="annView('${a.id}',${on})">${esc(a.title||'Sans titre')}</h4>
    <div class="anM"><span>📍 ${esc(a.sCity||'—')}</span>${a.cond?`<span>🏷 ${esc(a.cond)}</span>`:''}<span title="${fmtD(new Date(a.t))}">🕒 ${anAgo(a.t)}</span></div>
-   <div class="anW"><span class="anAv">${esc(anIni(w.n))}</span><div><b>${esc(w.n)}${a.membre?'<span class="anTag mb">Membre ✓</span>':'<span class="anTag vi">Visiteur</span>'}</b><small>${w.ph?'📞 '+esc(w.ph):''}${w.ph&&w.ml?' · ':''}${w.ml?'✉ '+esc(w.ml):''}${!w.ph&&!w.ml?'Coordonnées non renseignées':''}${w.wa?' · WhatsApp':''}</small></div></div>
+   <div class="anW"><span class="anAv">${esc(anIni(w.n))}</span><div><b>${esc(w.n)}${(a.membre?'<span class="anTag mb">Membre ✓</span>':'<span class="anTag vi">Visiteur</span>')+(a.adv?'<span class="anTag mb" style="background:#eab30822;color:#ca8a04">⭐ Avancé</span>':'')+(a.oldPrice>a.price&&a.cat!=="emploi"?`<span class="anTag" style="background:#ef444422;color:#ef4444">−${Math.round((1-a.price/a.oldPrice)*100)} %${a.promoEnd?' → '+new Date(a.promoEnd).toLocaleDateString('fr-FR'):''}</span>`:'')}</b><small>${w.ph?'📞 '+esc(w.ph):''}${w.ph&&w.ml?' · ':''}${w.ml?'✉ '+esc(w.ml):''}${!w.ph&&!w.ml?'Coordonnées non renseignées':''}${w.wa?' · WhatsApp':''}</small></div></div>
    <div class="anRef">Réf. ${esc(String(a.id).slice(-8).toUpperCase())}${on?(a.contact?' <span class="anTag op">🔓 Coordonnées publiques</span>':' <span class="anTag cl">🔒 Coordonnées masquées</span>'):' <span class="anTag cl">⏳ En attente</span>'}</div>
    <div class="anA">${on?`<a class="ghost sm" style="text-decoration:none" href="annonces/#${encodeURIComponent(a.id)}" target="_blank" rel="noopener">👁 Voir sur le site</a><button class="ghost sm danger" onclick="annDel('${a.id}')">🗑️ Retirer</button>`
      :`<button class="btn sm" onclick="annOk('${a.id}',true)">✅ Publier + coordonnées</button><button class="ghost sm" onclick="annOk('${a.id}',false)">✅ Publier masqué</button><button class="ghost sm danger" onclick="annNo('${a.id}')">❌ Refuser</button>`}</div></div></div>`}
 function annView(id,on){const a=(on?ANNON:ANNW).find(x=>x.id===id);if(!a)return;const w=anWho(a),I=(a.imgs||[]).map(anImg).filter(Boolean),sid=I.length?imgSet(I):'';
   openModal(`<div class="md-h"><div class="pi" style="--pc:${ANCOL[a.cat]||'#64748b'}">${(ANCAT[a.cat]||'🏷️').split(' ')[0]}</div><div><h2>${esc(a.title||'')}</h2><span>${annEur(a.price)} · ${esc(ANCAT[a.cat]||'')} · ${on?'En ligne':'À valider'}</span></div><button class="x" onclick="closeModal()">✕</button></div>
    <div class="md-b"><div class="anDet"><div class="anDetG">${I.length?`<img class="anHero" id="anHero" src="${I[0]}" alt="" onclick="imgView(null,+(this.dataset.i||0),window._imgSets['${sid}'])">${I.length>1?`<div class="anGal">${I.map((u,i)=>`<img src="${u}" class="${i?'':'on'}" onclick="const h=$('anHero');h.src=this.src;h.dataset.i=${i};this.parentNode.querySelectorAll('img').forEach(x=>x.classList.toggle('on',x===this))">`).join('')}</div>`:''}`:`<div class="anHero ph">${(ANCAT[a.cat]||'🏷️').split(' ')[0]}</div>`}</div><div class="anDetI">
-    <div class="anKV"><span>Envoyée par</span><b>${esc(w.n)} ${a.membre?'<span class="anTag mb">Membre ✓</span>':'<span class="anTag vi">Visiteur</span>'}</b><span>Téléphone</span><div>${w.ph?`<a href="tel:${esc(w.ph)}">${esc(w.ph)}</a>${w.wa?' · WhatsApp':''}`:'—'}</div><span>E-mail</span><div>${w.ml?`<a href="mailto:${esc(w.ml)}">${esc(w.ml)}</a>`:'—'}</div>
+    <div class="anKV"><span>Envoyée par</span><b>${esc(w.n)} ${(a.membre?'<span class="anTag mb">Membre ✓</span>':'<span class="anTag vi">Visiteur</span>')+(a.adv?'<span class="anTag mb" style="background:#eab30822;color:#ca8a04">⭐ Avancé</span>':'')+(a.oldPrice>a.price&&a.cat!=="emploi"?`<span class="anTag" style="background:#ef444422;color:#ef4444">−${Math.round((1-a.price/a.oldPrice)*100)} %${a.promoEnd?' → '+new Date(a.promoEnd).toLocaleDateString('fr-FR'):''}</span>`:'')}</b><span>Téléphone</span><div>${w.ph?`<a href="tel:${esc(w.ph)}">${esc(w.ph)}</a>${w.wa?' · WhatsApp':''}`:'—'}</div><span>E-mail</span><div>${w.ml?`<a href="mailto:${esc(w.ml)}">${esc(w.ml)}</a>`:'—'}</div>
      <span>Ville</span><div>📍 ${esc(a.sCity||'—')}</div><span>État</span><div>${esc(a.cond||'—')}</div><span>Prix</span><div><b>${annEur(a.price)}</b>${a.oldPrice>a.price?` <s style="opacity:.6">${annEur(a.oldPrice)}</s>`:''}</div>
      <span>Déposée le</span><div>${fmtD(new Date(a.t))} (${anAgo(a.t)})</div><span>Référence</span><div class="anRef">${esc(a.id)}</div>${on?`<span>Coordonnées</span><div>${a.contact?'🔓 visibles sur le site':'🔒 masquées (messagerie)'}</div>`:''}</div>
     <label>Description</label><div class="anDesc">${esc(a.desc||'—')}</div></div></div>
@@ -2119,15 +2129,25 @@ async function loadAnnMsg(){try{const d=await annGet('support');
    <div><b>${esc(ti||'Message')}</b><small>✉ ${esc(x.email)}${ad?` · ${annEur(ad.price)}`:''} · ${anAgo(x.last)}</small><small>${ad?(ANNON.includes(ad)?'✅ Annonce en ligne':'🕒 Annonce à valider'):'Annonce retirée ou introuvable'}</small></div>${annRed(x.unread)||'<span style="opacity:.5">›</span>'}</div>`}).join(''):'<div class="empty">📭 Aucun message</div>';anDraw()}
  catch(e){$('annMsg').innerHTML=`<div class="empty">⚠️ ${esc(e.message)}</div>`}}
 async function annOpenMsg(tid){try{await fbPut(`support/${tid}/seenAdmin`,Date.now())}catch(e){}await openSup(tid);loadAnnMsg()}
-async function loadAnnMb(){try{const d=await annGet('requests');ANNMB=Object.entries(d).map(([rid,r])=>({...r,rid})).filter(r=>r.produit==='Annonces'&&(r.type==='compte'||r.type==='mdp')).sort((a,b)=>b.t-a.t);renderAnnMb()}catch(e){$('annMb').innerHTML=`<div class="empty">⚠️ ${esc(e.message)}</div>`}}
+let FLASH={};
+async function loadFl(){try{FLASH=await fetch(`${FB()}/flash.json?t=${Date.now()}`).then(r=>r.json())||{}}catch(e){FLASH={}}const now=new Date().toISOString().slice(0,10);
+ const L=Object.entries(FLASH).sort((a,b)=>b[1].t-a[1].t),act=L.filter(([,f])=>!f.until||f.until>=now).length;const e=$('anTnFl');if(e)e.textContent=act;
+ if(!$('flList'))return;$('flList').innerHTML=L.length?L.map(([id,f])=>`<div class="card anL" style="cursor:default;display:flex;gap:12px;align-items:center;${f.until&&f.until<now?'opacity:.5':''}"><span style="font-size:1.3rem">${{urgent:'⚠',promo:'🔥',info:'📣'}[f.level]||'📣'}</span><div style="flex:1;min-width:0">${esc(f.text)}<small style="display:block;opacity:.7">${fmtD(new Date(f.t))}${f.until?' → '+new Date(f.until).toLocaleDateString('fr-FR'):' · sans date de fin'}${f.until&&f.until<now?' · expiré':''}${f.link?' · 🔗 '+esc(f.link):''}</small></div><button class="ghost sm danger" onclick="flDel('${id}')">🗑️ Supprimer</button></div>`).join(''):'<div class="empty">Aucun flash publié</div>'}
+async function flAdd(){const t=$('flTx').value.trim();if(!t)return toast('Écris le message','ko');const lk=$('flLk').value.trim();
+ try{await fbPut('flash/'+Date.now().toString(36),{text:t.slice(0,220),level:$('flLv').value,t:Date.now(),...(lk?{link:lk.slice(0,300)}:{}),...($('flUn').value?{until:$('flUn').value}:{})});$('flTx').value=$('flLk').value=$('flUn').value='';toast('📣 Flash publié sur le site');loadFl()}catch(e){toast(e.message,'ko')}}
+async function flDel(id){if(!confirm('Supprimer ce flash ?'))return;try{await fbPut('flash/'+id,null);toast('Flash supprimé');loadFl()}catch(e){toast(e.message,'ko')}}
+async function mbProSet(rid,on){try{await mbSet(rid,{pro:on});toast(on?'⭐ Mode avancé activé':'Mode avancé retiré');loadAnnMb()}catch(e){toast(e.message,'ko')}}
+async function mbPro(rid){const r=mbGet(rid);try{const t=await fbTok(),acc=await (await fetch(`${FB()}/requests/${r.ref}.json?auth=${t}`)).json();if(!acc)throw new Error('Compte introuvable');
+  await fbPut('requests/'+r.ref,{...acc,pro:true});await mbSet(rid,{statut:'accordee'});toast('⭐ Mode avancé accordé');loadAnnMb()}catch(e){toast(e.message,'ko')}}
+async function loadAnnMb(){try{const d=await annGet('requests');ANNMB=Object.entries(d).map(([rid,r])=>({...r,rid})).filter(r=>r.produit==='Annonces'&&(r.type==='compte'||r.type==='mdp'||r.type==='pro')).sort((a,b)=>b.t-a.t);renderAnnMb()}catch(e){$('annMb').innerHTML=`<div class="empty">⚠️ ${esc(e.message)}</div>`}}
 function renderAnnMb(){const w=ANNMB.filter(r=>r.statut==='attente'),ok=ANNMB.filter(r=>r.type==='compte'&&r.statut==='accordee');
  $('annMbN').textContent=ok.length+' membre(s) · '+w.length+' en attente';ANNMBW=w.length;annBadge();
  const nAds=em=>[...ANNW,...ANNON].filter(a=>(anWho(a).ml||'').toLowerCase()===String(em||'').toLowerCase()).length;
- const row=(r,btns)=>`<div class="card anL" style="cursor:default;display:block"><div style="display:flex;gap:12px;align-items:center"><span class="anAv">${esc(anIni(r.nom||r.email))}</span><div style="flex:1;min-width:0"><b>${r.type==='mdp'?'🔑 Nouveau mot de passe':r.statut==='accordee'?'✅ Membre':'🆕 Inscription'} — ${esc(r.nom||r.email)}</b>
+ const row=(r,btns)=>`<div class="card anL" style="cursor:default;display:block"><div style="display:flex;gap:12px;align-items:center"><span class="anAv">${esc(anIni(r.nom||r.email))}</span><div style="flex:1;min-width:0"><b>${r.type==='mdp'?'🔑 Nouveau mot de passe':r.type==='pro'?'⭐ Demande de mode avancé':r.statut==='accordee'?'✅ Membre':'🆕 Inscription'}${r.type==='compte'&&r.pro?' <span style="color:#eab308">⭐ Mode avancé</span>':''} — ${esc(r.nom||r.email)}</b>
   <small>✉ ${esc(r.email)}${r.tel?' · 📞 '+esc(r.tel):''}${r.ville?' · 📍 '+esc(r.ville):''} · ${anAgo(r.t)}${nAds(r.email)?` · 🏷️ ${nAds(r.email)} annonce${nAds(r.email)>1?'s':''}`:''}</small></div></div>
   ${r.message&&r.message.includes('\n\n')?`<div style="font-size:.85rem;opacity:.85;white-space:pre-wrap">${esc(r.message.split('\n\n').slice(1).join('\n\n'))}</div>`:''}<div class="acts2" style="margin-top:8px">${btns}</div></div>`;
- $('annMb').innerHTML=(w.length?w.map(r=>row(r,r.type==='mdp'?`<button class="btn sm" onclick="mbPwd('${r.rid}')">✅ Valider le nouveau mot de passe</button><button class="ghost sm danger" onclick="mbNo('${r.rid}')">❌ Refuser</button>`:`<button class="btn sm" onclick="mbOk('${r.rid}')">✅ Valider le compte</button><button class="ghost sm danger" onclick="mbNo('${r.rid}')">❌ Refuser</button>`)).join(''):'<div class="empty">📭 Aucune demande de compte en attente</div>')
-  +(ok.length?`<details style="margin-top:12px"><summary style="cursor:pointer">Membres validés (${ok.length})</summary>${ok.map(r=>row(r,`<button class="ghost sm danger" onclick="mbOff('${r.rid}')">⛔ Désactiver</button>`)).join('')}</details>`:'')}
+ $('annMb').innerHTML=(w.length?w.map(r=>row(r,r.type==='pro'?`<button class="btn sm" onclick="mbPro('${r.rid}')">⭐ Accorder le mode avancé</button><button class="ghost sm danger" onclick="mbNo('${r.rid}')">❌ Refuser</button>`:r.type==='mdp'?`<button class="btn sm" onclick="mbPwd('${r.rid}')">✅ Valider le nouveau mot de passe</button><button class="ghost sm danger" onclick="mbNo('${r.rid}')">❌ Refuser</button>`:`<button class="btn sm" onclick="mbOk('${r.rid}')">✅ Valider le compte</button><button class="ghost sm danger" onclick="mbNo('${r.rid}')">❌ Refuser</button>`)).join(''):'<div class="empty">📭 Aucune demande de compte en attente</div>')
+  +(ok.length?`<details style="margin-top:12px"><summary style="cursor:pointer">Membres validés (${ok.length})</summary>${ok.map(r=>row(r,`<button class="ghost sm" onclick="mbProSet('${r.rid}',${!r.pro})">${r.pro?'☆ Retirer le mode avancé':'⭐ Activer le mode avancé'}</button><button class="ghost sm danger" onclick="mbOff('${r.rid}')">⛔ Désactiver</button>`)).join('')}</details>`:'')}
 const mbGet=rid=>ANNMB.find(x=>x.rid===rid);
 async function mbSet(rid,patch){const{rid:_,...v}=mbGet(rid);await fbPut('requests/'+rid,{...v,...patch,traite:Date.now()})}
 async function mbOk(rid){try{await mbSet(rid,{statut:'accordee'});toast('🎉 Compte validé — le membre peut se connecter');loadAnnMb()}catch(e){toast(e.message,'ko')}}

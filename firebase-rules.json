@@ -107,6 +107,10 @@
           ".validate": "newData.isNumber() && $o.length <= 40 && $t.length <= 40"
         }
       }
+    },
+    "flash": {
+      ".read": true,
+      ".write": "auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63'"
     }
   }
 }

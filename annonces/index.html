@@ -172,6 +172,55 @@ textarea.f{min-height:120px;resize:vertical}
 .prev button{position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;background:rgba(27,24,20,.75);color:#fff;font-size:.75rem}
 .prev .first::after{content:"Couverture";position:absolute;left:0;right:0;bottom:0;background:var(--ink);color:var(--paper);font-size:.62rem;text-align:center;padding:3px}
 .veh{display:none}
+.dyn{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.dyn .full{grid-column:1/-1}
+.dyn:empty{display:none}
+.promo-live{grid-column:1/-1;font-size:.88rem;font-weight:700;color:var(--terra);min-height:1em}
+.adv{border:1.5px solid var(--gold);border-radius:18px;padding:16px;display:grid;gap:12px;background:linear-gradient(135deg,rgba(184,137,59,.08),transparent)}
+.adv h4{font-family:var(--serif);font-size:1.05rem}
+.kv{display:grid;grid-template-columns:1fr 1.3fr 36px;gap:8px}
+.kv button{border:1px solid var(--line);border-radius:12px;background:var(--card)}
+.sw{display:flex;gap:8px;flex-wrap:wrap}
+.sw button{width:32px;height:32px;border-radius:50%;border:3px solid var(--card);box-shadow:0 0 0 1px var(--line)}
+.sw button.on{box-shadow:0 0 0 2px var(--ink)}
+/* Promotions */
+.save{font-size:.78rem;font-weight:700;color:var(--olive)}
+.cdown{position:absolute;left:12px;bottom:12px;background:var(--ink);color:var(--paper);font-size:.7rem;font-weight:700;padding:4px 10px;border-radius:99px}
+.badge2{position:absolute;left:12px;top:48px;background:var(--gold);color:#fff;font-size:.7rem;font-weight:800;padding:4px 10px;border-radius:99px;letter-spacing:.02em}
+.promos{margin:18px 0 0;padding:20px;border-radius:24px;background:var(--ink);color:var(--paper);overflow:hidden}
+.promos h3{font-family:var(--serif);font-weight:600;font-size:1.4rem;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.promos h3 small{font-family:var(--sans);font-size:.85rem;opacity:.7;font-weight:500}
+.ptrack{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding:14px 0 4px;scrollbar-width:thin}
+.pc{flex:none;width:210px;scroll-snap-align:start;background:var(--card);color:var(--ink);border-radius:18px;overflow:hidden;cursor:pointer;transition:.3s}
+.pc:hover{transform:translateY(-4px)}
+.pc .ph{aspect-ratio:1}
+.pc .cb{padding:10px 12px}
+.pc .ttl{font-size:.95rem}
+.pstats{display:flex;gap:22px;flex-wrap:wrap;margin-top:6px;font-size:.85rem;opacity:.85}
+.pstats b{font-family:var(--serif);font-size:1.3rem;display:block;opacity:1}
+/* Emploi */
+.job{font-weight:800;font-size:1rem}
+/* Flash info */
+.flash{display:none;position:relative;z-index:51;color:#fff;font-size:.9rem;font-weight:600;overflow:hidden}
+.flash.on{display:flex;align-items:center}
+.flash .lab{flex:none;padding:9px 14px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;font-size:.72rem;background:rgba(0,0,0,.25)}
+.flash .tk{flex:1;overflow:hidden;white-space:nowrap;mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent)}
+.flash .tk span{display:inline-block;padding-left:100%;animation:tick var(--d,25s) linear infinite}
+.flash:hover .tk span{animation-play-state:paused}
+.flash a{color:#fff;text-decoration:underline}
+.flash .cl{flex:none;width:36px;color:#fff;font-size:1rem;opacity:.8}
+@keyframes tick{to{transform:translateX(-100%)}}
+.flash.info{background:var(--ink)}.flash.promo{background:var(--terra)}.flash.urgent{background:#b42318}
+/* Mises en page avancées */
+.dt.L-wide{grid-template-columns:1fr}
+.dt.L-wide .gal .main{aspect-ratio:21/9}
+.dt.L-right{grid-template-columns:1fr 1.35fr}
+.dt.L-right>div:first-child{order:2}
+.dt.L-dark{background:#14120f;color:#f4efe6}
+.dt.L-dark .desc{color:#d9d2c4}
+.dt.L-dark .specs,.dt.L-dark .specs div,.dt.L-dark .seller,.dt.L-dark .chip,.dt.L-dark .btn-line{background:#211e19;border-color:#3a352d;color:#f4efe6}
+.dt.L-dark .specs small,.dt.L-dark .lock{color:#a39a8a}
+.dt.L-dark .lock{background:#1b1915}
 .ck{display:flex;align-items:center;gap:10px;text-transform:none;letter-spacing:0;font-size:.92rem;color:var(--ink);font-weight:600}
 .ck input{width:18px;height:18px;accent-color:var(--terra)}
 .note{font-size:.84rem;color:var(--ink2);background:var(--paper2);padding:12px 14px;border-radius:14px;line-height:1.5}
@@ -207,7 +256,10 @@ footer button{text-decoration:underline;color:var(--ink2)}
  #accBtn{margin-left:auto}
  .bar{height:76px!important}
  .hero{grid-template-columns:1fr;padding:38px 0 22px;gap:18px}
- .dt{grid-template-columns:1fr}
+ .dt,.dt.L-right{grid-template-columns:1fr}
+ .dt.L-right>div:first-child{order:0}
+ .dyn,.kv{grid-template-columns:1fr}
+ .kv{grid-template-columns:1fr 1fr 36px}
  .card.big{grid-column:auto}
  .card.big .ph{aspect-ratio:5/4}
  .bar .btn-ink,.search{display:none}
@@ -236,6 +288,7 @@ footer button{text-decoration:underline;color:var(--ink2)}
  <button style="color:var(--paper);text-decoration:underline" onclick="logout()">Quitter</button>
 </div></div>
 
+<div class="flash" id="flash"><span class="lab" id="flL">Flash</span><div class="tk"><span id="flT"></span></div><button class="cl" onclick="hideFlash()" title="Masquer">✕</button></div>
 <header><div class="wrap bar">
  <div class="logo" onclick="resetAll()"><img src="logo.png" alt="Maison des Annonces"></div>
  <div class="search">🔍<input id="q" placeholder="Voiture, canapé, téléphone…" oninput="render()"></div>
@@ -261,12 +314,13 @@ footer button{text-decoration:underline;color:var(--ink2)}
  <div class="msearch"><div class="search">🔍<input id="q2" placeholder="Rechercher…" oninput="q.value=this.value;render()"></div></div>
  <nav class="cats" id="cats"></nav>
  <div class="tools">
-  <select id="sort" onchange="render()"><option value="new">Plus récentes</option><option value="pa">Prix croissant</option><option value="pd">Prix décroissant</option></select>
+  <select id="sort" onchange="render()"><option value="new">Plus récentes</option><option value="pa">Prix croissant</option><option value="pd">Prix décroissant</option><option value="disc">Meilleure réduction</option></select>
   <input id="pmin" type="number" placeholder="Prix min" oninput="render()">
   <input id="pmax" type="number" placeholder="Prix max" oninput="render()">
   <input id="city" placeholder="Ville" oninput="render()" style="width:130px">
   <span class="count" id="count"></span>
  </div>
+ <section class="promos" id="promos" hidden></section>
  <section class="grid" id="grid"><div class="skel"></div><div class="skel"></div><div class="skel"></div><div class="skel"></div></section>
 </main>
 
@@ -292,20 +346,18 @@ footer button{text-decoration:underline;color:var(--ink2)}
   <label>Titre *<input class="f" name="title" required maxlength="80"></label>
   <div class="r2">
    <label>Catégorie *<select class="f" name="cat" id="fCat" required></select></label>
-   <label>État<select class="f" name="cond"><option>Neuf</option><option>Très bon état</option><option selected>Bon état</option><option>État correct</option><option>Pour pièces</option></select></label>
+   <label id="condL">État<select class="f" name="cond"><option>Neuf</option><option>Très bon état</option><option selected>Bon état</option><option>État correct</option><option>Pour pièces</option></select></label>
   </div>
   <div class="r2">
-   <label>Prix (€) *<input class="f" name="price" type="number" min="0" step="0.01" required></label>
-   <label>Ancien prix (promo)<input class="f" name="oldPrice" type="number" min="0" step="0.01" placeholder="Optionnel"></label>
+   <label><span id="priceLbl">Prix (€) *</span><input class="f" name="price" type="number" min="0" step="0.01" required></label>
+   <label id="oldL">Prix avant promo<input class="f" name="oldPrice" type="number" min="0" step="0.01" placeholder="Optionnel" oninput="promoLive()"></label>
   </div>
-  <div class="r2 veh"><label>Marque<input class="f" name="brand"></label><label>Modèle<input class="f" name="model"></label></div>
-  <div class="r2 veh"><label>Année<input class="f" name="year" type="number" min="1950" max="2030"></label><label>Kilométrage<input class="f" name="km" type="number" min="0"></label></div>
-  <div class="r2 veh">
-   <label>Carburant<select class="f" name="fuel"><option></option><option>Essence</option><option>Diesel</option><option>Hybride</option><option>Électrique</option><option>GPL</option></select></label>
-   <label>Boîte<select class="f" name="gear"><option></option><option>Manuelle</option><option>Automatique</option></select></label>
-  </div>
+  <div class="r2" id="promoRow"><label>Fin de la promotion<input class="f" name="promoEnd" type="date" oninput="promoLive()"></label><div class="promo-live" id="promoLive" style="align-self:end"></div></div>
+  <div class="sec" id="dynH" style="font-size:1rem">Caractéristiques</div>
+  <div class="dyn" id="dyn"></div>
   <label>Description *<textarea class="f" name="desc" required maxlength="3000"></textarea></label>
   <label class="ck"><input type="checkbox" name="nego"> Prix négociable</label>
+  <div id="advBox"></div>
   <div class="sec">Vos coordonnées</div>
   <div class="r2"><label>Nom *<input class="f" name="sName" required maxlength="60"></label><label>Ville *<input class="f" name="sCity" required maxlength="60"></label></div>
   <div class="r2"><label>Téléphone<input class="f" name="sPhone" type="tel" maxlength="30"></label><label>E-mail<input class="f" name="sMail" type="email" maxlength="120"></label></div>
@@ -375,8 +427,26 @@ footer button{text-decoration:underline;color:var(--ink2)}
 const FB='https://covo-licences-default-rtdb.europe-west1.firebasedatabase.app';
 const FBKEY='AIzaSyBf93ZHmBf6qi6GbtUX-dQh-DGMgR6nIts';
 const PRODUIT='Annonces';
-const CATS=[{id:'all',n:'Tout',i:'✦'},{id:'auto',n:'Voitures',i:'🚗'},{id:'moto',n:'Motos',i:'🏍'},{id:'immo',n:'Immobilier',i:'🏠'},{id:'tech',n:'High-Tech',i:'📱'},{id:'maison',n:'Maison',i:'🛋'},{id:'mode',n:'Mode',i:'👜'},{id:'loisirs',n:'Loisirs',i:'🎮'},{id:'promo',n:'Promotions',i:'🔥'},{id:'autre',n:'Autres',i:'📦'}];
+const CATS=[{id:'all',n:'Tout',i:'✦'},{id:'auto',n:'Voitures',i:'🚗'},{id:'moto',n:'Motos',i:'🏍'},{id:'immo',n:'Immobilier',i:'🏠'},{id:'tech',n:'High-Tech',i:'📱'},{id:'maison',n:'Maison',i:'🛋'},{id:'mode',n:'Mode',i:'👜'},{id:'loisirs',n:'Loisirs',i:'🎮'},{id:'emploi',n:'Emploi',i:'💼'},{id:'promo',n:'Promotions',i:'🔥'},{id:'autre',n:'Autres',i:'📦'}];
 const VEH=['auto','moto'];
+/* Champs dynamiques : [clé, libellé, type(t=texte,n=nombre,s=liste,a=zone,d=date), options|placeholder] */
+const S=(...o)=>o;
+const FIELDS={
+ auto:[['brand','Marque','t','Peugeot, Renault…'],['model','Modèle','t','208, Clio…'],['year','Année','n'],['km','Kilométrage (km)','n'],['fuel','Motorisation / carburant','s',S('Essence','Diesel','Hybride','Hybride rechargeable','Électrique','GPL','E85')],['gear','Boîte de vitesses','s',S('Manuelle','Automatique')],['power','Puissance (ch)','n'],['doors','Portes','s',S('3','5','Autre')],['color','Couleur','t'],['ctech','Contrôle technique','s',S('OK','À faire','Non requis')]],
+ moto:[['brand','Marque','t'],['model','Modèle','t'],['year','Année','n'],['km','Kilométrage (km)','n'],['cc','Cylindrée (cm³)','n'],['mtype','Type','s',S('Roadster','Sportive','Trail','Custom','Routière','Scooter','Cross / Enduro')],['permis','Permis','s',S('A','A2','A1','B (125 cm³)','Sans permis')],['fuel','Motorisation','s',S('Essence','Électrique')]],
+ immo:[['ptype','Type de bien','s',S('Appartement','Maison','Immeuble','Terrain','Local commercial','Parking / Garage')],['tx','Transaction','s',S('Vente','Location','Colocation')],['surf','Superficie (m²)','n'],['rooms','Nombre de pièces','n'],['beds','Chambres','n'],['floor','Étage','n'],['lift','Ascenseur','s',S('Oui','Non')],['furn','Meublé','s',S('Oui','Non')],['land','Terrain (m²)','n'],['dpe','DPE','s',S('A','B','C','D','E','F','G','Non soumis')]],
+ tech:[['brand','Marque','t'],['model','Modèle exact','t','iPhone 15 Pro 256 Go…'],['ttype','Type d\'appareil','s',S('Smartphone','Ordinateur','Tablette','TV / Écran','Audio / Enceinte','Console / Jeux','Photo / Vidéo','Électroménager','Objet connecté','Accessoire','Autre')],['power','Alimentation','s',S('Batterie rechargeable','Piles','Secteur 230 V','12 V','USB','Solaire','Sans alimentation')],['conn','Connectique / branchement','t','USB-C, HDMI, Lightning, Bluetooth…'],['storage','Capacité / stockage','t','256 Go, 16 Go RAM…'],['warranty','Garantie','s',S('Aucune','Sous garantie','Facture disponible')]],
+ mode:[['pub','Public','s',S('Homme','Femme','Enfant','Bébé','Mixte')],['sub','Type d\'article','s',S('Haut / T-shirt','Chemise / Blouse','Pull / Sweat','Veste / Manteau','Pantalon / Jean','Short','Robe / Jupe','Chaussures','Sac','Accessoire','Sous-vêtement','Autre')],['size','Taille','t','S, M, 38, 42…'],['mat','Matière / textile','t','Coton, laine, cuir…'],['brand','Marque','t'],['color','Couleur','t']],
+ emploi:[['contract','Type de contrat','s',S('CDI','CDD','Intérim','Alternance','Stage','Freelance','Saisonnier')],['time','Temps de travail','s',S('Temps plein','Temps partiel','Horaires flexibles')],['company','Entreprise','t'],['sector','Secteur d\'activité','t'],['exp','Expérience','s',S('Débutant accepté','1 à 2 ans','3 à 5 ans','5 ans et plus')],['remote','Télétravail','s',S('Non','Partiel','Total')],['start','Date de début','d'],['quals','Qualifications requises','a','Diplômes, permis, compétences…']]
+};
+const NOCOND=['immo','emploi'];
+const isJob=a=>a.cat==='emploi';
+const xOf=a=>{const x={...(a.x||{})};['brand','model','year','km','fuel','gear'].forEach(k=>{if(a[k]&&x[k]==null)x[k]=a[k]});return x};
+function fmtX(k,v,cat){if(k==='km')return Number(v).toLocaleString('fr-FR')+' km';if(k==='surf'||k==='land')return v+' m²';if(k==='cc')return v+' cm³';if(k==='power'&&cat!=='tech')return v+' ch';if(k==='start')return new Date(v).toLocaleDateString('fr-FR');return v}
+function specList(a){const c=catOf(a.cat),x=xOf(a),fs=FIELDS[a.cat]||[];const out=[['Catégorie',c.n]];if(!NOCOND.includes(a.cat)&&a.cond)out.push(['État',a.cond]);
+ fs.forEach(([k,l])=>{if(x[k]!=null&&x[k]!==''&&k!=='quals')out.push([l,fmtX(k,x[k],a.cat)])});return out}
+function priceHtml(a){if(isJob(a))return a.price?`${eur(a.price)}<small style="font-size:.55em;font-weight:600;color:var(--ink2)"> /mois</small>`:'<span style="font-size:.8em">Salaire à définir</span>';
+ const p=isPromo(a);return`${eur(a.price)}${p?`<s>${eur(a.oldPrice)}</s>`:''}`}
 
 /* ===== État ===== */
 const LS={get:(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
@@ -419,31 +489,43 @@ function renderCats(){
 function setCat(c){cat=c;favView=false;renderCats();render()}
 function resetAll(){['q','q2','pmin','pmax','city'].forEach(i=>$(i).value='');setCat('all');scrollTo({top:0})}
 function toggleFav(){favView=!favView;renderCats();render();toast(favView?'Vos favoris':'Toutes les annonces')}
-const isPromo=a=>a.oldPrice>a.price;
+const today=()=>new Date().toISOString().slice(0,10);
+const isPromo=a=>!isJob(a)&&a.oldPrice>a.price&&(!a.promoEnd||a.promoEnd>=today());
+const disc=a=>isPromo(a)?Math.round((1-a.price/a.oldPrice)*100):0;
+const saving=a=>isPromo(a)?a.oldPrice-a.price:0;
+function daysLeft(a){if(!isPromo(a)||!a.promoEnd)return null;return Math.ceil((new Date(a.promoEnd+'T23:59:59')-Date.now())/864e5)}
+const cdTxt=d=>d==null?'':d<=0?'Dernier jour !':d===1?'Plus que 1 jour':`Plus que ${d} jours`;
+function renderPromos(r){const box=$('promos'),list=ads.filter(isPromo).sort((a,b)=>disc(b)-disc(a));
+ if(favView||!list.length||!(cat==='all'||cat==='promo')){box.hidden=true;return}
+ const max=disc(list[0]),tot=list.reduce((s,a)=>s+saving(a),0);box.hidden=false;
+ box.innerHTML=`<h3>🔥 Offres spéciales <small>${list.length} promotion${list.length>1?'s':''} en cours</small></h3>
+  <div class="pstats"><div><b>−${max} %</b>meilleure réduction</div><div><b>${eur(tot)}</b>d'économies cumulées</div><div><b>${list.filter(a=>{const d=daysLeft(a);return d!=null&&d<=3}).length}</b>se terminent bientôt</div></div>
+  <div class="ptrack">${list.slice(0,12).map(a=>{const d=daysLeft(a);return`<div class="pc" onclick="openDetail('${a.id}')"><div class="ph">${a.imgs[0]?`<div class="bg" style="background-image:url('${a.imgs[0]}')"></div><img src="${a.imgs[0]}" alt="">`:`<div class="none">${catOf(a.cat).i}</div>`}<span class="pill promo">−${disc(a)} %</span>${d!=null?`<span class="cdown">${cdTxt(d)}</span>`:''}</div>
+   <div class="cb"><div class="ttl">${esc(a.title)}</div><div class="price" style="font-size:1.05rem;margin-top:4px">${eur(a.price)}<s>${eur(a.oldPrice)}</s></div><div class="save">Économisez ${eur(saving(a))}</div></div></div>`}).join('')}</div>`}
 function filtered(){
  const q=$('q').value.toLowerCase().trim(),mn=parseFloat($('pmin').value),mx=parseFloat($('pmax').value),ci=$('city').value.toLowerCase().trim();
  const r=ads.filter(a=>{
   if(favView&&!favs.includes(a.id))return false;
   if(!favView&&cat!=='all'){if(cat==='promo'?!(isPromo(a)||a.cat==='promo'):a.cat!==cat)return false}
-  if(q&&!`${a.title} ${a.desc} ${a.brand||''} ${a.model||''}`.toLowerCase().includes(q))return false;
+  if(q&&!`${a.title} ${a.desc} ${Object.values(xOf(a)).join(' ')}`.toLowerCase().includes(q))return false;
   if(!isNaN(mn)&&a.price<mn)return false;if(!isNaN(mx)&&a.price>mx)return false;
   if(ci&&!(a.sCity||'').toLowerCase().includes(ci))return false;return true});
- const s=$('sort').value;return r.sort((a,b)=>s==='pa'?a.price-b.price:s==='pd'?b.price-a.price:b.t-a.t);
+ const s=cat==='promo'&&$('sort').value==='new'?'disc':$('sort').value;return r.sort((a,b)=>s==='disc'?disc(b)-disc(a)||b.t-a.t:s==='pa'?a.price-b.price:s==='pd'?b.price-a.price:b.t-a.t);
 }
 function render(){
  const r=filtered();
- $('count').textContent=`${r.length} annonce${r.length>1?'s':''}`;
+ $('count').textContent=`${r.length} annonce${r.length>1?'s':''}`;renderPromos(r);
  $('kT').textContent=ads.length;$('kP').textContent=ads.filter(a=>isPromo(a)||a.cat==='promo').length;$('kV').textContent=ads.filter(a=>VEH.includes(a.cat)).length;
  const fn=favs.filter(f=>ads.some(a=>a.id===f)).length;$('fN').textContent=fn;$('fN').hidden=!fn;
  if(!r.length){$('grid').innerHTML=`<div class="empty"><div style="font-size:3rem">${favView?'♡':'✦'}</div><h3>${favView?'Aucun favori pour l\'instant':'Rien par ici… encore.'}</h3><p>${favView?'Touchez ♡ sur une annonce pour la retrouver ici.':'Soyez le premier à proposer quelque chose.'}</p><button class="btn btn-ink" onclick="openForm()">Déposer une annonce</button></div>`;return}
  $('grid').innerHTML=r.map((a,i)=>{const c=catOf(a.cat),p=isPromo(a),big=i===0&&!favView&&cat==='all'&&r.length>3&&innerWidth>820;
   return`<article class="card ${big?'big':''}" style="animation-delay:${Math.min(i,12)*55}ms" onclick="openDetail('${a.id}')">
    <div class="ph">${a.imgs[0]?`<div class="bg" style="background-image:url('${a.imgs[0]}')"></div><img src="${a.imgs[0]}" loading="lazy" alt="">`:`<div class="none">${c.i}</div>`}
-    <span class="pill ${p?'promo':''}">${p?`−${Math.round((1-a.price/a.oldPrice)*100)} %`:`${c.i} ${c.n}`}</span>
+    <span class="pill ${p?'promo':''}">${p?`−${disc(a)} %`:isJob(a)&&xOf(a).contract?`💼 ${esc(xOf(a).contract)}`:`${c.i} ${c.n}`}</span>${a.adv&&a.adv.layout&&a.adv.layout.badge?`<span class="badge2" style="${a.adv.layout.accent?'background:'+a.adv.layout.accent:''}">${esc(a.adv.layout.badge)}</span>`:''}${p&&daysLeft(a)!=null?`<span class="cdown">${cdTxt(daysLeft(a))}</span>`:''}
     <button class="heart ${favs.includes(a.id)?'on':''}" onclick="event.stopPropagation();fav('${a.id}')">${favs.includes(a.id)?'♥':'♡'}</button>
     ${a.imgs.length>1?`<span class="nimg">${a.imgs.length} photos</span>`:''}</div>
    <div class="cb"><div class="ttl">${esc(a.title)}</div>
-    <div class="row1"><span class="price">${eur(a.price)}${p?`<s>${eur(a.oldPrice)}</s>`:''}</span><span class="where">${esc(a.sCity)} · ${ago(a.t)}</span></div></div></article>`}).join('');
+    ${p?`<div class="save" style="margin-top:4px">Économisez ${eur(saving(a))}</div>`:''}<div class="row1"><span class="price">${priceHtml(a)}</span><span class="where">${esc(a.sCity)} · ${ago(a.t)}</span></div></div></article>`}).join('');
 }
 function fav(id){favs=favs.includes(id)?favs.filter(f=>f!==id):[...favs,id];LS.set('ma_favs',favs);render();if(cur&&cur.id===id&&$('mD').classList.contains('open'))openDetail(id,true)}
 
@@ -453,16 +535,15 @@ function openDetail(id,keep){
  const c=catOf(a.cat),p=isPromo(a),ct=a.contact;
  const ph=ct&&ct.phone?ct.phone.replace(/[^\d+]/g,''):'',wa=ph.replace(/^0/,'33').replace('+','');
  const msg=encodeURIComponent(`Bonjour, votre annonce « ${a.title} » m'intéresse. Est-elle toujours disponible ?`);
- const specs=[['Catégorie',c.n],['État',a.cond],a.brand&&['Marque',a.brand],a.model&&['Modèle',a.model],a.year&&['Année',a.year],a.km&&['Kilométrage',Number(a.km).toLocaleString('fr-FR')+' km'],a.fuel&&['Carburant',a.fuel],a.gear&&['Boîte',a.gear]].filter(Boolean);
- $('dH').textContent=c.i+' '+c.n;
+ const L=(a.adv&&a.adv.layout)||{},custom=((a.adv&&a.adv.custom)||[]).filter(r=>r.k&&r.v),specs=[...specList(a),...custom.map(r=>[r.k,r.v])],quals=xOf(a).quals;
+ $('dH').textContent=c.i+' '+c.n;$('dB').className='dt'+(L.style?' L-'+L.style:'');$('dB').style.setProperty('--terra',L.accent||'');
  $('dB').innerHTML=`<div><div class="gal">${a.imgs.length?`<div class="bg" id="gBg" style="background-image:url('${a.imgs[gi]}')"></div><img class="main" id="gM" src="${a.imgs[gi]}" alt="">`:`<div class="none" style="aspect-ratio:4/3;display:grid;place-items:center;font-size:4rem">${c.i}</div>`}
    ${a.imgs.length>1?`<button class="nav l" onclick="go(-1)">‹</button><button class="nav r" onclick="go(1)">›</button><span class="ctr" id="gC">${gi+1} / ${a.imgs.length}</span>`:''}</div>
    ${a.imgs.length>1?`<div class="ths">${a.imgs.map((s,i)=>`<img src="${s}" class="${i===gi?'on':''}" onclick="gi=${i};showG()">`).join('')}</div>`:''}</div>
   <div class="inf">
-   <div><h3>${esc(a.title)}</h3><div class="price" style="margin-top:8px">${eur(a.price)}${p?`<s>${eur(a.oldPrice)}</s>`:''}</div></div>
-   <div class="chips">${p?`<span class="chip t">−${Math.round((1-a.price/a.oldPrice)*100)} %</span>`:''}${a.nego?'<span class="chip">Négociable</span>':''}<span class="chip">📍 ${esc(a.sCity)}</span><span class="chip">${ago(a.t)}</span></div>
-   <div class="specs">${specs.map(([k,v])=>`<div><small>${k}</small>${esc(v)}</div>`).join('')}</div>
-   <div class="desc">${esc(a.desc)}</div>
+   <div><h3>${esc(a.title)}</h3><div class="price" style="margin-top:8px">${priceHtml(a)}</div>${p?`<div class="save" style="font-size:.95rem;margin-top:4px">Vous économisez ${eur(saving(a))}${daysLeft(a)!=null?' · '+cdTxt(daysLeft(a)):''}</div>`:''}</div>
+   <div class="chips">${L.badge?`<span class="chip t" style="background:var(--gold)">${esc(L.badge)}</span>`:''}${p?`<span class="chip t">−${disc(a)} %</span>`:''}${a.nego?'<span class="chip">Négociable</span>':''}<span class="chip">📍 ${esc(a.sCity)}</span><span class="chip">${ago(a.t)}</span></div>
+   ${(()=>{const sp=`<div class="specs">${specs.map(([k,v])=>`<div><small>${esc(k)}</small>${esc(v)}</div>`).join('')}</div>`,ds=`<div class="desc">${esc(a.desc)}</div>`,qu=quals?`<div><div class="eyebrow" style="margin-bottom:6px">Qualifications requises</div><div class="desc">${esc(quals)}</div></div>`:'';return L.specsFirst===false?ds+qu+sp:sp+qu+ds})()}
    <div class="seller"><div class="sr"><div class="av">${esc((a.sName||'?')[0].toUpperCase())}</div><div><b>${esc(a.sName)}</b><br><small style="color:var(--ink2)">${esc(a.sCity)}</small></div></div>
     <div class="cbx">
      <button class="btn btn-terra" style="grid-column:1/-1" onclick="openContact()">✉ Envoyer un message</button>
@@ -538,15 +619,41 @@ async function replyThread(tid,b,role){const v=$('rep').value.trim();if(!v)retur
 
 /* ===== Dépôt ===== */
 const form=$('form');
-function vehToggle(){document.querySelectorAll('.veh').forEach(e=>e.style.display=VEH.includes($('fCat').value)?'grid':'none')}
-$('fCat').addEventListener('change',vehToggle);
+function vehToggle(vals){const c=$('fCat').value,fs=FIELDS[c]||[],cur0=vals||readDyn();
+ $('dynH').style.display=fs.length?'':'none';
+ $('dyn').innerHTML=fs.map(([k,l,t,o])=>{const v=esc(cur0[k]??''),nm=`name="x_${k}"`;
+  if(t==='s')return`<label>${l}<select class="f" ${nm}><option value=""></option>${o.map(x=>`<option${String(cur0[k])===x?' selected':''}>${x}</option>`).join('')}</select></label>`;
+  if(t==='a')return`<label class="full">${l}<textarea class="f" ${nm} maxlength="1500" placeholder="${o||''}">${v}</textarea></label>`;
+  return`<label>${l}<input class="f" ${nm} type="${t==='n'?'number':t==='d'?'date':'text'}" ${t==='n'?'min="0"':''} maxlength="80" placeholder="${o||''}" value="${v}"></label>`}).join('');
+ const job=c==='emploi';$('condL').style.display=NOCOND.includes(c)?'none':'';
+ $('priceLbl').textContent=job?'Salaire brut (€ / mois)':c==='immo'?'Prix ou loyer (€) *':'Prix (€) *';form.elements.price.required=!job;
+ $('oldL').style.display=$('promoRow').style.display=job?'none':'';promoLive()}
+function readDyn(){const o={};document.querySelectorAll('#dyn [name^="x_"]').forEach(e=>{const v=e.value.trim();if(v)o[e.name.slice(2)]=e.type==='number'?Number(v):v});return o}
+function promoLive(){const p=parseFloat(form.elements.price.value),o=parseFloat(form.elements.oldPrice.value),el=$('promoLive');if(!el)return;
+ el.textContent=o>p&&p>=0?`🔥 −${Math.round((1-p/o)*100)} % · économie de ${eur(o-p)}${form.elements.promoEnd.value?' · jusqu\'au '+new Date(form.elements.promoEnd.value).toLocaleDateString('fr-FR'):''}`:o&&o<=p?'⚠ Le prix avant promo doit être supérieur au prix':''}
+/* --- Mode avancé (membres autorisés) --- */
+const ACCENTS=['','#c4532f','#3f5a3c','#1f4e8c','#7a3fa0','#b8893b','#1b1814'];
+let ADV={custom:[],layout:{}};
+const canAdv=()=>!!ADM||!!(ACC&&ACC.pro&&accOk());
+function renderAdv(){const b=$('advBox');if(!canAdv()){b.innerHTML='';return}const L=ADV.layout;
+ b.innerHTML=`<div class="adv"><h4>⭐ Mode avancé</h4>
+  <div class="eyebrow">Caractéristiques techniques sur mesure</div>
+  ${ADV.custom.map((r,i)=>`<div class="kv"><input class="f" placeholder="Caractéristique" maxlength="40" value="${esc(r.k)}" oninput="ADV.custom[${i}].k=this.value"><input class="f" placeholder="Valeur" maxlength="120" value="${esc(r.v)}" oninput="ADV.custom[${i}].v=this.value"><button type="button" onclick="ADV.custom.splice(${i},1);renderAdv()">✕</button></div>`).join('')}
+  ${ADV.custom.length<20?`<button type="button" class="btn btn-line" onclick="ADV.custom.push({k:'',v:''});renderAdv()">＋ Ajouter une caractéristique</button>`:''}
+  <div class="eyebrow" style="margin-top:6px">Mise en page de la fiche</div>
+  <div class="r2"><label>Présentation<select class="f" onchange="ADV.layout.style=this.value">${[['','Classique'],['wide','Panoramique (grande photo)'],['right','Vitrine (photo à droite)'],['dark','Prestige (fond sombre)']].map(([v,l])=>`<option value="${v}"${(L.style||'')===v?' selected':''}>${l}</option>`).join('')}</select></label>
+   <label>Ordre<select class="f" onchange="ADV.layout.specsFirst=this.value==='1'"><option value="1"${L.specsFirst!==false?' selected':''}>Caractéristiques d'abord</option><option value="0"${L.specsFirst===false?' selected':''}>Description d'abord</option></select></label></div>
+  <label>Badge personnalisé<input class="f" maxlength="28" placeholder="Livraison offerte, Garantie 1 an…" value="${esc(L.badge||'')}" oninput="ADV.layout.badge=this.value"></label>
+  <label>Couleur d'accent</label><div class="sw">${ACCENTS.map(c=>`<button type="button" class="${(L.accent||'')===c?'on':''}" style="background:${c||'conic-gradient(var(--terra) 0 50%,var(--paper2) 0)'}" title="${c||'Par défaut'}" onclick="ADV.layout.accent='${c}';renderAdv()"></button>`).join('')}</div>
+ </div>`}
+$('fCat').addEventListener('change',()=>vehToggle());form.elements.price.addEventListener('input',promoLive);
 function openForm(id){if(!ADM&&!accOk()){openAcc();toast(ACC?'Votre compte est en attente de validation':'Connectez-vous pour déposer une annonce');return}
- form.reset();imgs=[];editId=id||null;
- if(id){const a=ads.find(x=>x.id===id)||queue.find(x=>x.id===id);imgs=[...(a.imgs||[])];for(const k in a){const el=form.elements[k];if(!el)continue;el.type==='checkbox'?el.checked=!!a[k]:el.value=a[k]??''}
+ form.reset();imgs=[];editId=id||null;ADV={custom:[],layout:{}};let xv={};
+ if(id){const a=ads.find(x=>x.id===id)||queue.find(x=>x.id===id);imgs=[...(a.imgs||[])];xv=xOf(a);if(a.adv)ADV=JSON.parse(JSON.stringify({custom:a.adv.custom||[],layout:a.adv.layout||{}}));for(const k in a){const el=form.elements[k];if(!el)continue;el.type==='checkbox'?el.checked=!!a[k]:el.value=a[k]??''}
   const c=a.contact||a.priv||{};if(ADM&&!a.priv)fget('crm/annoncesPriv/'+id,true).then(p=>{if(p&&editId===id){form.elements.sPhone.value=p.phone||'';form.elements.sMail.value=p.mail||'';form.elements.sWa.checked=!!p.wa}}).catch(()=>{});form.elements.sPhone.value=c.phone||'';form.elements.sMail.value=c.mail||'';form.elements.sWa.checked=!!c.wa}
  else{if(cat!=='all'&&cat!=='promo')$('fCat').value=cat;if(ACC){form.elements.sName.value=ACC.nom||'';form.elements.sCity.value=ACC.ville||'';form.elements.sPhone.value=ACC.tel||'';form.elements.sMail.value=ACC.email||''}}
  $('fH').textContent=id?'Modifier l\'annonce':'Déposer une annonce';$('fBtn').textContent=id?'Enregistrer':(ADM?'Publier':'Envoyer pour validation');
- vehToggle();renderPrev();openM('mF')}
+ vehToggle(xv);renderAdv();renderPrev();openM('mF')}
 async function addFiles(fs){for(const f of [...fs].filter(f=>f.type.startsWith('image/'))){if(imgs.length>=8){toast('8 photos maximum');break}const d=await compress(f);if(d){imgs.push(d);renderPrev()}}}
 $('fileIn').onchange=e=>{addFiles(e.target.files);e.target.value=''};
 const drop=$('drop');
@@ -557,9 +664,12 @@ let dI=null;
 function renderPrev(){$('prev').innerHTML=imgs.map((s,i)=>`<div draggable="true" class="${i?'':'first'}" ondragstart="dI=${i}" ondragover="event.preventDefault()" ondrop="mv(${i})"><img src="${s}"><button type="button" onclick="imgs.splice(${i},1);renderPrev()">✕</button></div>`).join('')}
 function mv(to){if(dI===null||dI===to)return;const[m]=imgs.splice(dI,1);imgs.splice(to,0,m);dI=null;renderPrev()}
 function readForm(){const f=form.elements,o={};
- ['title','cat','cond','brand','model','year','km','fuel','gear','desc','sName','sCity'].forEach(k=>o[k]=f[k].value.trim());
+ ['title','cat','cond','desc','sName','sCity','promoEnd'].forEach(k=>o[k]=f[k].value.trim());
  o.price=parseFloat(f.price.value)||0;o.oldPrice=parseFloat(f.oldPrice.value)||0;o.nego=f.nego.checked;
- if(!VEH.includes(o.cat))['brand','model','year','km','fuel','gear'].forEach(k=>delete o[k]);
+ if(NOCOND.includes(o.cat))delete o.cond;if(o.cat==='emploi'){o.oldPrice=0;delete o.promoEnd}if(!(o.oldPrice>o.price))delete o.promoEnd;
+ const x=readDyn();if(Object.keys(x).length)o.x=x;
+ if(canAdv()){const c=ADV.custom.filter(r=>r.k.trim()&&r.v.trim()).map(r=>({k:r.k.trim().slice(0,40),v:r.v.trim().slice(0,120)})),L={};Object.entries(ADV.layout).forEach(([k,v])=>{if(v!==''&&v!=null)L[k]=typeof v==='string'?v.slice(0,28):v});
+  if(c.length||Object.keys(L).length)o.adv={...(c.length?{custom:c}:{}),...(Object.keys(L).length?{layout:L}:{})}}
  Object.keys(o).forEach(k=>o[k]===''&&delete o[k]);
  return{o,priv:{phone:f.sPhone.value.trim(),mail:f.sMail.value.trim(),wa:f.sWa.checked}}}
 async function submitAd(e){
@@ -611,6 +721,7 @@ function accUI(){const b=$('accBtn');b.innerHTML=accOk()?`<b style="font-family:
 function openAcc(){if(accOk())return showAccount();if(ACC&&ACC.statut==='attente')return showPending();openLoginM()}
 function showAccount(){$('aH').textContent='Mon compte';$('aB').innerHTML=`<div class="sr"><div class="av">${esc(ACC.nom[0].toUpperCase())}</div><div><b>${esc(ACC.nom)}</b><br><small style="color:var(--ink2)">${esc(ACC.email)}</small></div></div>
  <div class="note">✅ Compte validé — vous pouvez déposer des annonces.</div>
+ ${ACC.pro?'<div class="note" style="border:1.5px solid var(--gold)">⭐ Mode avancé actif : caractéristiques sur mesure et mise en page personnalisée disponibles dans le formulaire.</div>':`<button class="btn btn-line" onclick="askPro(this)">⭐ Demander le mode avancé</button>`}
  <button class="btn btn-ink" onclick="closeM('mA');openForm()">Déposer une annonce</button><button class="btn btn-line" onclick="accOut()">Se déconnecter</button>`;openM('mA')}
 function showPending(){$('aH').textContent='Inscription en attente';$('aB').innerHTML=`<div class="note">⏳ Votre demande d'inscription est en cours de validation.<br>Dès qu'elle sera acceptée, connectez-vous avec votre e-mail et votre mot de passe.</div>
  <button class="btn btn-ink" onclick="pollAcc(true)">Vérifier maintenant</button><button class="btn btn-line" onclick="ACC=null;LS.set('ma_acc',null);accUI();openLoginM()">J'ai déjà un compte validé</button>`;openM('mA')}
@@ -628,7 +739,7 @@ async function accLogin(b){const e=$('gE').value.trim().toLowerCase(),p=$('gP').
  try{const m=await findMember(e);if(!m||m.r.hash!==await phash(e,p))throw new Error('E-mail ou mot de passe incorrect');
   if(m.r.statut==='attente')throw new Error('Votre inscription est encore en attente de validation');
   if(m.r.statut==='refusee')throw new Error('Votre inscription a été refusée'+(m.r.motif?' : '+m.r.motif:''));
-  ACC={rid:m.rid,email:e,nom:m.r.nom||e,tel:m.r.tel||'',ville:m.r.ville||'',statut:'accordee',auth:true};LS.set('ma_acc',ACC);accUI();closeM('mG');toast('Bienvenue '+ACC.nom+' ✓')}
+  ACC={rid:m.rid,email:e,nom:m.r.nom||e,tel:m.r.tel||'',ville:m.r.ville||'',statut:'accordee',auth:true,pro:!!m.r.pro};LS.set('ma_acc',ACC);accUI();closeM('mG');toast('Bienvenue '+ACC.nom+' ✓')}
  catch(x){toast(x.message||'Connexion impossible')}finally{b.disabled=false;b.textContent='Se connecter'}}
 
 /* --- Fenêtre INSCRIPTION (séparée) --- */
@@ -670,7 +781,9 @@ async function pollAcc(manual){if(!ACC)return;try{const r=await fget('requests/'
   else if(ACC.auth&&r.statut!=='accordee'){ACC=null;LS.set('ma_acc',null);toast('Votre compte a été désactivé')}
   else if(!ACC.auth&&r.statut==='accordee'){ACC=null;LS.set('ma_acc',null);openLoginM('🎉 Votre compte est validé ! Connectez-vous avec votre e-mail et votre mot de passe.')}
   else if(r.statut==='refusee'){ACC=null;LS.set('ma_acc',null);toast('Inscription refusée'+(r.motif?' : '+r.motif:''))}
+  else if(ACC.auth&&!!r.pro!==!!ACC.pro){ACC.pro=!!r.pro;LS.set('ma_acc',ACC);toast(ACC.pro?'⭐ Mode avancé activé sur votre compte':'Mode avancé retiré')}
   else if(manual)toast('Toujours en attente de validation')}catch(e){}accUI()}
+async function askPro(b){b.disabled=true;try{await fput('requests/'+rid(),{email:ACC.email,nom:ACC.nom,produit:PRODUIT,type:'pro',module:'Mode avancé',ref:ACC.rid,t:Date.now(),message:'Demande d\'accès au mode avancé (caractéristiques sur mesure + mise en page) — Maison des Annonces',statut:'attente'});b.textContent='⏳ Demande envoyée';toast('Demande envoyée à l\'administrateur')}catch(e){toast('Envoi impossible');b.disabled=false}}
 function accOut(){ACC=null;LS.set('ma_acc',null);accUI();closeM('mA');toast('Déconnecté')}
 
 /* ===== Icônes noir & blanc ===== */
@@ -682,8 +795,18 @@ document.querySelectorAll('option').forEach(o=>o.textContent=o.textContent.repla
 /* Logo 3D : inclinaison au survol */
 document.querySelector('.logo').addEventListener('mousemove',e=>{const r=e.currentTarget.getBoundingClientRect(),i=e.currentTarget.querySelector('img');i.style.setProperty('--ry',((e.clientX-r.left)/r.width-.5)*30+'deg');i.style.setProperty('--rx',(.5-(e.clientY-r.top)/r.height)*24+'deg')});
 document.querySelector('.logo').addEventListener('mouseleave',e=>{const i=e.currentTarget.querySelector('img');i.style.removeProperty('--ry');i.style.removeProperty('--rx')});
+/* ===== Information Flash ===== */
+const ssGet=k=>{try{return JSON.parse(sessionStorage.getItem(k))}catch(e){return null}},ssSet=(k,v)=>{try{sessionStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+let FLSIG='';
+async function loadFlash(){let d={};try{d=await fget('flash')||{}}catch(e){}const now=today();
+ const L=Object.values(d).filter(f=>f&&f.text&&(!f.until||f.until>=now)).sort((a,b)=>({urgent:0,promo:1,info:2}[a.level]??2)-({urgent:0,promo:1,info:2}[b.level]??2)||b.t-a.t);
+ FLSIG=L.map(f=>f.t).join(',');const el=$('flash');if(!L.length||ssGet('ma_flhide')===FLSIG){el.className='flash';return}
+ const lv=L[0].level||'info';el.className='flash on '+lv;$('flL').textContent={urgent:'⚠ Urgent',promo:'🔥 Promo',info:'📣 Info'}[lv]||'📣 Info';
+ const txt=L.map(f=>esc(f.text)+(f.link&&/^https?:\/\//.test(f.link)?` <a href="${esc(f.link)}" target="_blank" rel="noopener">En savoir plus</a>`:'')).join('&nbsp;&nbsp;&nbsp;◆&nbsp;&nbsp;&nbsp;');
+ $('flT').innerHTML=txt;$('flT').style.setProperty('--d',Math.max(14,$('flT').textContent.length/6)+'s')}
+function hideFlash(){ssSet('ma_flhide',FLSIG);$('flash').className='flash'}
 /* ===== Démarrage ===== */
-(async()=>{renderCats();setAdm();accUI();pollAcc();setInterval(()=>pollAcc(),20000);await load();if(ADM)loadQueue();checkReplies();setInterval(checkReplies,15000);
+(async()=>{renderCats();setAdm();accUI();pollAcc();setInterval(()=>pollAcc(),20000);loadFlash();setInterval(loadFlash,60000);await load();if(ADM)loadQueue();checkReplies();setInterval(checkReplies,15000);
  const h=location.hash.slice(1);if(h&&ads.some(a=>a.id===h))openDetail(h)})();
 </script>
 </body>
