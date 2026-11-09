@@ -5,8 +5,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f4efe6">
 <title>Maison des Annonces</title>
-<link rel="icon" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="referrer" content="no-referrer">
+<meta name="application-name" content="Maison des Annonces">
+<meta name="apple-mobile-web-app-title" content="Maison des Annonces">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="description" content="Petites annonces vérifiées : voitures, immobilier, objets, emploi et promotions.">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
@@ -805,6 +813,7 @@ async function loadFlash(){let d={};try{d=await fget('flash')||{}}catch(e){}cons
  const txt=L.map(f=>esc(f.text)+(f.link&&/^https?:\/\//.test(f.link)?` <a href="${esc(f.link)}" target="_blank" rel="noopener">En savoir plus</a>`:'')).join('&nbsp;&nbsp;&nbsp;◆&nbsp;&nbsp;&nbsp;');
  $('flT').innerHTML=txt;$('flT').style.setProperty('--d',Math.max(14,$('flT').textContent.length/6)+'s')}
 function hideFlash(){ssSet('ma_flhide',FLSIG);$('flash').className='flash'}
+if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 /* ===== Démarrage ===== */
 (async()=>{renderCats();setAdm();accUI();pollAcc();setInterval(()=>pollAcc(),20000);loadFlash();setInterval(loadFlash,60000);await load();if(ADM)loadQueue();checkReplies();setInterval(checkReplies,15000);
  const h=location.hash.slice(1);if(h&&ads.some(a=>a.id===h))openDetail(h)})();

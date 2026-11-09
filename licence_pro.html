@@ -2900,11 +2900,31 @@ async function gdFolder(){let id=gdGet('folder','');
   if(id){try{const f=await gdApi(`https://www.googleapis.com/drive/v3/files/${id}?fields=id,trashed`);if(f&&!f.trashed)return id}catch(e){if(e.message==='DRIVE_AUTH')throw e}}
   const f=await gdApi('https://www.googleapis.com/drive/v3/files?fields=id',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:'Licence Pro — Pièces jointes',mimeType:'application/vnd.google-apps.folder'})});
   gdSet('folder',f.id);return f.id}
-async function gdUpload(folder,name,mime,data,desc){const blob=await (await fetch(data)).blob(),fd=new FormData();
+async function gdUpload(folder,name,mime,data,desc,priv){const blob=await (await fetch(data)).blob(),fd=new FormData();
   fd.append('metadata',new Blob([JSON.stringify({name,parents:[folder],description:desc||''})],{type:'application/json'}));fd.append('file',new Blob([blob],{type:mime||blob.type||'application/octet-stream'}));
   const f=await gdApi('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,size',{method:'POST',body:fd});
-  if(gdShare())try{await gdApi(`https://www.googleapis.com/drive/v3/files/${f.id}/permissions?fields=id`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:'reader',type:'anyone'})})}catch(e){if(e.message==='DRIVE_AUTH')throw e}
+  if(gdShare()&&!priv)try{await gdApi(`https://www.googleapis.com/drive/v3/files/${f.id}/permissions?fields=id`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:'reader',type:'anyone'})})}catch(e){if(e.message==='DRIVE_AUTH')throw e}
   return {id:f.id,s:+f.size||blob.size}}
+// ── Maison des Annonces : photos + fiche complète → Drive, Firebase ne garde que le mémo ──
+async function gdSub(key,name,parent){let id=gdGet(key,'');
+  if(id){try{const f=await gdApi(`https://www.googleapis.com/drive/v3/files/${id}?fields=id,trashed`);if(f&&!f.trashed)return id}catch(e){if(e.message==='DRIVE_AUTH')throw e}}
+  const f=await gdApi('https://www.googleapis.com/drive/v3/files?fields=id',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,mimeType:'application/vnd.google-apps.folder',...(parent?{parents:[parent]}:{})})});gdSet(key,f.id);return f.id}
+async function gdPublic(id){try{await gdApi(`https://www.googleapis.com/drive/v3/files/${id}/permissions?fields=id`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:'reader',type:'anyone'})})}catch(e){if(e.message==='DRIVE_AUTH')throw e}}
+async function gdAnnArchive(st){const t=await fbTok(),root=await gdSub('annRoot','Maison des Annonces'),fPh=await gdSub('annPh','Photos',root),fFi=await gdSub('annFi','Fiches',root);
+  const get=async p=>{const r=await fetch(`${FB()}/${p}.json?auth=${t}&t=${Date.now()}`);return r.ok?(await r.json()||{}):{}};
+  const priv=await get('crm/annoncesPriv'),nm=x=>String(x||'').replace(/[\\/:*?"<>|]/g,'_').slice(0,60);let n=0;
+  for(const node of['annoncesWait','annonces']){const all=await get(node);
+    for(const[id,a]of Object.entries(all)){if(!a)continue;const imgs=Array.isArray(a.imgs)?a.imgs:[];let changed=false;const out=[];
+      for(let i=0;i<imgs.length;i++){const u=imgs[i];if(typeof u==='string'&&u.startsWith('data:image/')){const ext=(u.match(/^data:image\/(\w+)/)||[])[1]||'jpg',
+        up=await gdUpload(fPh,`${nm(a.title)} · ${id} · photo-${i+1}.${ext.replace('jpeg','jpg')}`,'image/'+ext,u,`Maison des Annonces — ${a.title||''}`);
+        if(!gdShare())await gdPublic(up.id);out.push(gdThumb(up.id));st.n++;st.b+=up.s;changed=true}else out.push(u)}
+      const{driveFiche:_df,driveSig:_ds,...a0}=a,sig=JSON.stringify({...a0,imgs:out}).length+':'+(a.title||'')+':'+(a.price||0);
+      if(changed||a.driveSig!==sig){const fiche={id,etat:node==='annonces'?'en ligne':'en attente de validation',...a,imgs:out,coordonnees:a.priv||priv[id]||a.contact||null,archive:new Date().toISOString()};delete fiche.driveFiche;delete fiche.driveSig;
+        const blob='data:application/json;base64,'+btoa(unescape(encodeURIComponent(JSON.stringify(fiche,null,2))));
+        if(a.driveFiche)try{await gdApi(`https://www.googleapis.com/drive/v3/files/${a.driveFiche}`,{method:'DELETE'})}catch(e){if(e.message==='DRIVE_AUTH')throw e}
+        const fu=await gdUpload(fFi,`${nm(a.title)} · ${id}.json`,'application/json',blob,`Fiche complète — ${a.title||''}`,true);
+        await fbPut(`${node}/${id}`,{...a,imgs:out,driveFiche:fu.id,driveSig:sig});n++}}}
+  return n}
 // déplace les images/fichiers d'un objet (message, note) vers Drive → renvoie le nouveau tableau « drive » ou null
 async function gdMove(folder,o,label,st){const im=(Array.isArray(o.img)?o.img:Array.isArray(o.att)?o.att:[]).filter(isImg),fl=(Array.isArray(o.files)?o.files:Array.isArray(o.attf)?o.attf:[]).map(fSafe).filter(Boolean);
   if(!im.length&&!fl.length)return null;const out=driveSafe(o.drive).slice(),d=new Date(o.t||Date.now()).toISOString().slice(0,10);
@@ -2923,6 +2943,8 @@ async function gdArchive(manual){if(GD.busy)return;if(!gdOk()){if(manual)toast('
     let notes=null;try{const r=await fetch(`${FB()}/crm/notes.json?auth=${t}&t=${Date.now()}`);if(r.ok)notes=await r.json()}catch(e){}
     for(const[id,n]of Object.entries(notes||{})){if(!n)continue;const d3=await gdMove(folder,n,`Note ${n.client||n.email||''} · ${n.title||''}`.replace(/[\\/:*?"<>|]/g,'_').slice(0,80),st);
       if(d3){const{att:_a,attf:_b,...rest}=n;await fbPut('crm/notes/'+id,{...rest,drive:d3})}}
+    let annN=0;try{annN=await gdAnnArchive(st)}catch(e){if(e.message==='DRIVE_AUTH')throw e;toast('☁️ Annonces : '+e.message,'ko')}
+    if(annN&&typeof loadAnn==='function')loadAnn();
     GD.err='';const tot=JSON.parse(gdGet('stats','{"n":0,"b":0}'));tot.n+=st.n;tot.b+=st.b;tot.last=Date.now();gdSet('stats',JSON.stringify(tot));GD.last=st;
     if(st.n){toast(`☁️ ${st.n} pièce${st.n>1?'s':''} jointe${st.n>1?'s':''} déplacée${st.n>1?'s':''} sur Google Drive (${fSize(st.b)})`);loadSup();if(typeof loadNotes==='function')loadNotes()}
     else if(manual)toast('☁️ Rien à déplacer — tout est déjà sur Google Drive')}
@@ -2933,7 +2955,7 @@ function gdUI(){const ok=gdOk(),was=gdGet('was','0')==='1',p=$('gdPill');
     :gdCid()?`<button class="gdp ko" onclick="gdConnect()" title="Les pièces jointes restent dans Firebase tant que Drive n'est pas connecté">☁️ ${was?'Reconnecter Drive':'Connecter Drive'}</button>`:'';
   const c=$('gdCard');if(!c)return;const tot=JSON.parse(gdGet('stats','{"n":0,"b":0}')),fo=gdGet('folder','');
   c.innerHTML=`<h3>☁️ Stockage Google Drive des pièces jointes ${ok?'<span class="rqst accordee" style="margin-left:8px">Connecté</span>':'<span class="rqst attente" style="margin-left:8px">Non connecté</span>'}</h3>
-    <p class="hint">Captures d'écran, PDF, Word, Excel… envoyés au SAV ou ajoutés aux notes sont <b>déplacés automatiquement</b> dans ton Google Drive (dossier « Licence Pro — Pièces jointes ») dès que Licence Pro est ouvert. Firebase ne garde qu'un lien léger : la base reste rapide et gratuite.</p>
+    <p class="hint">Captures d'écran, PDF, Word, Excel… envoyés au SAV ou ajoutés aux notes, ainsi que <b>les photos et la fiche complète de chaque annonce</b> de Maison des Annonces (dossier « Maison des Annonces » → Photos / Fiches), sont <b>déplacés automatiquement</b> dans ton Google Drive (dossier « Licence Pro — Pièces jointes ») dès que Licence Pro est ouvert. Firebase ne garde qu'un lien léger : la base reste rapide et gratuite.</p>
     <p class="hint" style="color:var(--mu)">ℹ️ Une <b>clé API</b> Google ne permet que de <i>lire</i> des fichiers publics : pour <i>écrire</i> dans ton Drive, Google exige une connexion à ton compte (OAuth) avec ton <b>Client ID</b>. Elle dure 1 h ; au-delà, un clic sur « Reconnecter Drive » suffit. Rien n'est jamais mis dans le code de tes clients.</p>
     <label>Client ID Google (OAuth)</label><input id="gdCidIn" value="${esc(gdGet('cid',''))}" placeholder="${esc(gdCid()||'123456-abc.apps.googleusercontent.com')}" autocomplete="off" spellcheck="false">
     <label style="display:flex;gap:8px;align-items:center;text-transform:none;letter-spacing:0;margin-top:12px"><input type="checkbox" style="width:18px;height:18px" ${gdAuto()?'checked':''} onchange="gdSet('auto',this.checked?'1':'0');gdUI()"> Déplacer automatiquement les pièces jointes vers Drive</label>
@@ -2941,6 +2963,7 @@ function gdUI(){const ok=gdOk(),was=gdGet('was','0')==='1',p=$('gdPill');
     <div class="gd-st"><div><small>Pièces déplacées</small><b>${tot.n||0}</b></div><div><small>Espace libéré dans Firebase</small><b>${fSize(tot.b||0)}</b></div><div><small>Dernier passage</small><b>${tot.last?fmtD(new Date(tot.last)):'—'}</b></div></div>
     ${GD.err?`<p class="hint" style="color:#f59e0b">⚠️ ${esc(GD.err)}</p>`:''}
     <div class="acts2">${ok?`<button class="btn sm" onclick="gdArchive(true)" ${GD.busy?'disabled':''}>${GD.busy?'⏳ Envoi en cours…':'☁️ Archiver maintenant'}</button><button class="ghost sm" onclick="gdDisconnect()">Déconnecter</button>`:`<button class="btn sm" onclick="gdConnect()">🔗 Connecter Google Drive</button>`}
+      ${gdGet('annRoot','')?`<a class="ghost sm" style="text-decoration:none" target="_blank" rel="noopener" href="https://drive.google.com/drive/folders/${esc(gdGet('annRoot',''))}">🏷️ Dossier Annonces</a>`:''}
       ${fo?`<a class="ghost sm" style="text-decoration:none" target="_blank" rel="noopener" href="https://drive.google.com/drive/folders/${esc(fo)}">📂 Ouvrir le dossier</a>`:''}</div>
     <p class="hint" style="margin-top:10px">Dans Google Cloud Console → ton Client ID → « Origines JavaScript autorisées », ajoute <b>${esc(location.origin)}</b>. L'API Google Drive doit être activée sur le projet.</p>`}
 setInterval(()=>{gdUI();if(gdOk())gdArchive(false)},5*60*1000);
