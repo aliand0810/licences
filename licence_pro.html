@@ -379,7 +379,31 @@ main{min-width:0}
 .anK div{padding:14px 16px;border-radius:16px;border:1px solid var(--bd);background:var(--glass);position:relative;overflow:hidden}
 .anK div::before{content:'';position:absolute;inset:0 auto 0 0;width:4px;background:var(--kc)}
 .anK small{display:block;color:var(--mut);font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em}.anK b{display:block;font-size:1.55rem;margin-top:4px;font-family:'JetBrains Mono',monospace}.anK em{font-style:normal;font-size:.74rem;color:var(--mut)}
-.anTabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.anTabs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-bottom:14px}
+@media(max-width:1400px){.anTabs{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:640px){.anTabs{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.anTabs button{padding:10px}.anTabs small{display:none}}
+.anX{display:grid;grid-template-columns:1.1fr 1fr;gap:12px;margin-bottom:14px}.anX>div{padding:14px 16px;border-radius:16px;border:1px solid var(--bd);background:var(--glass);min-width:0}
+.anX h5{margin:0 0 10px;font-size:.74rem;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);display:flex;justify-content:space-between}
+.anSt{display:flex;height:14px;border-radius:999px;overflow:hidden;background:var(--glass2)}.anSt span{height:100%}
+.anLg{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:10px;font-size:.76rem}.anLg span{display:flex;align-items:center;gap:5px;cursor:pointer}.anLg i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.anH{display:flex;align-items:flex-end;gap:4px;height:74px}.anH div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:1px;height:100%;position:relative}
+.anH div span{border-radius:3px 3px 0 0;min-height:0}.anH div b{position:absolute;bottom:-17px;left:0;right:0;text-align:center;font:600 .58rem 'JetBrains Mono',monospace;color:var(--mut)}
+.anHl{display:flex;gap:12px;font-size:.72rem;color:var(--mut);margin-top:22px}.anHl i{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:4px}
+@media(max-width:900px){.anX{grid-template-columns:1fr}}
+.anVw{display:inline-flex;border:1px solid var(--bd);border-radius:999px;overflow:hidden}.anVw button{border:0;background:transparent;color:inherit;font:inherit;font-size:.78rem;font-weight:700;padding:7px 12px;cursor:pointer}.anVw button.on{background:var(--a1);color:#fff}
+.anTbl{width:100%;border-collapse:separate;border-spacing:0 6px;font-size:.84rem}.anTbl th{text-align:left;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);padding:4px 10px;white-space:nowrap}
+.anTbl td{padding:8px 10px;background:var(--glass);border-top:1px solid var(--bd);border-bottom:1px solid var(--bd);vertical-align:middle}.anTbl td:first-child{border-left:3px solid var(--cc);border-radius:12px 0 0 12px}.anTbl td:last-child{border-right:1px solid var(--bd);border-radius:0 12px 12px 0}
+.anTbl tr:hover td{background:var(--glass2)}.anTbl .th{width:58px;height:44px;border-radius:8px;object-fit:cover;display:grid;place-items:center;background:color-mix(in srgb,var(--cc) 16%,transparent);font-size:1.3rem;cursor:zoom-in}
+.anTbl .tt{font-weight:800;cursor:pointer}.anTbl .sm2{display:block;font-size:.72rem;color:var(--mut)}.anTbl .acts2{flex-wrap:nowrap}.anTw{overflow-x:auto}
+.anSF{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:12px;border:1px solid var(--a1);background:color-mix(in srgb,var(--a1) 10%,transparent);margin-bottom:12px;font-size:.86rem}
+.anSel{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.anS{padding:14px;border-radius:16px;border:1px solid var(--bd);background:var(--glass);display:flex;flex-direction:column;gap:10px;animation:up .3s both}
+.anS .hd{display:flex;gap:12px;align-items:center}.anS .hd .anAv{width:46px;height:46px;font-size:1.1rem}.anS .hd b{display:block;font-size:1rem}.anS .hd small{display:block;color:var(--mut);font-size:.76rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.anS .ct{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.anS .ct div{padding:7px 4px;border-radius:10px;text-align:center;background:color-mix(in srgb,var(--k) 12%,transparent);border:1px solid color-mix(in srgb,var(--k) 30%,transparent)}
+.anS .ct b{display:block;font:800 1.05rem 'JetBrains Mono',monospace}.anS .ct small{font-size:.62rem;color:var(--mut);text-transform:uppercase;letter-spacing:.04em}
+.anS .ths{display:flex;gap:5px}.anS .ths img,.anS .ths span{width:44px;height:44px;border-radius:8px;object-fit:cover;display:grid;place-items:center;background:var(--glass2);font-size:1.1rem}
+.anLog{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:10px 14px;border-radius:12px;border:1px solid var(--bd);background:var(--glass);margin-top:6px;border-left:4px solid var(--lc)}
+.anLog .ic{font-size:1.2rem}.anLog b{display:block}.anLog small{display:block;color:var(--mut);font-size:.76rem}.anLog .when{font:600 .72rem 'JetBrains Mono',monospace;color:var(--mut);text-align:right}
 .anTabs button{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;border:1.5px solid var(--bd);background:var(--glass);color:inherit;font:inherit;text-align:left;cursor:pointer;position:relative}
 .anTabs button .ni{font-size:1.35rem}.anTabs button>span:nth-child(2){flex:1;min-width:0}.anTabs b{display:block;font-size:.92rem}.anTabs small{display:block;font-size:.72rem;color:var(--mut)}
 .anTabs button.on{border-color:var(--a1);box-shadow:0 0 0 3px color-mix(in srgb,var(--a1) 22%,transparent)}
@@ -874,20 +898,26 @@ kbd{display:inline-block;padding:2px 7px;border-radius:6px;border:1px solid var(
   <section id="v-ann" class="view">
     <div class="anK" id="anK"></div>
     <div id="anNot"></div>
+    <div class="anX" id="anX"></div>
     <div class="anTabs" id="anTabs">
       <button data-t="wait" onclick="anTab('wait')"><span class="ni">🕒</span><span><b>À valider</b><small>Annonces reçues</small></span><i class="rqAn" id="anTnWait"></i></button>
       <button data-t="on" onclick="anTab('on')"><span class="ni">✅</span><span><b>En ligne</b><small>Disponibles sur le site</small></span><i class="rqAn z" id="anTnOn"></i></button>
       <button data-t="msg" onclick="anTab('msg')"><span class="ni">💬</span><span><b>Messages</b><small>Acheteurs</small></span><i class="rqAn" id="anTnMsg"></i></button>
       <button data-t="mb" onclick="anTab('mb')"><span class="ni">👤</span><span><b>Membres</b><small>Comptes vendeurs</small></span><i class="rqAn" id="anTnMb"></i></button>
+      <button data-t="sel" onclick="anTab('sel')"><span class="ni">🧑‍💼</span><span><b>Vendeurs</b><small>Qui a envoyé quoi</small></span><i class="rqAn z" id="anTnSel"></i></button>
+      <button data-t="log" onclick="anTab('log')"><span class="ni">📜</span><span><b>Historique</b><small>Publiées, refusées, retirées</small></span><i class="rqAn z" id="anTnLog"></i></button>
     </div>
     <div class="card">
       <div class="anTb"><input id="anQ" type="search" placeholder="🔎 Titre, vendeur, ville, e-mail…" oninput="anDraw()">
-        <select id="anSort" onchange="anDraw()"><option value="new">Plus récentes</option><option value="old">Plus anciennes</option><option value="pd">Prix décroissant</option><option value="pa">Prix croissant</option></select>
+        <span class="anVw" id="anVw"><button data-v="g" onclick="anView('g')" title="Cartes">▦ Cartes</button><button data-v="t" onclick="anView('t')" title="Tableau">☰ Tableau</button></span><select id="anSort" onchange="anDraw()"><option value="new">Plus récentes</option><option value="old">Plus anciennes</option><option value="pd">Prix décroissant</option><option value="pa">Prix croissant</option></select>
         <span style="display:flex;gap:6px;margin-left:auto"><a class="ghost sm" href="annonces/" target="_blank" rel="noopener" style="text-decoration:none">🌐 Ouvrir le site ↗</a><button class="ghost sm" onclick="loadAnn().then(()=>toast('↻ Annonces actualisées'))">↻</button></span></div>
       <div class="rqCh" id="anCat" style="margin-bottom:12px"></div>
+      <div id="anSelF"></div>
       <div class="anP" data-p="wait"><p class="hint">Rien n'est visible sur le site tant que tu n'as pas autorisé la publication. « Publier + coordonnées » affiche le téléphone et l'e-mail du vendeur ; sinon les acheteurs passent par la messagerie.</p><div id="annList" class="anG"></div></div>
       <div class="anP" data-p="on"><p class="hint">Annonces actuellement disponibles sur Maison des Annonces. <span id="annOnN"></span></p><div id="annOn" class="anG"></div></div>
       <div class="anP" data-p="msg"><p class="hint">Messages envoyés par les acheteurs depuis les annonces. <span id="annMsgN"></span></p><div id="annMsg"></div></div>
+      <div class="anP" data-p="sel"><p class="hint">Chaque personne qui a envoyé une annonce : coordonnées, statut de membre et ce qu'elle a déposé. « Voir ses annonces » filtre les autres fenêtres sur ce vendeur.</p><div id="annSel"></div></div>
+      <div class="anP" data-p="log"><p class="hint">Journal des décisions prises depuis Licence Pro (à partir de maintenant) : annonce publiée, refusée ou retirée, avec le vendeur et la date.</p><div class="rqCh" id="anLogF" style="margin-bottom:10px"></div><div id="annLog"></div></div>
       <div class="anP" data-p="mb"><p class="hint">Inscriptions et nouveaux mots de passe demandés sur le site — un clic suffit, aucune licence à générer. <span id="annMbN"></span></p><div id="annMb"></div></div>
     </div>
   </section>
@@ -1915,29 +1945,36 @@ let ANNW=[],ANNON=[];
 const ANCAT={auto:'🚗 Voiture',moto:'🏍 Moto',immo:'🏠 Immobilier',tech:'📱 High-Tech',maison:'🛋 Maison',mode:'👜 Mode',loisirs:'🎮 Loisirs',promo:'🔥 Promotion',autre:'📦 Autre'};
 const annEur=n=>Number(n||0).toLocaleString('fr-FR',{style:'currency',currency:'EUR',maximumFractionDigits:0});
 async function annGet(p){const t=await fbTok(),r=await fetch(`${FB()}/${p}.json?auth=${t}&t=${Date.now()}`);if(r.status===401||r.status===403)throw new Error('Règles Firebase à republier (nœuds « annonces »)');if(!r.ok)throw new Error('Firebase '+r.status);return await r.json()||{}}
-async function loadAnn(){loadAnnMb();loadAnnMsg();try{annGet('crm/annoncesPriv').then(d=>{ANNPRIV=d||{};anDraw()}).catch(()=>{});const w=await annGet('annoncesWait'),o=await fetch(`${FB()}/annonces.json?t=${Date.now()}`).then(r=>r.ok?r.json():{})||{};
+async function loadAnn(){loadAnnMb();loadAnnMsg();loadAnnLog();try{annGet('crm/annoncesPriv').then(d=>{ANNPRIV=d||{};anDraw()}).catch(()=>{});const w=await annGet('annoncesWait'),o=await fetch(`${FB()}/annonces.json?t=${Date.now()}`).then(r=>r.ok?r.json():{})||{};
   ANNW=Object.entries(w).map(([id,a])=>({...a,id})).sort((a,b)=>b.t-a.t);ANNON=Object.entries(o).map(([id,a])=>({...a,id})).sort((a,b)=>b.t-a.t);renderAnn()}
  catch(e){$('annList').innerHTML=`<div class="empty">⚠️ ${esc(e.message)}</div>`}}
 const ANCOL={auto:'#3b82f6',moto:'#f97316',immo:'#10b981',tech:'#8b5cf6',maison:'#eab308',mode:'#ec4899',loisirs:'#06b6d4',promo:'#ef4444',autre:'#64748b'};
-let ANTAB=(()=>{try{return localStorage.getItem('anTab')||''}catch(e){return''}})(),ANCATF='',ANNPRIV={};
+let ANTAB=(()=>{try{return localStorage.getItem('anTab')||''}catch(e){return''}})(),ANCATF='',ANNPRIV={},ANVW=(()=>{try{return localStorage.getItem('anVw')||'g'}catch(e){return'g'}})(),ANSELF='',ANLOG=[],ANLOGF='';
+let ANALIAS={};const anKey=a=>{const w=anWho(a),k=(w.ml||w.ph||w.n||'?').toLowerCase().trim();return ANALIAS[k]||k};
+function anView(v){ANVW=v;try{localStorage.setItem('anVw',v)}catch(e){}anDraw()}
+function anSeller(k,tab){ANSELF=k;if(tab)anTab(tab);else anDraw()}
+async function anLogAdd(a,act){const w=anWho(a),id=Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+  try{await fbPut('crm/annLog/'+id,{t:Date.now(),act,aid:a.id,title:String(a.title||'').slice(0,120),price:+a.price||0,cat:a.cat||'autre',sn:w.n,ml:w.ml,ph:w.ph,city:a.sCity||'',membre:!!a.membre,at:a.t||0})}catch(e){}}
+async function loadAnnLog(){try{const d=await annGet('crm/annLog');ANLOG=Object.entries(d||{}).map(([id,x])=>({...x,id})).sort((a,b)=>b.t-a.t)}catch(e){ANLOG=[]}anHead();anDraw()}
 const anAgo=t=>{const m=Math.round((Date.now()-t)/60000);return m<1?'à l\'instant':m<60?`il y a ${m} min`:m<1440?`il y a ${Math.round(m/60)} h`:m<43200?`il y a ${Math.round(m/1440)} j`:fmtD(new Date(t))};
 const anIni=n=>(String(n||'?').trim()[0]||'?').toUpperCase();
 const anWho=a=>{const p=a.priv||ANNPRIV[a.id]||a.contact||{};return{n:a.sName||p.name||'Vendeur',ph:p.phone||'',ml:p.mail||'',wa:!!p.wa,city:a.sCity||''}};
 const anImg=u=>typeof u==='string'&&/^(data:image\/(png|jpe?g|webp|gif);base64,|https:\/\/)/.test(u)?u:'';
-function anTab(t){ANTAB=t;ANCATF='';try{localStorage.setItem('anTab',t)}catch(e){}anHead();anDraw()}
+function anTab(t){ANTAB=t;ANCATF='';if(t==='sel'||t==='log')ANSELF='';try{localStorage.setItem('anTab',t)}catch(e){}anHead();anDraw()}
 function anHead(){const un=ANNMSG.reduce((x,m)=>x+m.unread,0),mbw=ANNMB.filter(r=>r.statut==='attente').length,mbok=ANNMB.filter(r=>r.type==='compte'&&r.statut==='accordee').length;
   if(!ANTAB)ANTAB='wait';
   document.querySelectorAll('#anTabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===ANTAB));document.querySelectorAll('.anP').forEach(p=>p.classList.toggle('on',p.dataset.p===ANTAB));
   const st=(id,n,z)=>{const e=$(id);if(e){e.textContent=n;e.classList.toggle('z',!!z)}};
-  st('anTnWait',ANNW.length||'✓',!ANNW.length);st('anTnOn',ANNON.length,true);st('anTnMsg',un||'✓',!un);st('anTnMb',mbw||'✓',!mbw);
+  st('anTnWait',ANNW.length||'✓',!ANNW.length);st('anTnSel',anSellers().length,true);st('anTnLog',ANLOG.length,true);st('anTnOn',ANNON.length,true);st('anTnMsg',un||'✓',!un);st('anTnMb',mbw||'✓',!mbw);
   const val=ANNON.reduce((x,a)=>x+(+a.price||0),0);
   if($('anK'))$('anK').innerHTML=[['À valider',ANNW.length,'#f59e0b',ANNW.length?`dernière ${anAgo(ANNW[0].t)}`:'rien en attente'],['En ligne',ANNON.length,'#10b981',`${ANNON.filter(a=>a.contact).length} avec coordonnées`],['Messages non lus',un,'#ef4444',`${ANNMSG.length} conversation${ANNMSG.length>1?'s':''}`],['Membres',mbok,'#3b82f6',mbw?`${mbw} en attente`:'aucune demande'],['Valeur en ligne',annEur(val),'#8b5cf6',ANNON.length?`moy. ${annEur(val/ANNON.length)}`:'—']]
     .map(([l,v,c,e])=>`<div style="--kc:${c}"><small>${l}</small><b>${v}</b><em>${e}</em></div>`).join('');
+  anCharts();
   const parts=[ANNW.length?`<strong>${ANNW.length}</strong> annonce${ANNW.length>1?'s':''} à valider`:'',un?`<strong>${un}</strong> message${un>1?'s':''} non lu${un>1?'s':''}`:'',mbw?`<strong>${mbw}</strong> demande${mbw>1?'s':''} de compte`:''].filter(Boolean);
   if($('anNot'))$('anNot').innerHTML=parts.length?`<div class="rqN new"><span class="rqNi">🔔</span><div style="flex:1"><b>Annonces : tu as ${parts.join(' · ')}</b><small>${ANNW.length?`Dernière annonce reçue de ${esc(anWho(ANNW[0]).n)} — « ${esc(ANNW[0].title||'')} »`:'Ouvre l\'onglet concerné pour traiter.'}</small></div></div>`
     :`<div class="rqN ok"><span class="rqNi">✅</span><div><b>Annonces : tout est traité</b><small>${ANNON.length} annonce${ANNON.length>1?'s':''} disponible${ANNON.length>1?'s':''} sur le site.</small></div></div>`}
 function anList(on){const q=($('anQ')?.value||'').trim().toLowerCase(),so=$('anSort')?.value||'new';
-  return (on?ANNON:ANNW).filter(a=>{if(ANCATF&&a.cat!==ANCATF)return false;if(!q)return true;const w=anWho(a);return [a.title,a.desc,a.sCity,w.n,w.ml,w.ph,ANCAT[a.cat],a.id].join(' ').toLowerCase().includes(q)})
+  return (on?ANNON:ANNW).filter(a=>{if(ANCATF&&a.cat!==ANCATF)return false;if(ANSELF&&anKey(a)!==ANSELF)return false;if(!q)return true;const w=anWho(a);return [a.title,a.desc,a.sCity,w.n,w.ml,w.ph,ANCAT[a.cat],a.id].join(' ').toLowerCase().includes(q)})
     .sort((x,y)=>so==='old'?x.t-y.t:so==='pd'?(+y.price||0)-(+x.price||0):so==='pa'?(+x.price||0)-(+y.price||0):y.t-x.t)}
 function annCard(a,on,i){const img=anImg((a.imgs||[])[0]),w=anWho(a),cc=ANCOL[a.cat]||'#64748b',pc=a.oldPrice>a.price?Math.round((1-a.price/a.oldPrice)*100):0;
  return `<div class="anC" style="--cc:${cc};animation-delay:${(i||0)*.03}s">
@@ -1962,11 +1999,59 @@ function anDraw(){const on=ANTAB==='on',isAd=ANTAB==='wait'||on,src=on?ANNON:ANN
   if($('anCat')){$('anCat').style.display=isAd?'':'none';const cats=[...new Set(src.map(a=>a.cat||'autre'))];
     $('anCat').innerHTML=isAd&&src.length?[`<button class="${!ANCATF?'on':''}" onclick="ANCATF='';anDraw()">Toutes<i>${src.length}</i></button>`,...cats.map(c=>`<button class="${ANCATF===c?'on':''}" onclick="ANCATF='${c}';anDraw()">${esc(ANCAT[c]||c)}<i>${src.filter(a=>(a.cat||'autre')===c).length}</i></button>`)].join(''):''}
   if($('anSort'))$('anSort').style.display=isAd?'':'none';
-  const L=anList(false),O=anList(true),flt=($('anQ')?.value||'').trim()||ANCATF;
+  if($('anVw')){$('anVw').style.display=isAd?'':'none';$('anVw').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.v===ANVW))}
+  if($('anSelF')){const S=ANSELF&&anSellers().find(x=>x.k===ANSELF);$('anSelF').innerHTML=S&&isAd?`<div class="anSF"><span class="anAv" style="width:28px;height:28px;font-size:.8rem">${esc(anIni(S.n))}</span><span style="flex:1">Annonces de <b>${esc(S.n)}</b> ${S.ml?'· '+esc(S.ml):''}</span><button class="ghost sm" onclick="anSeller('')">✕ Tout afficher</button></div>`:''}
+  if(ANTAB==='sel')anDrawSel();if(ANTAB==='log')anDrawLog();
+  const L=anList(false),O=anList(true),flt=($('anQ')?.value||'').trim()||ANCATF||ANSELF;
+  if(ANVW==='t'){if($('annList')){$('annList').className='anTw';$('annList').innerHTML=L.length?anTable(L,false):`<div class="empty">${ANNW.length&&flt?'🔎 Aucune annonce ne correspond':'📭 Aucune annonce en attente'}</div>`}
+    if($('annOn')){$('annOn').className='anTw';$('annOn').innerHTML=O.length?anTable(O,true):`<div class="empty">${ANNON.length&&flt?'🔎 Aucune annonce ne correspond':'Aucune annonce publiée'}</div>`}
+    if($('annOnN'))$('annOnN').textContent=ANNON.length+' en ligne';return}
+  if($('annList'))$('annList').className='anG';if($('annOn'))$('annOn').className='anG';
   if($('annList'))$('annList').innerHTML=L.length?L.map((a,i)=>annCard(a,false,i)).join(''):`<div class="empty" style="grid-column:1/-1">${ANNW.length&&flt?'🔎 Aucune annonce ne correspond':'📭 Aucune annonce en attente'}</div>`;
   if($('annOn'))$('annOn').innerHTML=O.length?O.map((a,i)=>annCard(a,true,i)).join(''):`<div class="empty" style="grid-column:1/-1">${ANNON.length&&flt?'🔎 Aucune annonce ne correspond':'Aucune annonce publiée'}</div>`;
   if($('annOnN'))$('annOnN').textContent=ANNON.length+' en ligne';
   if(ANTAB==='msg'||ANTAB==='mb'){const q=($('anQ')?.value||'').trim().toLowerCase();document.querySelectorAll(`#annMsg .anL,#annMb .anL,#annMb details .card`).forEach(e=>{e.style.display=!q||e.textContent.toLowerCase().includes(q)?'':'none'})}}
+
+// ── Annonces : vendeurs, historique, tableau, graphiques ──
+function anSellers(){const M={},add=(a,st)=>{const k=anKey(a),w=anWho(a);const o=M[k]||(M[k]={k,n:w.n,ml:w.ml,ph:w.ph,wa:w.wa,city:a.sCity||'',wait:0,on:0,ref:0,del:0,val:0,last:0,imgs:[],membre:false});
+   if(st)o[st]++;if(st==='on')o.val+=+a.price||0;if((a.t||0)>o.last){o.last=a.t;o.n=w.n||o.n;o.city=a.sCity||o.city}if(a.membre)o.membre=true;if(!o.ml&&w.ml)o.ml=w.ml;if(!o.ph&&w.ph)o.ph=w.ph;
+   const im=anImg((a.imgs||[])[0]);if(im&&o.imgs.length<4)o.imgs.push(im);return o};
+  ANNW.forEach(a=>add(a,'wait'));ANNON.forEach(a=>add(a,'on'));
+  ANLOG.forEach(l=>{const k=(l.ml||l.ph||l.sn||'?').toLowerCase().trim();const o=M[k]||(M[k]={k,n:l.sn||'Vendeur',ml:l.ml||'',ph:l.ph||'',city:l.city||'',wait:0,on:0,ref:0,del:0,val:0,last:0,imgs:[],membre:!!l.membre});
+   if(l.act==='ref')o.ref++;if(l.act==='del')o.del++;if((l.at||l.t)>o.last)o.last=l.at||l.t});
+  ANNMB.filter(r=>r.type==='compte'&&r.statut==='accordee').forEach(r=>{const o=M[String(r.email||'').toLowerCase()];if(o)o.membre=true});
+  // fusion : même nom, une fiche sans coordonnées → rattachée à la fiche avec e-mail/téléphone
+  ANALIAS={};Object.values(M).forEach(o=>{if(o.ml||o.ph)return;const t=Object.values(M).find(x=>x!==o&&(x.ml||x.ph)&&String(x.n).toLowerCase().trim()===String(o.n).toLowerCase().trim());
+    if(t){['wait','on','ref','del','val'].forEach(k=>t[k]+=o[k]);t.last=Math.max(t.last,o.last);t.membre=t.membre||o.membre;t.imgs=[...t.imgs,...o.imgs].slice(0,4);ANALIAS[o.k]=t.k;delete M[o.k]}});
+  return Object.values(M).sort((a,b)=>b.wait-a.wait||b.last-a.last)}
+function anDrawSel(){const q=($('anQ')?.value||'').trim().toLowerCase(),S=anSellers().filter(x=>!q||[x.n,x.ml,x.ph,x.city].join(' ').toLowerCase().includes(q));
+  $('annSel').innerHTML=S.length?`<div class="anSel">${S.map((x,i)=>`<div class="anS" style="animation-delay:${i*.03}s"><div class="hd"><span class="anAv">${esc(anIni(x.n))}</span><div style="flex:1;min-width:0"><b>${esc(x.n)} ${x.membre?'<span class="anTag mb">Membre ✓</span>':'<span class="anTag vi">Visiteur</span>'}</b><small>${x.ml?'✉ '+esc(x.ml):''}${x.ml&&x.ph?' · ':''}${x.ph?'📞 '+esc(x.ph):''}${!x.ml&&!x.ph?'Coordonnées non renseignées':''}</small><small>📍 ${esc(x.city||'—')} · dernière annonce ${x.last?anAgo(x.last):'—'}</small></div></div>
+    <div class="ct"><div style="--k:#f59e0b"><b>${x.wait}</b><small>À valider</small></div><div style="--k:#10b981"><b>${x.on}</b><small>En ligne</small></div><div style="--k:#ef4444"><b>${x.ref+x.del}</b><small>Refus/retrait</small></div><div style="--k:#8b5cf6"><b style="font-size:.85rem">${annEur(x.val)}</b><small>Valeur</small></div></div>
+    ${x.imgs.length?`<div class="ths">${x.imgs.map(u=>`<img src="${u}" alt="" loading="lazy">`).join('')}</div>`:''}
+    <div class="acts2">${x.wait?`<button class="btn sm" onclick="anSeller('${esc(x.k)}','wait')">🕒 ${x.wait} à valider</button>`:''}${x.on?`<button class="ghost sm" onclick="anSeller('${esc(x.k)}','on')">✅ ${x.on} en ligne</button>`:''}${x.ml?`<a class="ghost sm" style="text-decoration:none" href="mailto:${esc(x.ml)}">✉</a>`:''}${x.ph?`<a class="ghost sm" style="text-decoration:none" href="tel:${esc(x.ph)}">📞</a>`:''}</div></div>`).join('')}</div>`:'<div class="empty">📭 Aucun vendeur pour le moment</div>'}
+const ANLA={pub:['✅','Publiée avec coordonnées','#10b981'],pubm:['✅','Publiée (coordonnées masquées)','#22c55e'],ref:['❌','Refusée','#ef4444'],del:['🗑️','Retirée du site','#f97316']};
+function anDrawLog(){const q=($('anQ')?.value||'').trim().toLowerCase(),c=k=>ANLOG.filter(l=>k==='pub'?l.act.startsWith('pub'):l.act===k).length;
+  if($('anLogF'))$('anLogF').innerHTML=[['','Tout',ANLOG.length],['pub','✅ Publiées',c('pub')],['ref','❌ Refusées',c('ref')],['del','🗑️ Retirées',c('del')]].map(([k,l,n])=>`<button class="${ANLOGF===k?'on':''}" onclick="ANLOGF='${k}';anDraw()">${l}<i>${n}</i></button>`).join('');
+  const L=ANLOG.filter(l=>(!ANLOGF||(ANLOGF==='pub'?l.act.startsWith('pub'):l.act===ANLOGF))&&(!q||[l.title,l.sn,l.ml,l.city].join(' ').toLowerCase().includes(q)));
+  $('annLog').innerHTML=L.length?L.map(l=>{const A=ANLA[l.act]||['•',l.act,'#64748b'];return `<div class="anLog" style="--lc:${A[2]}"><span class="ic">${A[0]}</span><div style="min-width:0"><b>${esc(l.title||'Annonce')} <span style="font-weight:600;color:var(--mut)">· ${annEur(l.price)}</span></b><small>${A[1]} · ${esc(ANCAT[l.cat]||'')} · par <b style="display:inline">${esc(l.sn||'?')}</b>${l.ml?' ('+esc(l.ml)+')':''}${l.city?' · 📍 '+esc(l.city):''}</small></div><span class="when">${fmtD(new Date(l.t))}<br>${anAgo(l.t)}</span></div>`}).join('')
+    :`<div class="empty">📜 ${ANLOG.length?'Rien dans ce filtre':'Aucune décision enregistrée pour l\'instant — elles apparaîtront ici dès ta prochaine validation.'}</div>`}
+function anTable(L,on){return `<table class="anTbl"><thead><tr><th></th><th>Annonce</th><th>Prix</th><th>Envoyée par</th><th>Ville</th><th>${on?'Publiée':'Reçue'}</th><th>Réf.</th><th style="text-align:right">Actions</th></tr></thead><tbody>${L.map(a=>{const w=anWho(a),im=anImg((a.imgs||[])[0]),cc=ANCOL[a.cat]||'#64748b';
+  return `<tr style="--cc:${cc}"><td>${im?`<img class="th" src="${im}" alt="" onclick="annView('${a.id}',${on})">`:`<span class="th" onclick="annView('${a.id}',${on})">${(ANCAT[a.cat]||'🏷️').split(' ')[0]}</span>`}</td>
+   <td><span class="tt" onclick="annView('${a.id}',${on})">${esc(a.title||'Sans titre')}</span><span class="sm2">${esc(ANCAT[a.cat]||'📦 Autre')} · 📷 ${(a.imgs||[]).length}${a.cond?' · '+esc(a.cond):''}</span></td>
+   <td style="white-space:nowrap"><b>${annEur(a.price)}</b>${a.oldPrice>a.price?`<span class="sm2"><s>${annEur(a.oldPrice)}</s></span>`:''}</td>
+   <td><span style="cursor:pointer" onclick="anSeller('${esc(anKey(a))}')" title="Voir toutes ses annonces"><b>${esc(w.n)}</b>${a.membre?'<span class="anTag mb">Membre</span>':''}</span><span class="sm2">${esc(w.ml||w.ph||'—')}</span></td>
+   <td>${esc(a.sCity||'—')}</td><td style="white-space:nowrap" title="${fmtD(new Date(a.t))}">${anAgo(a.t)}</td><td class="anRef">${esc(String(a.id).slice(-8).toUpperCase())}</td>
+   <td><div class="acts2" style="justify-content:flex-end">${on?`<a class="ghost sm" style="text-decoration:none" href="annonces/#${encodeURIComponent(a.id)}" target="_blank" rel="noopener" title="Voir sur le site">👁</a><button class="ghost sm danger" onclick="annDel('${a.id}')" title="Retirer">🗑️</button>`
+     :`<button class="btn sm" onclick="annOk('${a.id}',true)" title="Publier avec coordonnées">✅ Publier</button><button class="ghost sm" onclick="annOk('${a.id}',false)" title="Publier, coordonnées masquées">🔒</button><button class="ghost sm danger" onclick="annNo('${a.id}')" title="Refuser">❌</button>`}</div></td></tr>`}).join('')}</tbody></table>`}
+function anCharts(){const el=$('anX');if(!el)return;const all=[...ANNW,...ANNON];if(!all.length&&!ANLOG.length){el.innerHTML='';return}
+  const cats={};all.forEach(a=>{const c=a.cat||'autre';cats[c]=(cats[c]||0)+1});const tot=all.length||1,ent=Object.entries(cats).sort((a,b)=>b[1]-a[1]);
+  const D=14,day=86400000,t0=new Date();t0.setHours(0,0,0,0);const bins=[...Array(D)].map((_,i)=>{const s=t0.getTime()-(D-1-i)*day;return{s,w:0,o:0,l:new Date(s).getDate()}});
+  const put=(t,k)=>{const i=Math.floor((t-bins[0].s)/day);if(i>=0&&i<D)bins[i][k]++};ANNW.forEach(a=>put(a.t,'w'));ANNON.forEach(a=>put(a.t,'o'));
+  const mx=Math.max(1,...bins.map(b=>b.w+b.o)),n14=bins.reduce((x,b)=>x+b.w+b.o,0);
+  el.innerHTML=`<div><h5><span>Répartition par catégorie</span><span>${all.length} annonce${all.length>1?'s':''}</span></h5><div class="anSt">${ent.map(([c,n])=>`<span style="width:${n/tot*100}%;background:${ANCOL[c]||'#64748b'}" title="${esc(ANCAT[c]||c)} : ${n}"></span>`).join('')}</div>
+    <div class="anLg">${ent.map(([c,n])=>`<span onclick="ANCATF='${c}';anTab(ANNW.some(a=>(a.cat||'autre')==='${c}')?'wait':'on');ANCATF='${c}';anDraw()"><i style="background:${ANCOL[c]||'#64748b'}"></i>${esc(ANCAT[c]||c)} <b>${n}</b> <span style="opacity:.6">${Math.round(n/tot*100)} %</span></span>`).join('')}</div></div>
+   <div><h5><span>Annonces reçues · 14 derniers jours</span><span>${n14} reçue${n14>1?'s':''}</span></h5><div class="anH">${bins.map(b=>`<div title="${new Date(b.s).toLocaleDateString('fr-FR')} : ${b.w} à valider, ${b.o} en ligne"><span style="height:${b.w/mx*100}%;background:#f59e0b"></span><span style="height:${b.o/mx*100}%;background:#10b981"></span><b>${b.l}</b></div>`).join('')}</div>
+    <div class="anHl"><span><i style="background:#f59e0b"></i>À valider</span><span><i style="background:#10b981"></i>En ligne</span></div></div>`}
 function renderAnn(){annBadge();anDraw()}
 let ANNMB=[],ANNMBW=0,ANNMSG=[];
 const annRed=n=>n?`<span style="background:#ef4444;color:#fff;border-radius:99px;min-width:22px;height:22px;padding:0 7px;display:inline-grid;place-items:center;font-size:.75rem;font-weight:800">${n}</span>`:'';
@@ -1999,9 +2084,9 @@ async function mbPwd(rid){const r=mbGet(rid);try{const t=await fbTok(),acc=await
   await fbPut('requests/'+r.ref,{...acc,hash:r.hash,mdpLe:Date.now()});await mbSet(rid,{statut:'accordee'});toast('🔑 Nouveau mot de passe activé');loadAnnMb()}catch(e){toast(e.message,'ko')}}
 function annImgs(id,on){const a=(on?ANNON:ANNW).find(x=>x.id===id);if(!a)return;const w=window.open('','_blank');if(w)w.document.write(`<title>${esc(a.title)}</title><body style="margin:0;background:#111;display:grid;gap:8px;padding:8px">${(a.imgs||[]).map(s=>`<img src="${s}" style="max-width:100%">`).join('')}`)}
 async function annOk(id,show){const a=ANNW.find(x=>x.id===id);if(!a)return;const{id:_,priv,...ad}=a;if(show&&priv)ad.contact=priv;else delete ad.contact;
- try{await fbPut('crm/annoncesPriv/'+id,priv||{});await fbPut('annonces/'+id,ad);await fbPut('annoncesWait/'+id,null);toast(show?'✅ Annonce publiée avec coordonnées':'✅ Annonce publiée, coordonnées masquées');await loadAnn()}catch(e){toast(e.message,'ko')}}
-async function annNo(id){const a=ANNW.find(x=>x.id===id);if(!a||!confirm('Refuser et supprimer l\'annonce « '+a.title+' » ?'))return;try{await fbPut('annoncesWait/'+id,null);toast('Annonce refusée');await loadAnn()}catch(e){toast(e.message,'ko')}}
-async function annDel(id){if(!confirm('Retirer définitivement cette annonce du site ?'))return;try{await fbPut('annonces/'+id,null);await fbPut('crm/annoncesPriv/'+id,null);toast('Annonce retirée');await loadAnn()}catch(e){toast(e.message,'ko')}}
+ try{await fbPut('crm/annoncesPriv/'+id,priv||{});await fbPut('annonces/'+id,ad);await fbPut('annoncesWait/'+id,null);anLogAdd(a,show?'pub':'pubm');toast(show?'✅ Annonce publiée avec coordonnées':'✅ Annonce publiée, coordonnées masquées');await loadAnn()}catch(e){toast(e.message,'ko')}}
+async function annNo(id){const a=ANNW.find(x=>x.id===id);if(!a||!confirm('Refuser et supprimer l\'annonce « '+a.title+' » ?'))return;try{await fbPut('annoncesWait/'+id,null);anLogAdd(a,'ref');toast('Annonce refusée');await loadAnn()}catch(e){toast(e.message,'ko')}}
+async function annDel(id){const a=ANNON.find(x=>x.id===id);if(!confirm('Retirer définitivement cette annonce du site ?'))return;try{await fbPut('annonces/'+id,null);if(a)anLogAdd(a,'del');await fbPut('crm/annoncesPriv/'+id,null);toast('Annonce retirée');await loadAnn()}catch(e){toast(e.message,'ko')}}
 load();setInterval(load,60000);loadAnn();setInterval(loadAnn,60000);setInterval(()=>LIC.length&&renderAll(),30000);
 if(!C().tok)go('set');
 /* ═══════════ THÈMES ═══════════ */
