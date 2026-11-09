@@ -271,7 +271,7 @@ canvas{max-height:270px}
 /* ═══ Fenêtres : plein écran adapté à l'appareil ═══ */
 html.mdOpen,html.mdOpen body{overflow:hidden}
 .md-bg{backdrop-filter:blur(8px) saturate(1.1)}
-.md.full{width:calc(100vw - 40px);max-width:1680px;height:calc(100dvh - 40px);max-height:none;border-radius:20px}
+.md.full{width:calc(100vw - 24px);max-width:none;height:calc(100dvh - 24px);max-height:none;border-radius:16px}
 .md.full .md-b{flex:1;padding:20px 26px 26px}.md.full .md-h{padding:16px 22px}.md.full .md-f{padding:14px 22px}
 .md.full .chatB{min-height:46vh}.md.full .anGal{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
 .md.cmp{width:min(560px,94vw)}
@@ -280,7 +280,6 @@ html.mdOpen,html.mdOpen body{overflow:hidden}
 .md.pop{animation:mdIn .32s cubic-bezier(.2,.9,.3,1) both}.md.pop .md-b>*{animation:mdUp .35s .06s both}
 @keyframes mdIn{from{opacity:0;transform:scale(.965) translateY(10px)}to{opacity:1;transform:none}}
 @keyframes mdUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-@media(min-width:1800px){.md.full{width:min(1680px,calc(100vw - 80px));height:calc(100dvh - 64px)}}
 .md-f{display:flex;gap:8px;justify-content:flex-end;padding:14px 20px calc(14px + env(safe-area-inset-bottom));border-top:1px solid var(--bd);flex-wrap:wrap}
 textarea{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--bd);background:rgba(0,0,0,.3);color:var(--txt);font:inherit;font-size:.9rem;line-height:1.6;resize:vertical;outline:none;transition:.2s}
 textarea:focus{border-color:var(--a2);box-shadow:0 0 0 4px color-mix(in srgb,var(--a2) 14%,transparent)}
