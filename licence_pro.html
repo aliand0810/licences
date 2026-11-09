@@ -268,6 +268,19 @@ canvas{max-height:270px}
 .md-h{display:flex;gap:12px;align-items:center;padding:18px 20px;border-bottom:1px solid var(--bd)}.md-h h2{margin:0;font-size:1.12rem}.md-h span{font-size:.78rem;color:var(--mut)}
 .md-h .x{margin-left:auto;background:var(--glass);border:1px solid var(--bd);width:36px;height:36px;padding:0;flex-shrink:0}
 .md-b{overflow:auto;padding:16px 20px 20px}
+/* ═══ Fenêtres : plein écran adapté à l'appareil ═══ */
+html.mdOpen,html.mdOpen body{overflow:hidden}
+.md-bg{backdrop-filter:blur(8px) saturate(1.1)}
+.md.full{width:calc(100vw - 40px);max-width:1680px;height:calc(100dvh - 40px);max-height:none;border-radius:20px}
+.md.full .md-b{flex:1;padding:20px 26px 26px}.md.full .md-h{padding:16px 22px}.md.full .md-f{padding:14px 22px}
+.md.full .chatB{min-height:46vh}.md.full .anGal{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+.md.cmp{width:min(560px,94vw)}
+.mdSz{background:var(--glass);border:1px solid var(--bd);width:36px;height:36px;padding:0;flex-shrink:0;margin-left:auto;font-size:1.05rem;color:var(--txt);border-radius:10px;cursor:pointer}
+.mdSz+.x{margin-left:8px!important}
+.md.pop{animation:mdIn .32s cubic-bezier(.2,.9,.3,1) both}.md.pop .md-b>*{animation:mdUp .35s .06s both}
+@keyframes mdIn{from{opacity:0;transform:scale(.965) translateY(10px)}to{opacity:1;transform:none}}
+@keyframes mdUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media(min-width:1800px){.md.full{width:min(1680px,calc(100vw - 80px));height:calc(100dvh - 64px)}}
 .md-f{display:flex;gap:8px;justify-content:flex-end;padding:14px 20px calc(14px + env(safe-area-inset-bottom));border-top:1px solid var(--bd);flex-wrap:wrap}
 textarea{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--bd);background:rgba(0,0,0,.3);color:var(--txt);font:inherit;font-size:.9rem;line-height:1.6;resize:vertical;outline:none;transition:.2s}
 textarea:focus{border-color:var(--a2);box-shadow:0 0 0 4px color-mix(in srgb,var(--a2) 14%,transparent)}
@@ -302,6 +315,11 @@ textarea:focus{border-color:var(--a2);box-shadow:0 0 0 4px color-mix(in srgb,var
  .lic{padding:14px 16px}
  .secWarn{flex-wrap:wrap}.secWarn>div:not(.pi){min-width:calc(100% - 70px)}.secWarn button{width:100%}
  .mdl{place-items:end center}.md{width:100%;max-height:94vh;border-radius:22px 22px 0 0;transform:translateY(100%)}.mdl.on .md{transform:none}
+ .md.full{width:100vw;max-width:none;height:100dvh;max-height:100dvh;border-radius:0;border:0;padding-bottom:env(safe-area-inset-bottom)}
+ .md.full .md-h{padding:calc(12px + env(safe-area-inset-top)) 14px 12px}.md.full .md-b{padding:14px}
+ .md.pop{animation:mdSheet .34s cubic-bezier(.2,.9,.3,1) both}@keyframes mdSheet{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+ .md.cmp{width:100%}
+ .md.full .anGal{grid-template-columns:repeat(2,minmax(0,1fr))}
  .g2{grid-template-columns:1fr;gap:0}.md-f .btn{flex:1 1 100%;order:-1}.md-f .ghost{flex:1}
  textarea,select{font-size:16px}
  .nact{margin-left:0;width:100%;justify-content:flex-end}
@@ -1565,8 +1583,14 @@ function forgotSet(){if(!confirm("Réinitialiser le mot de passe ?\n\nPar sécur
   const c=C();delete c.tok;delete c.sec;delete c.fbPass;delete c.appAdm;localStorage.setItem('licCfg',JSON.stringify(c));localStorage.removeItem('licAdmin');FBT=null;FBOK=false;renderConn();showLock();toast('Mot de passe réinitialisé — crée-en un nouveau')}
 
 /* ── Fenêtre modale ── */
-function openModal(html){$('md').innerHTML=html;$('mdl').classList.add('on');setTimeout(()=>{const f=$('md').querySelector('input:not([type=checkbox]),textarea');if(f&&innerWidth>860)f.focus()},150)}
-function closeModal(){$('mdl').classList.remove('on')}
+function mdFullPref(){try{return localStorage.getItem('mdFull')!=='0'}catch(e){return true}}
+function mdSize(){const m=$('md');if(!m)return;const small=!!m.querySelector('.nc-hero')||m.dataset.small==='1';m.classList.toggle('full',!small&&mdFullPref());m.classList.toggle('cmp',small);
+  const x=m.querySelector('.md-h .x');if(x&&!small&&!m.querySelector('.mdSz')){const b=document.createElement('button');b.className='mdSz';b.type='button';b.onclick=mdToggle;x.before(b)}
+  const b=m.querySelector('.mdSz');if(b){const f=m.classList.contains('full');b.textContent=f?'⤡':'⤢';b.title=f?'Réduire la fenêtre':'Agrandir en plein écran'}}
+function mdToggle(){try{localStorage.setItem('mdFull',mdFullPref()?'0':'1')}catch(e){}mdSize()}
+new MutationObserver(()=>mdSize()).observe(document.getElementById('md')||document.body,{childList:true});
+function openModal(html,o){const m=$('md');m.classList.remove('pop');void m.offsetWidth;m.dataset.small=o&&o.small?'1':'';m.innerHTML=html;mdSize();m.classList.add('pop');$('mdl').classList.add('on');document.documentElement.classList.add('mdOpen');setTimeout(()=>{const f=$('md').querySelector('input:not([type=checkbox]),textarea');if(f&&innerWidth>860)f.focus()},150)}
+function closeModal(){$('mdl').classList.remove('on');document.documentElement.classList.remove('mdOpen')}
 document.addEventListener('keydown',e=>e.key==='Escape'&&closeModal());
 function chips(id,cb){$(id).querySelectorAll('button').forEach(b=>b.onclick=()=>{$(id).querySelectorAll('button').forEach(x=>x.classList.remove('act'));b.classList.add('act');cb(b)})}
 function mailTo(to,subj,body){location.href=`mailto:${to}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`}
@@ -2757,7 +2781,7 @@ function appEdit(id){const a=id?appsAll().find(x=>x.id===id):{id:'',n:'',ic:'�
     <label>Adresse (https://…)</label><input id="apU" value="${esc(a.u||'')}" placeholder="https://aliand0810.github.io/MonApp/" spellcheck="false">
     <div class="g2"><div><label>Groupe</label><input id="apG" list="apGl" value="${esc(a.g||'')}"><datalist id="apGl">${G.map(g=>`<option value="${esc(g)}">`).join('')}</datalist></div><div><label>Couleur</label><input id="apC" type="color" value="${esc(/^#[0-9a-f]{6}$/i.test(a.c||'')?a.c:'#7c3aed')}" style="height:44px;padding:4px"></div></div>
     <label>Description (facultatif)</label><input id="apD" value="${esc(a.d||'')}" maxlength="60" placeholder="Laisser vide pour afficher l'adresse">
-    <div class="acts2" style="margin-top:16px"><button class="btn" onclick="appSave('${esc(a.id)}')">💾 Enregistrer</button>${id&&!a.auto?`<button class="ghost danger" onclick="appDel('${esc(a.id)}')">🗑️ Retirer</button>`:''}${id?`<button class="ghost" style="margin-left:auto" onclick="APPS=null;appPersist('Catalogue des applications réinitialisé')">↺ Catalogue d'origine</button>`:''}</div></div>`)}
+    <div class="acts2" style="margin-top:16px"><button class="btn" onclick="appSave('${esc(a.id)}')">💾 Enregistrer</button>${id&&!a.auto?`<button class="ghost danger" onclick="appDel('${esc(a.id)}')">🗑️ Retirer</button>`:''}${id?`<button class="ghost" style="margin-left:auto" onclick="APPS=null;appPersist('Catalogue des applications réinitialisé')">↺ Catalogue d'origine</button>`:''}</div></div>`,{small:true})}
 function appSave(id){const n=$('apN').value.trim(),u=$('apU').value.trim();if(!n)return toast('Indique un nom','ko');if(u&&u!=='https://'&&!okUrl(u))return toast('Adresse invalide — elle doit commencer par https://','ko');
   const L=appsAll().map(x=>{const{auto,...r}=x;return r}),o={id:id||('a'+Date.now().toString(36)),n,ic:$('apIc').value.trim()||'📦',c:$('apC').value,u:okUrl(u)?u:'',g:$('apG').value.trim()||'Autres',d:$('apD').value.trim()};
   const i=L.findIndex(x=>x.id===id);if(i>=0)L[i]={...L[i],...o};else L.push(o);APPS=L;closeModal();appPersist('🧩 Application enregistrée')}
@@ -2768,7 +2792,7 @@ async function appPersist(msg){try{APPS?localStorage.setItem('licApps',JSON.stri
 // menu complet (téléphone)
 function openMore(){const B=[...document.querySelectorAll('nav button[data-v]')].filter(b=>b.dataset.v!=='more'),cur=(document.querySelector('.view.on')||{}).id||'';
   openModal(`<div class="md-h"><div class="pi" style="--pc:var(--a1)">☰</div><div><h2>Menu</h2><span>Toutes les sections de Licence Pro</span></div><button class="x" onclick="closeModal()">✕</button></div>
-   <div class="md-b"><div class="mrG">${B.map(b=>{const nb=b.querySelector('.nb');return `<button class="${cur==='v-'+b.dataset.v?'act':''}" onclick="closeModal();${b.dataset.v==='new'?'newLic()':`go('${b.dataset.v}')`}">${b.querySelector('.ni').outerHTML}<span>${esc(b.querySelector('span:not(.ni)').textContent)}</span>${nb&&nb.textContent?`<i class="nb">${esc(nb.textContent)}</i>`:''}</button>`}).join('')}</div></div>`)}
+   <div class="md-b"><div class="mrG">${B.map(b=>{const nb=b.querySelector('.nb');return `<button class="${cur==='v-'+b.dataset.v?'act':''}" onclick="closeModal();${b.dataset.v==='new'?'newLic()':`go('${b.dataset.v}')`}">${b.querySelector('.ni').outerHTML}<span>${esc(b.querySelector('span:not(.ni)').textContent)}</span>${nb&&nb.textContent?`<i class="nb">${esc(nb.textContent)}</i>`:''}</button>`}).join('')}</div></div>`,{small:true})}
 setInterval(()=>{const e=$('nbMore');if(!e)return;const n=['nbAnn','nbNotes','nbAl'].reduce((a,id)=>a+(+($(id)?.textContent)||0),0);e.textContent=n||''},2000);
 
 // ══ ☁️ Stockage Google Drive des pièces jointes ══
