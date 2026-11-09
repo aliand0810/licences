@@ -75,7 +75,7 @@
   function navRec(v,n){if(!NAV)return;if(v&&isSatLaunch(v))return;if(v){n=cleanTxt(n)||nameFor(v)||tName(v);CURTAB={v,n}}const c=navCur();if(v){c.v=v;c.n=n}
     c.n=String(c.n||(c.v?tName(c.v):'')||document.title||c.p).replace(/\s+/g,' ').slice(0,50);c.v=String(c.v||'').slice(0,40);
     const k=c.p+'|'+c.v+'|'+c.h;if(k===navLast&&Date.now()-navT<6e4)return;navLast=k;navT=Date.now();
-    Promise.all([devId(),netInfo().catch(()=>({}))]).then(([dv,ni])=>fetch(`${NAV.fb}/nav/${NAV.id}/${dv}.json`,{method:'POST',keepalive:true,body:JSON.stringify({w:2,src:WSRC(),t:Date.now(),p:c.p.slice(0,60),v:c.v,n:c.n,h:c.h,m:MODULE||PRODUIT,ti:(document.title||'').slice(0,60),ip:ni.ip||'',loc:ni.loc||'',isp:String(ni.isp||'').slice(0,60),d:DEVD,scr:SCR,lang:LANG})})).catch(()=>{})}
+    Promise.all([devId(),netInfo().catch(()=>({}))]).then(([dv,ni])=>fetch(`${NAV.fb}/nav/${NAV.id}/${dv}.json`,{method:'POST',keepalive:true,body:JSON.stringify({w:2,src:WSRC(),t:Date.now(),p:c.p.slice(0,60),v:c.v,n:c.n,h:c.h,m:MODULE||PRODUIT,ti:(document.title||'').slice(0,60),ip:ni.ip||'',loc:ni.loc||'',isp:String(ni.isp||'').slice(0,60),d:DEVD,scr:SCR,lang:LANG,tz:DEVTZ,gtz:String(ni.tz||'').slice(0,40)})})).catch(()=>{})}
   let bgT=0;
   function navBg(){if(!NAV||Date.now()-bgT<3000)return;bgT=Date.now();navLast='';
     devId().then(dv=>fetch(`${NAV.fb}/nav/${NAV.id}/${dv}.json`,{method:'POST',keepalive:true,body:JSON.stringify({w:2,src:WSRC(),t:Date.now(),p:(location.pathname.split('/').pop()||'accueil').slice(0,60),ev:'bg',m:MODULE||PRODUIT,v:CURTAB?CURTAB.v:'',n:CURTAB?CURTAB.n:''})})).catch(()=>{})}
@@ -84,7 +84,7 @@
   const DEVD=(()=>{let d='';try{const u=navigator.userAgent,os=/Windows/.test(u)?'Windows':/iPhone/.test(u)?'iPhone':/iPad/.test(u)?'iPad':/Android/.test(u)?'Android':/Mac OS X/.test(u)?(navigator.maxTouchPoints>1?'iPad':'Mac'):/CrOS/.test(u)?'Chromebook':/Linux/.test(u)?'Linux':'';
     const br=/Edg\//.test(u)?'Edge':/OPR\//.test(u)?'Opera':/SamsungBrowser/.test(u)?'Samsung Internet':/Firefox\//.test(u)?'Firefox':/Chrome\//.test(u)?'Chrome':/Safari\//.test(u)?'Safari':'';
     const k=/iPad|Tablet/.test(u)||(/Android/.test(u)&&!/Mobile/.test(u))||(os==='iPad')?'Tablette':/Mobi|iPhone|Android/.test(u)?'Mobile':'Ordinateur';d=[k,os,br].filter(Boolean).join(' · ')}catch(e){}return d.slice(0,60)})();
-  const SCR=(()=>{try{return Math.round(screen.width)+'×'+Math.round(screen.height)}catch(e){return''}})(),LANG=(navigator.language||'').slice(0,12);
+  const SCR=(()=>{try{return Math.round(screen.width)+'×'+Math.round(screen.height)}catch(e){return''}})(),LANG=(navigator.language||'').slice(0,12),DEVTZ=(()=>{try{return Intl.DateTimeFormat().resolvedOptions().timeZone||''}catch(e){return''}})();
   const WSRC=()=>{try{if(matchMedia('(display-mode: standalone)').matches||navigator.standalone)return'pwa';if(window.opener&&!window.opener.closed)return'popup'}catch(e){}return'tab'};
   const FRAMED=(()=>{try{return window.self!==window.top}catch(e){return true}})()||/[?&]bg=1\b/.test(location.search);
   let offT=0;
@@ -148,9 +148,9 @@
   // Adresse IP publique + ville approximative (mise en cache 10 min)
   async function netInfo(){try{const c=JSON.parse(sessionStorage.getItem('licNet')||'null');if(c&&c.ip&&Date.now()-c.at<6e5)return c}catch(e){}
     const get=u=>Promise.race([fetch(u,{cache:'no-store'}).then(r=>{if(!r.ok)throw 0;return r.json()}),new Promise((_,j)=>setTimeout(()=>j(0),4000))]);
-    const src=[['https://get.geojs.io/v1/ip/geo.json',j=>({ip:j.ip,loc:[j.city,j.country_code].filter(Boolean).join(', '),isp:j.organization_name||''})],
-      ['https://ipwho.is/?fields=ip,city,country_code,connection',j=>({ip:j.ip,loc:[j.city,j.country_code].filter(Boolean).join(', '),isp:(j.connection&&(j.connection.isp||j.connection.org))||''})],
-      ['https://ipinfo.io/json',j=>({ip:j.ip,loc:[j.city,j.country].filter(Boolean).join(', '),isp:String(j.org||'').replace(/^AS\d+\s*/,'')})],
+    const src=[['https://get.geojs.io/v1/ip/geo.json',j=>({ip:j.ip,loc:[j.city,j.country_code].filter(Boolean).join(', '),isp:j.organization_name||'',tz:j.timezone||''})],
+      ['https://ipwho.is/?fields=ip,city,country_code,connection,timezone',j=>({ip:j.ip,loc:[j.city,j.country_code].filter(Boolean).join(', '),isp:(j.connection&&(j.connection.isp||j.connection.org))||'',tz:(j.timezone&&j.timezone.id)||''})],
+      ['https://ipinfo.io/json',j=>({ip:j.ip,loc:[j.city,j.country].filter(Boolean).join(', '),isp:String(j.org||'').replace(/^AS\d+\s*/,''),tz:j.timezone||''})],
       ['https://api.ipify.org?format=json',j=>({ip:j.ip,loc:''})],
       ['https://api64.ipify.org?format=json',j=>({ip:j.ip,loc:''})]];
     let n=null;for(const[u,f]of src){try{const r=f(await get(u));if(r.ip){n=r;break}}catch(e){}}

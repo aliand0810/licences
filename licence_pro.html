@@ -460,6 +460,9 @@ main{min-width:0}
 .anKV{display:grid;grid-template-columns:140px 1fr;gap:6px 12px;font-size:.88rem;margin:12px 0}.anKV span{color:var(--mut)}
 @media(max-width:1100px){.anK{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:700px){.anK div:last-child{grid-column:1/-1}.anK{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.anK b{font-size:1.25rem}.anTabs{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.anTabs button{padding:10px}.anTabs small{display:none}.anTabs .rqAn{position:absolute;top:6px;right:6px;min-width:22px;height:22px;font-size:.72rem}.anG{grid-template-columns:1fr}.anKV{grid-template-columns:1fr}}
+.tzc{display:inline-flex;align-items:baseline;gap:5px;cursor:help;flex-wrap:wrap}.tzc i{font-style:normal;font-size:.62rem;font-weight:800;padding:1px 6px;border-radius:999px;background:color-mix(in srgb,#0ea5e9 18%,transparent);color:#0ea5e9;white-space:nowrap}
+.tzm{display:block;font-size:.68rem;color:var(--mut);font-weight:600}
+#aTz{max-width:230px}
 /* ═══ Thèmes de couleur ═══ */
 nav button.act{color:var(--txt);background:linear-gradient(135deg,color-mix(in srgb,var(--a1) 26%,transparent),color-mix(in srgb,var(--a2) 12%,transparent));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--a1) 45%,transparent)}
 .chips button.act{background:color-mix(in srgb,var(--a1) 22%,transparent);border-color:var(--a1);color:var(--txt)}
@@ -961,6 +964,7 @@ kbd{display:inline-block;padding:2px 7px;border-radius:6px;border:1px solid var(
       <div class="seg ax-per" id="aflt"><button data-f="today">Aujourd'hui</button><button data-f="7">7 j</button><button data-f="30">30 j</button><button data-f="90">90 j</button><button data-f="365">12 mois</button><button data-f="all">Tout</button></div>
       <select id="aProd" onchange="AFPROD=this.value;renderAct()"><option value="">Tous les logiciels</option></select>
       <select id="aSat" onchange="ASAT=this.value;renderAct()"><option value="">Tous les satellites</option></select>
+      <select id="aTz" onchange="actTzSet(this.value)" title="Fuseau horaire des heures affichées"><option value="client">🌍 Heure locale du client</option><option value="both">🌍 + 🇫🇷 Les deux heures</option><option value="me">🕐 Mon heure (cet appareil)</option></select>
       <div class="ax-btns"><button class="ghost sm ax-live on" id="aLive" onclick="actLive(!ALIVE)" title="Actualisation automatique toutes les 15 s"><i></i>En direct</button><button class="ghost sm" onclick="renderActView()" title="Actualiser">🔄</button><button class="ghost sm" onclick="actCsv()" title="Exporter les visites affichées">⬇️ CSV</button><button class="ghost sm" id="aIpx" onclick="openIpx()">🚫 IP exclues</button><button class="ghost sm" onclick="openIpCut()">⛔ Déconnexion</button><button class="ghost sm" onclick="openSuiviManager()">⚙️ Gérer le suivi</button></div>
     </div>
     <div id="aSus"></div>
@@ -2456,6 +2460,28 @@ try{const u=JSON.parse(localStorage.getItem('lpActUi')||'null');if(u){AFILTER=u.
 const actSaveUi=()=>{try{localStorage.setItem('lpActUi',JSON.stringify({p:AFILTER,t:ATAB}))}catch(e){}};
 const VGAP=30*6e4,DEVI={Mobile:'📱',Tablette:'📲',Ordinateur:'💻',Inconnu:'❔'};
 const hm=t=>new Date(t).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+// ── Fuseaux horaires : heure locale du client (Mayotte, Réunion, Antilles…) ou la mienne ──
+const MYTZ=(()=>{try{return Intl.DateTimeFormat().resolvedOptions().timeZone}catch(e){return'Europe/Paris'}})();
+let ATZ=(()=>{try{return localStorage.getItem('lpActTz')||'client'}catch(e){return'client'}})();
+function actTzSet(v){ATZ=v;try{localStorage.setItem('lpActTz',v)}catch(e){}renderAct();const d=$('aDrw');if(d&&d.classList.contains('open')&&ASELV)try{actVisit(ASELV)}catch(e){}}
+setTimeout(()=>{if($('aTz'))$('aTz').value=ATZ},0);
+const CCTZ={FR:'Europe/Paris',YT:'Indian/Mayotte',RE:'Indian/Reunion',GP:'America/Guadeloupe',MQ:'America/Martinique',GF:'America/Cayenne',PM:'America/Miquelon',BL:'America/St_Barthelemy',MF:'America/Marigot',PF:'Pacific/Tahiti',NC:'Pacific/Noumea',WF:'Pacific/Wallis',KM:'Indian/Comoro',MG:'Indian/Antananarivo',MU:'Indian/Mauritius',SC:'Indian/Mahe',BE:'Europe/Brussels',CH:'Europe/Zurich',LU:'Europe/Luxembourg',MC:'Europe/Monaco',DE:'Europe/Berlin',ES:'Europe/Madrid',IT:'Europe/Rome',PT:'Europe/Lisbon',GB:'Europe/London',IE:'Europe/Dublin',NL:'Europe/Amsterdam',MA:'Africa/Casablanca',DZ:'Africa/Algiers',TN:'Africa/Tunis',SN:'Africa/Dakar',CI:'Africa/Abidjan',ML:'Africa/Bamako',CM:'Africa/Douala',CD:'Africa/Kinshasa',CG:'Africa/Brazzaville',GA:'Africa/Libreville',BJ:'Africa/Porto-Novo',TG:'Africa/Lome',BF:'Africa/Ouagadougou',NE:'Africa/Niamey',TD:'Africa/Ndjamena',DJ:'Africa/Djibouti',HT:'America/Port-au-Prince',TR:'Europe/Istanbul'};
+const TZN={'Indian/Mayotte':'Mayotte','Indian/Reunion':'La Réunion','America/Guadeloupe':'Guadeloupe','America/Martinique':'Martinique','America/Cayenne':'Guyane','Pacific/Tahiti':'Tahiti','Pacific/Noumea':'Nouvelle-Calédonie','Europe/Paris':'France','Indian/Comoro':'Comores','Indian/Antananarivo':'Madagascar','America/Miquelon':'Saint-Pierre-et-Miquelon','Pacific/Wallis':'Wallis-et-Futuna'};
+const tzOk=z=>{try{if(!z)return false;new Intl.DateTimeFormat('fr-FR',{timeZone:z});return true}catch(e){return false}};
+function tzOf(e){if(!e)return'';if(typeof e._tz==='string')return e._tz;let z=[e.tz,e.gtz].find(tzOk)||'';
+  if(!z){const cc=String(e.loc||'').split(',').pop().trim().toUpperCase();z=CCTZ[cc]||''}
+  if(!z&&Array.isArray(e.steps)){const f=e.steps.find(x=>tzOf(x));z=f?tzOf(f):''}
+  try{Object.defineProperty(e,'_tz',{value:z,writable:true,enumerable:false,configurable:true})}catch(_){}return z}
+const tzOff=(z,t)=>{try{const p=new Intl.DateTimeFormat('en-US',{timeZone:z,timeZoneName:'longOffset'}).formatToParts(new Date(t)).find(x=>x.type==='timeZoneName').value;const m=p.match(/GMT([+-])(\d\d):?(\d\d)?/);return m?(m[1]==='-'?-1:1)*(+m[2]*60+(+m[3]||0)):0}catch(e){return 0}};
+const tzLbl=z=>TZN[z]||String(z||'').split('/').pop().replace(/_/g,' ');
+const tzDiff=(z,t)=>{const d=tzOff(z,t)-tzOff(MYTZ,t);if(!d)return'';const h=Math.abs(d)/60;return (d>0?'+':'−')+(Number.isInteger(h)?h:h.toFixed(1).replace('.',','))+' h'};
+const hmIn=(t,z,sec)=>new Date(t).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit',...(sec?{second:'2-digit'}:{}),...(z?{timeZone:z}:{})});
+const dIn=(t,z)=>new Date(t).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'2-digit',...(z?{timeZone:z}:{})});
+function hmz(t,e,sec){const z=tzOf(e),dif=z&&z!==MYTZ?tzDiff(z,t):'';
+  if(ATZ==='me'||!dif)return `<span title="${dif?`Heure locale du client (${esc(tzLbl(z))}) : ${hmIn(t,z,sec)}`:'Même fuseau horaire que toi'}">${hmIn(t,'',sec)}</span>`;
+  const loc=`<span class="tzc" title="Heure locale du client — ${esc(tzLbl(z))} (${dif} par rapport à toi). Chez toi : ${hmIn(t,'',sec)}">${hmIn(t,z,sec)}<i>${esc(tzLbl(z))} ${dif}</i></span>`;
+  return ATZ==='both'?`${loc}<span class="tzm" title="Ton heure">🇫🇷 ${hmIn(t,'',sec)}</span>`:loc}
+function dtz(t,e){if(!t)return'—';const z=ATZ==='me'?'':tzOf(e);return dIn(t,z&&z!==MYTZ?z:'')+' '+hmz(t,e)}
 const fmtDT2=t=>t?new Date(t).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'2-digit'})+' '+hm(t):'—';
 const dur=ms=>{const s=Math.max(0,Math.round(ms/1000));if(s<60)return s+' s';const m=Math.round(s/60);return m<60?m+' min':Math.floor(m/60)+' h '+String(m%60).padStart(2,'0')};
 const nrm=s=>String(s==null?'':s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -2471,7 +2497,7 @@ function buildVisits(){const E=ACT.concat(ACTBG).filter(a=>!ipExcl(a.ip)).sort((
     if(e.ev==='off'){v.closed=true;v.end=e.r||'close';v.steps.push({...e,kind:'off'});return}
     if(e.ev==='bg'){v.steps.push({...e,kind:'bg'});return}
     v.steps.push({...e,kind:'page'});if(e.ip&&!v.ips.includes(e.ip))v.ips.push(e.ip);
-    ['loc','isp','d','scr','lang','src'].forEach(f=>{if(e[f]&&!v[f])v[f]=e[f]});const st=satOf(e);if(st)v.sats.add(st)});
+    ['loc','isp','d','scr','lang','src','tz','gtz'].forEach(f=>{if(e[f]&&!v[f])v[f]=e[f]});const st=satOf(e);if(st)v.sats.add(st)});
   const now=Date.now(),nv={};
   V.forEach(v=>{v.pages=v.steps.filter(x=>x.kind==='page');v.np=v.pages.length;v.ip=v.ips[0]||'';
     if(!v.d){const x=DEV[v.lic.id]&&Object.values(DEV[v.lic.id]).find(y=>y&&y.id===v.dv);if(x){const u=shortUA(x.ua);v.d=(u.ic==='📱'?'Mobile':u.ic==='📲'?'Tablette':'Ordinateur')+' · '+u.txt}}
@@ -2547,7 +2573,7 @@ function renderActList(){const host=$('actList');if(!host)return;const R=actRang
     if(dk!==lastDay){lastDay=dk;const n=Math.round((d00-new Date(d.getFullYear(),d.getMonth(),d.getDate()))/864e5),c=L.filter(x=>new Date(x.t).toDateString()===dk).length;
       out+=`<div class="ax-day"><span>${n===0?'Aujourd\'hui':n===1?'Hier':d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})}</span><span>${c} visite${c>1?'s':''}</span></div>`}
     const last=v.pages[v.pages.length-1],lp=pageOf(last),[pic]=pm(v.lic.produit),ipn=v.ip?(ipLbl(v.ip)||v.ip):'';
-    out+=`<div class="ax-vis${ASELV===v.id?' sel':''}${v.live?' live':''}" data-vid="${esc(v.id)}" onclick="actVisit(this.dataset.vid)"><div class="tm">${hm(v.t)}</div><div class="dv" title="${esc(v.d||'Appareil inconnu')}">${DEVI[v.kind]}</div>
+    out+=`<div class="ax-vis${ASELV===v.id?' sel':''}${v.live?' live':''}" data-vid="${esc(v.id)}" onclick="actVisit(this.dataset.vid)"><div class="tm">${hmz(v.t,v)}</div><div class="dv" title="${esc(v.d||'Appareil inconnu')}">${DEVI[v.kind]}</div>
       <div class="cl">${esc(v.lic.email)}<small>${pic} ${esc(v.lic.produit)}${v.sats.size?' · 🧩 '+[...v.sats].map(esc).join(', '):''}</small></div>
       <div class="lo">🌐 ${esc(ipn||'IP inconnue')}<small>📍 ${esc(v.loc||'Lieu inconnu')}</small></div>
       <div class="pg">📄 ${v.np} page${v.np>1?'s':''}${v.tl>v.t?' · ⏱️ '+dur(v.tl-v.t):''}<small>dernière : ${satOf(last)?satIc(satOf(last))+' ':''}${lp.ic} ${esc(lp.nm)}</small></div>
@@ -2559,10 +2585,10 @@ function actOpenCl(c){$('aq').value=c;ATAB='visits';actSaveUi();renderActList();
 function actVisit(id){const v=AVMAP[id];if(!v)return;ASELV=id;document.querySelectorAll('.ax-vis').forEach(x=>x.classList.toggle('sel',x.dataset.vid===id));
   const others=AVIS.filter(x=>x!==v&&(x.lic.email===v.lic.email||x.ips.some(i=>v.ips.includes(i)))).slice(0,30),[pic]=pm(v.lic.produit);
   const steps=v.steps.map((x,i)=>{const nx=v.steps[i+1],stay=nx?nx.t-x.t:0;
-    if(x.kind==='bg')return `<li class="bg"><b>💤 Passé en arrière-plan</b><small>${new Date(x.t).toLocaleTimeString('fr-FR')}</small></li>`;
-    if(x.kind==='off')return `<li class="off"><b>🔴 ${esc((OFFR[x.r]||'fermé').replace(/^./,c=>c.toUpperCase()))}</b><small>${new Date(x.t).toLocaleTimeString('fr-FR')}</small></li>`;
-    const g=pageOf(x),st=satOf(x);return `<li><b>${g.ic} ${esc(g.nm)}</b><span class="where">${pic} ${esc(x.lic.produit)}${st?' › Satellite '+satIc(st)+' '+esc(st):''}</span><small>${new Date(x.t).toLocaleTimeString('fr-FR')}${stay>0?' · resté '+dur(stay):''}</small></li>`}).join('');
-  $('aDrw').innerHTML=`<div class="dh"><div style="min-width:0;flex:1"><h3>👤 ${esc(v.lic.email)}</h3><p>${fmtDT2(v.t)}${v.tl>v.t?' → '+hm(v.tl)+' · '+dur(v.tl-v.t):''}</p><span class="ax-vp ${v.live?'on':v.closed?'off':''}">${vEnd(v)}</span></div><button class="x" onclick="actDrwClose()">✕</button></div>
+    if(x.kind==='bg')return `<li class="bg"><b>💤 Passé en arrière-plan</b><small>${hmz(x.t,v,1)}</small></li>`;
+    if(x.kind==='off')return `<li class="off"><b>🔴 ${esc((OFFR[x.r]||'fermé').replace(/^./,c=>c.toUpperCase()))}</b><small>${hmz(x.t,v,1)}</small></li>`;
+    const g=pageOf(x),st=satOf(x);return `<li><b>${g.ic} ${esc(g.nm)}</b><span class="where">${pic} ${esc(x.lic.produit)}${st?' › Satellite '+satIc(st)+' '+esc(st):''}</span><small>${hmz(x.t,v,1)}${stay>0?' · resté '+dur(stay):''}</small></li>`}).join('');
+  $('aDrw').innerHTML=`<div class="dh"><div style="min-width:0;flex:1"><h3>👤 ${esc(v.lic.email)}</h3><p>${dtz(v.t,v)}${v.tl>v.t?' → '+hmz(v.tl,v)+' · '+dur(v.tl-v.t):''}</p><span class="ax-vp ${v.live?'on':v.closed?'off':''}">${vEnd(v)}</span></div><button class="x" onclick="actDrwClose()">✕</button></div>
     <div class="db"><div class="ax-kv">
       <span>${pic} Logiciel</span><b>${esc(v.lic.produit)}</b>
       <span>🧩 Satellites</span><b>${v.sats.size?[...v.sats].map(x=>satIc(x)+' '+esc(x)).join(', '):'aucun (application principale)'}</b>
@@ -2577,7 +2603,7 @@ function actVisit(id){const v=AVMAP[id];if(!v)return;ASELV=id;document.querySele
     <div class="ax-act"><button class="ghost sm" onclick="openLic('${v.lic.id}')">👤 Fiche client</button>${v.ip?`<button class="ghost sm" onclick="ipSteps('${esc(v.ip)}')">👣 Suivi des pas de l'IP</button>${ipCutBtns(v.ip)}`:''}</div>
     <div class="ax-h5">🧭 Parcours · ${v.np} page${v.np>1?'s':''}</div><ol class="ax-path2">${steps}</ol>
     <div class="ax-h5">↩︎ Autres visites du client ou de la même IP · ${others.length}</div>
-    ${others.length?others.map(x=>`<div class="ax-other" data-vid="${esc(x.id)}" onclick="actVisit(this.dataset.vid)"><span>${fmtDT2(x.t)} · ${DEVI[x.kind]} ${x.np} page${x.np>1?'s':''}${x.tl>x.t?' · '+dur(x.tl-x.t):''}</span><b>${x.lic.email===v.lic.email?'':esc(x.lic.email)}</b></div>`).join(''):'<div class="sub2">Première visite connue</div>'}</div>`;
+    ${others.length?others.map(x=>`<div class="ax-other" data-vid="${esc(x.id)}" onclick="actVisit(this.dataset.vid)"><span>${dtz(x.t,x)} · ${DEVI[x.kind]} ${x.np} page${x.np>1?'s':''}${x.tl>x.t?' · '+dur(x.tl-x.t):''}</span><b>${x.lic.email===v.lic.email?'':esc(x.lic.email)}</b></div>`).join(''):'<div class="sub2">Première visite connue</div>'}</div>`;
   $('aDrw').classList.add('open');$('aDrwBg').classList.add('on')}
 function actDrwClose(){ASELV=null;$('aDrw').classList.remove('open');$('aDrwBg').classList.remove('on');document.querySelectorAll('.ax-vis.sel').forEach(x=>x.classList.remove('sel'))}
 function actCsv(){const R=actRange(AFILTER),L=AVIS.filter(v=>v.t>=R.from&&v.t<=R.to).filter(vMatch);if(!L.length)return toast('Aucune visite à exporter','ko');
@@ -2601,7 +2627,7 @@ async function ipSteps(ip){const nm=ipLbl(ip);
     ${clients.length>1?`<div class="cf-imp" style="--ac:var(--ko)"><b>⚠ ${clients.length} clients différents</b> utilisent cette même adresse IP : ${clients.map(esc).join(', ')}.</div>`:''}
     <h4>Pages les plus vues</h4><div class="nvtop">${top.map(x=>`<div class="nvc" style="--pc:${x.m.col}"><div class="im">${x.m.ic}</div><div><b>${esc(x.m.nm)}</b><small>${x.n}× · ${ago(x.last)}</small></div></div>`).join('')}</div>
     <h4>Journal détaillé</h4><div class="nvl">${E.slice(0,120).map(a=>{const m=pageOf(a),[ic]=pm(a.lic.produit),day=new Date(a.t).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});const hd=day!==last?(last=day,`<div class="nvday">${day}</div>`):'';
-      return hd+`<div class="nvi" style="--pc:${m.col}"><div class="im">${m.ic}</div><div><b>${esc(m.nm)}</b>${pathHTML(a)}<small>👤 ${esc(a.lic.email)}</small></div><time>${new Date(a.t).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</time></div>`}).join('')}</div>
+      return hd+`<div class="nvi" style="--pc:${m.col}"><div class="im">${m.ic}</div><div><b>${esc(m.nm)}</b>${pathHTML(a)}<small>👤 ${esc(a.lic.email)}</small></div><time>${hmz(a.t,a)}</time></div>`}).join('')}</div>
     <div class="row" style="gap:8px;margin-top:12px"><button class="ghost sm" onclick="ipRename('${esc(ip)}').then(()=>ipSteps('${esc(ip)}'))">🏷️ ${nm?'Renommer l\'IP':'Nommer cette IP'}</button><button class="ghost sm" onclick="copyTxt('${esc(ip)}')">📋 Copier l'IP</button>${ipCutBtns(ip)}<button class="ghost sm${ipExcl(ip)?'':' danger'}" onclick="ipToggleExcl('${esc(ip)}',${!ipExcl(ip)}).then(()=>ipSteps('${esc(ip)}'))">${ipExcl(ip)?'✅ Réintégrer dans l\'activité':'🚫 Exclure de l\'activité'}</button></div>`}
 
 /* ═══════════ GÉRER LE SUIVI (activer/désactiver par licence) ═══════════ */
