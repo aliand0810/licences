@@ -450,6 +450,14 @@ main{min-width:0}
 .anL.unr{border-color:#ef4444;box-shadow:inset 4px 0 0 #ef4444}.anL img,.anL .ph{width:52px;height:52px;border-radius:10px;object-fit:cover;flex:none;display:grid;place-items:center;background:var(--glass2);font-size:1.4rem}
 .anL>div{flex:1;min-width:0}.anL b{display:block}.anL small{display:block;color:var(--mut);font-size:.8rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .anGal{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}.anGal img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;cursor:zoom-in}
+.anDet{display:flex;flex-direction:column;gap:14px}.anDetG{min-width:0}.anDetI{min-width:0}
+.anHero{display:block;width:100%;max-height:52vh;object-fit:contain;border-radius:14px;background:#000;cursor:zoom-in}.anHero.ph{height:220px;display:grid;place-items:center;font-size:4rem;background:var(--glass2)}
+.anDetG .anGal{display:flex;gap:8px;margin-top:8px;overflow-x:auto}.anDetG .anGal img{width:74px;height:74px;flex:none;opacity:.6;border:2px solid transparent}.anDetG .anGal img.on{opacity:1;border-color:var(--a1)}
+.anDesc{white-space:pre-wrap;font-size:.9rem;line-height:1.55;padding:12px;border-radius:12px;border:1px solid var(--bd);max-height:260px;overflow:auto}
+.anDetA{margin-top:14px;position:sticky;bottom:-20px;padding:12px 0 4px;background:linear-gradient(transparent,var(--panel) 30%)}
+.md.full .anDet{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(320px,1fr);gap:26px;align-items:start}
+.md.full .anHero{max-height:calc(100dvh - 300px)}.md.full .anDesc{max-height:none}
+@media(max-width:860px){.md.full .anDet{display:flex}.md.full .anHero{max-height:46vh}}
 .anKV{display:grid;grid-template-columns:140px 1fr;gap:6px 12px;font-size:.88rem;margin:12px 0}.anKV span{color:var(--mut)}
 @media(max-width:1100px){.anK{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:700px){.anK div:last-child{grid-column:1/-1}.anK{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.anK b{font-size:1.25rem}.anTabs{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.anTabs button{padding:10px}.anTabs small{display:none}.anTabs .rqAn{position:absolute;top:6px;right:6px;min-width:22px;height:22px;font-size:.72rem}.anG{grid-template-columns:1fr}.anKV{grid-template-columns:1fr}}
@@ -2012,12 +2020,12 @@ function annCard(a,on,i){const img=anImg((a.imgs||[])[0]),w=anWho(a),cc=ANCOL[a.
      :`<button class="btn sm" onclick="annOk('${a.id}',true)">✅ Publier + coordonnées</button><button class="ghost sm" onclick="annOk('${a.id}',false)">✅ Publier masqué</button><button class="ghost sm danger" onclick="annNo('${a.id}')">❌ Refuser</button>`}</div></div></div>`}
 function annView(id,on){const a=(on?ANNON:ANNW).find(x=>x.id===id);if(!a)return;const w=anWho(a),I=(a.imgs||[]).map(anImg).filter(Boolean),sid=I.length?imgSet(I):'';
   openModal(`<div class="md-h"><div class="pi" style="--pc:${ANCOL[a.cat]||'#64748b'}">${(ANCAT[a.cat]||'🏷️').split(' ')[0]}</div><div><h2>${esc(a.title||'')}</h2><span>${annEur(a.price)} · ${esc(ANCAT[a.cat]||'')} · ${on?'En ligne':'À valider'}</span></div><button class="x" onclick="closeModal()">✕</button></div>
-   <div class="md-b">${I.length?`<div class="anGal">${I.map((u,i)=>`<img src="${u}" onclick="imgView(null,${i},window._imgSets['${sid}'])">`).join('')}</div>`:''}
+   <div class="md-b"><div class="anDet"><div class="anDetG">${I.length?`<img class="anHero" id="anHero" src="${I[0]}" alt="" onclick="imgView(null,+(this.dataset.i||0),window._imgSets['${sid}'])">${I.length>1?`<div class="anGal">${I.map((u,i)=>`<img src="${u}" class="${i?'':'on'}" onclick="const h=$('anHero');h.src=this.src;h.dataset.i=${i};this.parentNode.querySelectorAll('img').forEach(x=>x.classList.toggle('on',x===this))">`).join('')}</div>`:''}`:`<div class="anHero ph">${(ANCAT[a.cat]||'🏷️').split(' ')[0]}</div>`}</div><div class="anDetI">
     <div class="anKV"><span>Envoyée par</span><b>${esc(w.n)} ${a.membre?'<span class="anTag mb">Membre ✓</span>':'<span class="anTag vi">Visiteur</span>'}</b><span>Téléphone</span><div>${w.ph?`<a href="tel:${esc(w.ph)}">${esc(w.ph)}</a>${w.wa?' · WhatsApp':''}`:'—'}</div><span>E-mail</span><div>${w.ml?`<a href="mailto:${esc(w.ml)}">${esc(w.ml)}</a>`:'—'}</div>
      <span>Ville</span><div>📍 ${esc(a.sCity||'—')}</div><span>État</span><div>${esc(a.cond||'—')}</div><span>Prix</span><div><b>${annEur(a.price)}</b>${a.oldPrice>a.price?` <s style="opacity:.6">${annEur(a.oldPrice)}</s>`:''}</div>
      <span>Déposée le</span><div>${fmtD(new Date(a.t))} (${anAgo(a.t)})</div><span>Référence</span><div class="anRef">${esc(a.id)}</div>${on?`<span>Coordonnées</span><div>${a.contact?'🔓 visibles sur le site':'🔒 masquées (messagerie)'}</div>`:''}</div>
-    <label>Description</label><div style="white-space:pre-wrap;font-size:.9rem;line-height:1.5;padding:12px;border-radius:12px;border:1px solid var(--bd);max-height:260px;overflow:auto">${esc(a.desc||'—')}</div>
-    <div class="acts2" style="margin-top:14px">${on?`<a class="btn" style="text-decoration:none" href="annonces/#${encodeURIComponent(a.id)}" target="_blank" rel="noopener">👁 Voir sur le site</a><button class="ghost danger" onclick="closeModal();annDel('${a.id}')">🗑️ Retirer du site</button>`
+    <label>Description</label><div class="anDesc">${esc(a.desc||'—')}</div></div></div>
+    <div class="acts2 anDetA">${on?`<a class="btn" style="text-decoration:none" href="annonces/#${encodeURIComponent(a.id)}" target="_blank" rel="noopener">👁 Voir sur le site</a><button class="ghost danger" onclick="closeModal();annDel('${a.id}')">🗑️ Retirer du site</button>`
       :`<button class="btn" onclick="closeModal();annOk('${a.id}',true)">✅ Publier + coordonnées</button><button class="ghost" onclick="closeModal();annOk('${a.id}',false)">✅ Publier masqué</button><button class="ghost danger" onclick="closeModal();annNo('${a.id}')">❌ Refuser</button>`}</div></div>`)}
 function anDraw(){const on=ANTAB==='on',isAd=ANTAB==='wait'||on,src=on?ANNON:ANNW;
   if($('anCat')){$('anCat').style.display=isAd?'':'none';const cats=[...new Set(src.map(a=>a.cat||'autre'))];
