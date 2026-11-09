@@ -1177,11 +1177,28 @@ async function ghPut(data,sha,msg){const b={message:msg,content:btoa(unescape(en
 /* ── Firebase ── */
 const FB=()=>(C().fbUrl||FB_DEF.fbUrl).replace(/\/+$/,'');
 const FBKEY=()=>C().fbKey||FB_DEF.fbKey;
-async function fbTok(){if(FBT&&FBT.exp>Date.now())return FBT.t;
-  if(!C().fbMail||!C().fbPass)throw new Error('Ajoute ton e-mail et mot de passe admin Firebase dans Réglages');
-  const r=await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key='+FBKEY(),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:C().fbMail,password:C().fbPass,returnSecureToken:true})});
-  const j=await r.json();if(!r.ok)throw new Error('Firebase : connexion refusée ('+(j.error&&j.error.message||r.status)+')');
-  FBT={t:j.idToken,exp:Date.now()+50*6e4};return FBT.t}
+// ── Connexion Firebase : une seule vérification du mot de passe, puis renouvellement par jeton ──
+// (Google limite le nombre de vérifications de mot de passe : on garde la session et on la renouvelle sans mot de passe)
+let FBP=null;const FBTK='licFbTok',FBCD='licFbCool';
+const fbSave=o=>{try{o?localStorage.setItem(FBTK,JSON.stringify(o)):localStorage.removeItem(FBTK)}catch(e){}};
+function fbForget(){FBT=null;fbSave(null)}
+function fbCool(){try{const t=+localStorage.getItem(FBCD)||0;return t>Date.now()?t:0}catch(e){return 0}}
+async function fbTok(){if(FBT&&FBT.exp>Date.now())return FBT.t;if(FBP)return FBP;
+  FBP=(async()=>{const mail=C().fbMail;if(!mail||!C().fbPass)throw new Error('Ajoute ton e-mail et mot de passe admin Firebase dans Réglages');
+    let st=null;try{st=JSON.parse(localStorage.getItem(FBTK)||'null')}catch(e){}
+    if(st&&st.m===mail&&st.t&&st.exp>Date.now()){FBT={t:st.t,exp:st.exp};return st.t}
+    if(st&&st.m===mail&&st.rt){// renouvellement sans mot de passe
+      try{const r=await fetch('https://securetoken.googleapis.com/v1/token?key='+FBKEY(),{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'grant_type=refresh_token&refresh_token='+encodeURIComponent(st.rt)});
+        const j=await r.json();if(r.ok&&j.id_token){const exp=Date.now()+Math.max(60,(+j.expires_in||3600)-300)*1000;FBT={t:j.id_token,exp};fbSave({m:mail,t:j.id_token,rt:j.refresh_token||st.rt,exp});return j.id_token}}catch(e){}}
+    const cd=fbCool();if(cd)throw new Error(`Firebase : trop de connexions, Google bloque temporairement — nouvel essai possible vers ${new Date(cd).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}`);
+    const r=await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key='+FBKEY(),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:mail,password:C().fbPass,returnSecureToken:true})});
+    const j=await r.json();if(!r.ok){const m=(j.error&&j.error.message)||String(r.status);
+      if(/QUOTA_EXCEEDED|TOO_MANY_ATTEMPTS/.test(m)){const until=Date.now()+20*60000;try{localStorage.setItem(FBCD,String(until))}catch(e){}
+        throw new Error(`Firebase : trop de connexions — Google bloque temporairement la vérification du mot de passe. Patiente jusqu'à ${new Date(until).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})} sans recharger la page.`)}
+      throw new Error('Firebase : connexion refusée ('+m+')')}
+    try{localStorage.removeItem(FBCD)}catch(e){}
+    const exp=Date.now()+Math.max(60,(+j.expiresIn||3600)-300)*1000;FBT={t:j.idToken,exp};fbSave({m:mail,t:j.idToken,rt:j.refreshToken,exp});return j.idToken})();
+  try{return await FBP}finally{FBP=null}}
 async function fbPut(path,val){const t=await fbTok();const r=await fetch(`${FB()}/${path}.json?auth=${t}`,{method:val===null?'DELETE':'PUT',body:JSON.stringify(val)});
   if(!r.ok)throw new Error('Firebase '+r.status+' — vérifie les règles publiées')}
 async function fbGet(path){try{const r=await fetch(`${FB()}/${path}.json?t=${Date.now()}`);return r.ok?await r.json():null}catch(e){return null}}
@@ -1426,7 +1443,7 @@ function mailKey(mail,prod,key){location.href=`mailto:${mail}?subject=${encodeUR
 /* ── réglages ── */
 const CFG_KEYS=['tok','own','rep','pth','sec','prods','fbUrl','fbKey','fbMail','fbPass'];
 function initCfg(){renderConn()}
-async function saveCfg(){if(!UNLOCKED)return showLock();const c={...C()};CFG_KEYS.forEach(k=>c[k]=$(k).value.trim());localStorage.setItem('licCfg',JSON.stringify(c));FBT=null;FBOK=false;renderConn();renderTiles();
+async function saveCfg(){if(!UNLOCKED)return showLock();const c={...C()};CFG_KEYS.forEach(k=>c[k]=$(k).value.trim());localStorage.setItem('licCfg',JSON.stringify(c));fbForget();FBOK=false;renderConn();renderTiles();
   const d=await diag().catch(()=>'GitHub injoignable');if(d)return toast(d,'ko');
   if(c.fbMail&&c.fbPass){try{await fbTok();FBOK=true;renderConn();toast('✔ GitHub et Firebase connectés')}catch(e){return toast(e.message,'ko')}}else toast('✔ GitHub connecté — ajoute Firebase pour limiter les appareils');
   load(true);setDev(DEVN)}
@@ -1469,7 +1486,8 @@ function renderAppAdm(){const p=$('acProd')&&$('acProd').value;if(!$('aaStatus')
   $('aaId').value=a?a.id:'';$('aaPwd').value=a?a.pwd:'';
   $('aaStatus').innerHTML=a?`✅ Compte <b>${esc(a.id)}</b> enregistré pour ${esc(p)} : les inscriptions acceptées sont activées immédiatement`:`⚪ Non renseigné : les inscriptions acceptées seront activées à la prochaine ouverture de ${esc(p)} par l'administrateur`}
 async function appCfgDe(p){if(!APPCFG[p]){try{const{data}=await ghGet();APPCFG=data.configs||{}}catch(e){}}const c=APPCFG[p];if(!c)throw new Error('Configuration Firebase de '+p+' absente (Réglages › Connexion des applications)');return c}
-async function appTok(p){const a=appAdm(p);if(!a)throw new Error('Compte administrateur de '+p+' non renseigné');if(APPT[p]&&APPT[p].exp>Date.now())return APPT[p];
+const APPTP={};async function appTok(p){if(APPT[p]&&APPT[p].exp>Date.now())return APPT[p];if(APPTP[p])return APPTP[p];APPTP[p]=appTok0(p);try{return await APPTP[p]}finally{delete APPTP[p]}}
+async function appTok0(p){const a=appAdm(p);if(!a)throw new Error('Compte administrateur de '+p+' non renseigné');
   const c=await appCfgDe(p);let email=a.id;
   if(!email.includes('@')){const r=await fetch(`https://firestore.googleapis.com/v1/projects/${c.projectId}/databases/(default)/documents/logins/${encodeURIComponent(a.id.toLowerCase())}?key=${c.apiKey}`);
     if(!r.ok)throw new Error('Identifiant administrateur inconnu dans '+p);const j=await r.json();email=j.fields&&j.fields.email&&j.fields.email.stringValue;if(!email)throw new Error('Identifiant administrateur inconnu dans '+p)}
@@ -1588,7 +1606,7 @@ async function changeSetPass(){const o=prompt('Mot de passe actuel :');if(o===nu
   const n=prompt('Nouveau mot de passe (6 caractères minimum) :');if(!n)return;if(n.length<6)return toast('6 caractères minimum','ko');if(prompt('Confirme le nouveau mot de passe :')!==n)return toast('Les mots de passe sont différents','ko');
   const salt=hex(crypto.getRandomValues(new Uint8Array(16)));localStorage.setItem('licAdmin',JSON.stringify({salt,hash:await passHash(n,salt)}));toast('✔ Mot de passe modifié')}
 function forgotSet(){if(!confirm("Réinitialiser le mot de passe ?\n\nPar sécurité, ton token GitHub, ton secret maître et ton mot de passe Firebase seront effacés de cet appareil. Tu devras les ressaisir (le secret maître doit être EXACTEMENT le même, sinon les clés changeront).\n\nTes licences sur GitHub ne sont pas touchées."))return;
-  const c=C();delete c.tok;delete c.sec;delete c.fbPass;delete c.appAdm;localStorage.setItem('licCfg',JSON.stringify(c));localStorage.removeItem('licAdmin');FBT=null;FBOK=false;renderConn();showLock();toast('Mot de passe réinitialisé — crée-en un nouveau')}
+  const c=C();delete c.tok;delete c.sec;delete c.fbPass;delete c.appAdm;localStorage.setItem('licCfg',JSON.stringify(c));localStorage.removeItem('licAdmin');fbForget();FBOK=false;renderConn();showLock();toast('Mot de passe réinitialisé — crée-en un nouveau')}
 
 /* ── Fenêtre modale ── */
 function mdFullPref(){try{return localStorage.getItem('mdFull')!=='0'}catch(e){return true}}
@@ -1818,7 +1836,7 @@ async function importCfg(){if(!UNLOCKED)return showLock();
 async function doImport(){const parts=$('iCode').value.trim().replace(/\s+/g,'').split('.');if(parts.length!==4||parts[0]!=='LP1')return toast('Code de transfert invalide','ko');
   try{const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:ub64(parts[2])},await pbk($('iPass').value,ub64(parts[1])),ub64(parts[3]));
     const o=JSON.parse(new TextDecoder().decode(pt));localStorage.setItem('licCfg',JSON.stringify({...C(),...o.cfg}));if(o.sign)localStorage.setItem('licSign',o.sign);
-    FBT=null;FBOK=false;closeModal();fillCfg();renderConn();renderTiles();toast('✔ Réglages importés — vérification des clés…');await load(true);
+    fbForget();FBOK=false;closeModal();fillCfg();renderConn();renderTiles();toast('✔ Réglages importés — vérification des clés…');await load(true);
     if(C().fbMail&&C().fbPass)fbTok().then(()=>{FBOK=true;renderConn()}).catch(()=>{})}
   catch(e){toast('Mot de passe de transfert incorrect ou code abîmé','ko')}}
 
