@@ -1123,13 +1123,13 @@ kbd{display:inline-block;padding:2px 7px;border-radius:6px;border:1px solid var(
 <script>
 const $=id=>document.getElementById(id);
 const FB_DEF={fbUrl:'https://covo-licences-default-rtdb.europe-west1.firebasedatabase.app',fbKey:'AIzaSyBf93ZHmBf6qi6GbtUX-dQh-DGMgR6nIts'};
-const DEF_P='COVO Pro,Projets Pro,Gestion Terrain Pro,LivraPro,Mon Planning Pro,Onda Player,Bureau Virtuel Pro';
+const DEF_P='COVO Pro,Restauration Pro,Projets Pro,Gestion Terrain Pro,LivraPro,Mon Planning Pro,Onda Player,Bureau Virtuel Pro';
 /* logiciels ajoutés après coup : toujours proposés, même si la liste a été personnalisée dans les Réglages */
-const NEW_P=['Projets Pro'];
+const NEW_P=['Projets Pro','Restauration Pro'];
 const PAL=['#7c3aed','#06b6d4','#10b981','#f59e0b','#f43f5e','#3b82f6','#ec4899','#84cc16'];
-const PMETA={'COVO Pro':['🛒','#7c3aed'],'Gestion Terrain Pro':['🗺️','#10b981'],'LivraPro':['🚚','#f59e0b'],'Mon Planning Pro':['📅','#3b82f6'],'Onda Player':['📺','#ec4899'],'Bureau Virtuel Pro':['🖥️','#06b6d4'],'Projets Pro':['📁','#2a78d6']};
-const MICON={'Caisse':'💳','Gestion':'📦','Investissement':'📈','Finances':'💰','Historique':'🕘','Clôtures':'🔒','Fidélité':'🎁','Admin':'🛡️','Projets':'📁'};
-const DEF_MODS={'COVO Pro':['Caisse','Gestion','Investissement','Finances','Historique','Clôtures','Fidélité','Admin','Projets']};
+const PMETA={'COVO Pro':['🛒','#7c3aed'],'Restauration Pro':['🍽️','#ea580c'],'Gestion Terrain Pro':['🗺️','#10b981'],'LivraPro':['🚚','#f59e0b'],'Mon Planning Pro':['📅','#3b82f6'],'Onda Player':['📺','#ec4899'],'Bureau Virtuel Pro':['🖥️','#06b6d4'],'Projets Pro':['📁','#2a78d6']};
+const MICON={'Caisse':'💳','Gestion':'📦','Investissement':'📈','Finances':'💰','Historique':'🕘','Clôtures':'🔒','Fidélité':'🎁','Admin':'🛡️','Projets':'📁','Cuisine':'👨‍🍳'};
+const DEF_MODS={'COVO Pro':['Caisse','Gestion','Investissement','Finances','Historique','Clôtures','Fidélité','Admin','Projets'],'Restauration Pro':['Cuisine','Caisse','Gestion','Investissement','Finances','Historique','Clôtures','Fidélité','Admin','Projets']};
 /* Projets Pro (satellite) : inclus d'office dans les licences COVO Pro créées avant son arrivée (sans le repère « pv ») */
 const modsOf=l=>l&&l.produit==='COVO Pro'&&Array.isArray(l.modules)&&!l.pv&&!l.modules.includes('Projets')?[...l.modules,'Projets']:l&&l.modules;
 const ongOf=l=>l&&l.produit==='COVO Pro'&&Array.isArray(l.onglets)&&!l.pv&&!l.onglets.includes('projets')?[...l.onglets,'projets']:l&&l.onglets;
@@ -1138,6 +1138,7 @@ const TABS_BASE={'Mon Planning Pro':[['tab-planning','📅','Planning','Agenda e
   'LivraPro':[['list','📋','Liste','Liste des livraisons'],['map','🗺️','Carte','Carte des livraisons'],['route','🧭','Route','Itinéraire optimisé'],['settings','⚙️','Réglages','Paramètres de l\'application']],
   'COVO Pro':[['catalogue','🗂️','Catalogue','Rayons, prix, site web'],['stats','📊','Statistiques','Ventes et graphiques'],['predictions','☂️','Prédictions','Prévisions et ruptures'],['retours','📦','Gestion','Retours · Stocks · Achats'],
   ['gestionhub','⚙️','Gestion Pro','Heures · Inventaire · Stock','Gestion'],['historique','🧾','Historique','Tickets de caisse','Historique'],['clotures','🗓️','Clôtures','Fins de journée','Clôtures'],['paiements','💸','Paiements','Paie et finances','Finances'],['projets','📁','Projets Pro','Projets · budget · votes','Projets']]};
+TABS_BASE['Restauration Pro']=JSON.parse(JSON.stringify(TABS_BASE['COVO Pro']));
 let TABS_DEF=JSON.parse(JSON.stringify(TABS_BASE)),TABCAT={};
 const PRINT_TAB=['__print','🖨️','Imprimer','Boutons d\'impression et Ctrl+P'];
 function mergeTabs(cat){TABCAT=cat||{};TABS_DEF=JSON.parse(JSON.stringify(TABS_BASE));Object.entries(TABCAT).forEach(([p,l])=>{if(Array.isArray(l))TABS_DEF[p]=l.filter(t=>t[0]!=='__print')});
@@ -1151,7 +1152,7 @@ let LIC=[],BAN=[],DEV={},EXC={},EXCN=0,FILTER='all',PER=30,EDIT=null,KEEP=false,
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function toast(t,c='ok'){const e=$('toast');e.textContent=t;e.className='toast show '+c;clearTimeout(e._t);e._t=setTimeout(()=>e.className='toast',3200)}
 const prods=()=>{const l=(C().prods||DEF_P).split(',').map(s=>s.trim()).filter(Boolean);NEW_P.forEach(p=>{if(!l.includes(p)){const i=l.indexOf('COVO Pro');i>=0?l.splice(i+1,0,p):l.push(p)}});return l};
-function MODS(){let m;try{m=C().mods?JSON.parse(C().mods):DEF_MODS}catch(e){m=DEF_MODS}if(m&&Array.isArray(m['COVO Pro'])&&!m['COVO Pro'].includes('Projets'))m={...m,'COVO Pro':[...m['COVO Pro'],'Projets']};return m}
+function MODS(){let m;try{m=C().mods?JSON.parse(C().mods):DEF_MODS}catch(e){m=DEF_MODS}if(m&&Array.isArray(m['COVO Pro'])&&!m['COVO Pro'].includes('Projets'))m={...m,'COVO Pro':[...m['COVO Pro'],'Projets']};if(m&&!m['Restauration Pro'])m={...m,'Restauration Pro':DEF_MODS['Restauration Pro']};return m}
 const pm=p=>PMETA[p]||['📦',PAL[Math.max(0,prods().indexOf(p))%PAL.length]];
 
 /* ── navigation ── */
@@ -2820,6 +2821,8 @@ const APPS_DEF=[
  {id:'admin',n:'Admin Pro',ic:'🛡️',c:'#8b5cf6',u:GH+'Admins-PRO/',g:'Suite COVO Pro',m:'Admin'},
  {id:'proj',n:'Projets Pro',ic:'📁',c:'#2a78d6',u:GH+'Projets-Pro/',g:'Suite COVO Pro',m:'Projets',p:'Projets Pro'},
  {id:'visites',n:'Visites Pro',ic:'👁️',c:'#14b8a6',u:GH+'Visites-Pro/',g:'Suite COVO Pro'},
+ {id:'resto',n:'Restauration Pro',ic:'🍽️',c:'#ea580c',u:GH+'Restauration-Pro/app/',g:'Restauration Pro',d:'Caisse, salle & cuisine',p:'Restauration Pro'},
+ {id:'resto-cuisine',n:'Cuisine Pro',ic:'👨‍🍳',c:'#f97316',u:GH+'Restauration-Pro/cuisine/',g:'Restauration Pro',d:'Écran cuisine, fiches, HACCP',m:'Cuisine',mp:'Restauration Pro'},
  {id:'planning',n:'Mon Planning Pro',ic:'📅',c:'#3b82f6',u:GH+'Agendpro/',g:'Logiciels',p:'Mon Planning Pro'},
  {id:'bureau',n:'Bureau Virtuel Pro',ic:'🖥️',c:'#06b6d4',u:GH+'plate-forme-professionnelle-/',g:'Logiciels',p:'Bureau Virtuel Pro'},
  {id:'onda',n:'Onda Player',ic:'📺',c:'#ec4899',u:GH+'Onda-player/',g:'Logiciels',p:'Onda Player'},
@@ -2832,15 +2835,16 @@ const APPS_DEF=[
  {id:'licence',n:'Licence Pro',ic:'🔑',c:'#7c3aed',u:GH+'licences/',g:'Outils',d:'Cette application'}];
 let APPS=null,APED=false;
 try{const a=JSON.parse(localStorage.getItem('licApps')||'null');if(Array.isArray(a))APPS=a}catch(e){}
-const appsAll=()=>{const L=(APPS||APPS_DEF).slice(),have=new Set(L.map(a=>a.p||a.n));
+const NEW_APPS=['resto','resto-cuisine'];
+const appsAll=()=>{const L=(APPS||APPS_DEF).slice();if(APPS)NEW_APPS.forEach(id=>{if(!L.some(a=>a.id===id)&&!(APPS._rm||[]).includes(id)){const d=APPS_DEF.find(a=>a.id===id);if(d)L.push(d)}});const have=new Set(L.map(a=>a.p||a.n));
   prods().forEach(p=>{if(!have.has(p)&&!L.some(a=>a.n===p))L.push({id:'p_'+p.replace(/\W+/g,'_'),n:p,ic:pm(p)[0],c:pm(p)[1],u:'',g:'Logiciels',p,auto:1})});return L};
 const appHost=u=>{try{const x=new URL(u);return x.host+(x.pathname.length>1?x.pathname.replace(/\/$/,''):'')}catch(e){return''}};
 const okUrl=u=>/^https:\/\/[^\s"'<>]+$/i.test(u||'');
-function appCount(a){if(a.m)return LIC.filter(l=>l.produit==='COVO Pro'&&(modsOf(l)||DEF_MODS['COVO Pro']).includes(a.m)).length+(a.p?LIC.filter(l=>l.produit===a.p).length:0);
+function appCount(a){const mp=a.mp||'COVO Pro';if(a.m)return LIC.filter(l=>l.produit===mp&&(modsOf(l)||DEF_MODS[mp]).includes(a.m)).length+(a.p?LIC.filter(l=>l.produit===a.p).length:0);
   return a.p?LIC.filter(l=>l.produit===a.p).length:0}
 function renderApps(){const el=$('apList');if(!el)return;const q=($('apQ')?.value||'').trim().toLowerCase();
   if($('apEdBtn'))$('apEdBtn').textContent=APED?'✓ Terminer':'✏️ Modifier';
-  const L=appsAll().filter(a=>(APED||!a.hide)&&(!q||(a.n+' '+(a.u||'')+' '+(a.g||'')).toLowerCase().includes(q))),G=[...new Set(L.map(a=>a.g||'Autres'))];
+  const L=appsAll().filter(a=>a.g!=='_'&&(APED||!a.hide)&&(!q||(a.n+' '+(a.u||'')+' '+(a.g||'')).toLowerCase().includes(q))),G=[...new Set(L.map(a=>a.g||'Autres'))];
   el.innerHTML=L.length?G.map(g=>{const A=L.filter(a=>(a.g||'Autres')===g);return `<div class="apG"><h3>${esc(g)} <i>· ${A.length}</i></h3><div class="apL">${A.map((a,i)=>{const n=appCount(a),off=!okUrl(a.u);
     return `<div class="apT ${off?'off':''} ${a.hide?'hid':''}" style="--pc:${esc(a.c||'#7c3aed')};animation-delay:${i*.02}s" role="link" tabindex="0" title="${off?'Adresse à renseigner':'Ouvrir '+esc(a.n)}" onclick="appOpen('${esc(a.id)}')" onkeydown="event.key==='Enter'&&appOpen('${esc(a.id)}')">
       ${APED?`<span class="apE"><button title="Modifier" onclick="event.stopPropagation();appEdit('${esc(a.id)}')">✏️</button><button title="${a.hide?'Afficher':'Masquer'}" onclick="event.stopPropagation();appHide('${esc(a.id)}')">${a.hide?'👁':'🙈'}</button></span>`:''}
@@ -2859,7 +2863,7 @@ function appSave(id){const n=$('apN').value.trim(),u=$('apU').value.trim();if(!n
   const L=appsAll().map(x=>{const{auto,...r}=x;return r}),o={id:id||('a'+Date.now().toString(36)),n,ic:$('apIc').value.trim()||'📦',c:$('apC').value,u:okUrl(u)?u:'',g:$('apG').value.trim()||'Autres',d:$('apD').value.trim()};
   const i=L.findIndex(x=>x.id===id);if(i>=0)L[i]={...L[i],...o};else L.push(o);APPS=L;closeModal();appPersist('🧩 Application enregistrée')}
 function appHide(id){const L=appsAll().map(x=>{const{auto,...r}=x;return r}),a=L.find(x=>x.id===id);if(!a)return;a.hide=!a.hide;if(!a.hide)delete a.hide;APPS=L;appPersist(a.hide?'🙈 Application masquée':'👁 Application affichée')}
-function appDel(id){if(!confirm('Retirer cette application du catalogue ?'))return;APPS=appsAll().filter(x=>x.id!==id).map(x=>{const{auto,...r}=x;return r});closeModal();appPersist('Application retirée')}
+function appDel(id){if(!confirm('Retirer cette application du catalogue ?'))return;APPS=appsAll().filter(x=>x.id!==id).map(x=>{const{auto,...r}=x;return r});if(NEW_APPS.includes(id))APPS.push({id,n:'',hide:1,g:'_',u:''});closeModal();appPersist('Application retirée')}
 async function appPersist(msg){try{APPS?localStorage.setItem('licApps',JSON.stringify(APPS)):localStorage.removeItem('licApps')}catch(e){}renderApps();toast(msg);
   try{if(!C().tok)return;const{data,sha}=await ghGet();if(APPS)data.apps=APPS;else delete data.apps;await ghPut(data,sha,'Catalogue des applications')}catch(e){toast('Enregistré sur cet appareil (GitHub : '+e.message+')','ko')}}
 // menu complet (téléphone)
