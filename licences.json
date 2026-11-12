@@ -159,6 +159,35 @@
       "google": null,
       "ongletsOff": null,
       "ongletsNoms": null
+    },
+    {
+      "id": "04900c606129c087d546b9bcf2090c4392092890d4904311a134b8389e88125f",
+      "email": "aliand0810@gmail.com",
+      "produit": "Restauration Pro",
+      "hash": "e5ea21322c48214ba026af82d87ca7cc9f8c34378be17de1cbae944929e5416b",
+      "cree": "2026-11-12",
+      "expire": null,
+      "actif": true,
+      "modules": [
+        "Cuisine",
+        "Caisse",
+        "Gestion",
+        "Investissement",
+        "Finances",
+        "Historique",
+        "Clôtures",
+        "Fidélité",
+        "Admin",
+        "Projets"
+      ],
+      "maxDevices": null,
+      "sav": {
+        "on": false
+      },
+      "onglets": null,
+      "google": null,
+      "ongletsOff": null,
+      "ongletsNoms": null
     }
   ],
   "bannis": [],
