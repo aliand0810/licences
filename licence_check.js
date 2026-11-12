@@ -155,22 +155,40 @@
       ['https://api64.ipify.org?format=json',j=>({ip:j.ip,loc:''})]];
     let n=null;for(const[u,f]of src){try{const r=f(await get(u));if(r.ip){n=r;break}}catch(e){}}
     n=n||{ip:'',loc:'',err:1};n.at=Date.now();if(n.ip)try{sessionStorage.setItem('licNet',JSON.stringify(n))}catch(e){}return n}
+  // ── Limite d'appareils : on compte les appareils CONNECTÉS, pas ceux enregistrés ──
+  //  • Actifs ≤ Autorisés → autorisé (même si plus d'appareils sont enregistrés : tolérance)
+  //  • Actifs > Autorisés → refusé + alerte « Licence en trop » chez le vendeur
+  // Un appareil est « connecté » s'il a donné signe de vie depuis moins de 6 min (battement toutes les 2 min).
+  const ACTW=6*6e4,BEAT=2*6e4;
+  const isAct=(d,now)=>!!d&&(d.seen||d.t||0)>now-ACTW&&!((d.off||0)>=(d.seen||d.t||0));
+  let HB=null,HBK='';
+  function beat(fb,lic,k){const key=lic+'/'+k;if(HBK===key)return;HBK=key;clearInterval(HB);
+    const put=(f)=>fetch(`${fb}/devices/${lic}/${k}/${f}.json`,{method:'PUT',keepalive:true,body:JSON.stringify(Date.now())}).catch(()=>{});
+    HB=setInterval(()=>put('seen'),BEAT);
+    addEventListener('pagehide',()=>{if(!FRAMED)put('off')});
+    addEventListener('pageshow',e=>{if(e.persisted)put('seen')});
+    document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')put('seen')})}
   async function device(fb,l){
-    fb=fb.replace(/\/+$/,'');const me=await devId(),flag='licSlot_'+l.id;
+    fb=fb.replace(/\/+$/,'');const me=await devId(),flag='licSlot_'+l.id,max=+l.maxDevices||0,now=Date.now();
     let list;try{list=await (await fetch(`${fb}/devices/${l.id}.json`,{cache:'no-store'})).json()||{}}catch(e){return{ok:true}} // Firebase injoignable : on tolère
-    const k0=Object.keys(list).find(k=>list[k]&&list[k].id===me);
-    if(k0){const d=list[k0];if(!d.lastIp||Date.now()-(d.seen||0)>6e5){const n=await netInfo();
-        const hist=[{t:Date.now(),ip:n.ip,loc:n.loc},...(Array.isArray(d.hist)?d.hist:[])].slice(0,15);
-        fetch(`${fb}/devices/${l.id}/${k0}.json`,{method:'PUT',body:JSON.stringify({...d,seen:Date.now(),lastIp:n.ip,lastLoc:n.loc,ua:UA(),hist})}).catch(()=>{})}
-      return{ok:true}}
-    if(localStorage.getItem(flag))return{ok:false,msg:'Cet appareil a été retiré de la licence'};
+    const keys=Object.keys(list).filter(k=>list[k]),k0=keys.find(k=>list[k].id===me);
+    const actOthers=keys.filter(k=>list[k].id!==me&&isAct(list[k],now)).length;
     const n=await netInfo();
-    for(let i=0;i<l.maxDevices;i++){const k=String(i).padStart(2,'0');if(list[k])continue;
-      const r=await fetch(`${fb}/devices/${l.id}/${k}.json`,{method:'PUT',body:JSON.stringify({id:me,t:Date.now(),seen:Date.now(),ua:UA(),ip:n.ip,loc:n.loc,lastIp:n.ip,lastLoc:n.loc,hist:[{t:Date.now(),ip:n.ip,loc:n.loc}]})});
-      if(r.ok){localStorage.setItem(flag,k);return{ok:true}}}
-    // Licence en trop : on signale la tentative au vendeur (avec IP)
-    try{await fetch(`${fb}/excess/${l.id}/${me}.json`,{method:'PUT',body:JSON.stringify({t:Date.now(),ua:UA(),ip:n.ip,loc:n.loc})})}catch(e){}
-    return{ok:false,msg:`Licence en trop : ce code est déjà utilisé sur ${l.maxDevices} appareil${l.maxDevices>1?'s':''}. Contactez le vendeur.`};
+    const refuse=async()=>{try{await fetch(`${fb}/excess/${l.id}/${me}.json`,{method:'PUT',body:JSON.stringify({t:Date.now(),ua:UA(),ip:n.ip,loc:n.loc,act:actOthers,max,reg:keys.length,known:!!k0})})}catch(e){}
+      return{ok:false,msg:`Licence en trop : ${actOthers} appareil${actOthers>1?'s sont':' est'} déjà connecté${actOthers>1?'s':''} avec ce code (maximum ${max}). Fermez le logiciel sur un autre appareil, puis réessayez dans quelques minutes.`}};
+    if(k0){// appareil déjà enregistré
+      if(actOthers>=max)return refuse();
+      const d=list[k0],hist=(!d.lastIp||n.ip!==d.lastIp||now-(d.seen||0)>6e5)?[{t:now,ip:n.ip,loc:n.loc},...(Array.isArray(d.hist)?d.hist:[])].slice(0,15):d.hist;
+      fetch(`${fb}/devices/${l.id}/${k0}.json`,{method:'PUT',body:JSON.stringify({...d,seen:now,off:null,lastIp:n.ip,lastLoc:n.loc,ua:UA(),hist})}).catch(()=>{});
+      beat(fb,l.id,k0);return{ok:true}}
+    if(localStorage.getItem(flag))return{ok:false,msg:'Cet appareil a été retiré de la licence'}; // retiré par le vendeur
+    if(actOthers>=max)return refuse();
+    // nouvel appareil : première place libre (le nombre d'appareils enregistrés peut dépasser la limite, seuls les connectés comptent)
+    for(let i=0;i<100;i++){const k=String(i).padStart(2,'0');if(list[k])continue;
+      const r=await fetch(`${fb}/devices/${l.id}/${k}.json`,{method:'PUT',body:JSON.stringify({id:me,t:now,seen:now,ua:UA(),ip:n.ip,loc:n.loc,lastIp:n.ip,lastLoc:n.loc,hist:[{t:now,ip:n.ip,loc:n.loc}]})});
+      if(r.ok){localStorage.setItem(flag,k);beat(fb,l.id,k);return{ok:true}}
+      if(i>=max)break}// règles Firebase pas encore republiées : places limitées
+    return refuse();
   }
 
   // ── Réglages injectés par Licence Pro ──

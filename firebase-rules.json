@@ -11,7 +11,7 @@
       "$lic": {
         ".write": "auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63'",
         "$slot": {
-          ".write": "newData.exists() && $slot.length === 2 && root.child('limits').child($lic).exists() && $slot < root.child('limits').child($lic).val() && (!data.exists() || data.child('id').val() === newData.child('id').val())",
+          ".write": "newData.exists() && $slot.length === 2 && $slot.matches(/^[0-9][0-9]$/) && root.child('limits').child($lic).exists() && (!data.exists() || data.child('id').val() === newData.child('id').val())",
           ".validate": "newData.hasChildren(['id','t']) && newData.child('id').isString() && newData.child('id').val().length <= 40"
         }
       }
