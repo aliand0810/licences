@@ -205,6 +205,7 @@
   },
   "google": {},
   "domaines": [
-    "aliand0810.github.io"
+    "aliand0810.github.io",
+    "*.covo-trv.store"
   ]
 }
