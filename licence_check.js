@@ -573,6 +573,48 @@
   async function savShot(){const st=await navigator.mediaDevices.getDisplayMedia({video:true,audio:false});const v=document.createElement('video');v.srcObject=st;v.muted=true;await v.play();await new Promise(r=>setTimeout(r,450));const c=document.createElement('canvas');c.width=v.videoWidth;c.height=v.videoHeight;c.getContext('2d').drawImage(v,0,0);st.getTracks().forEach(t=>t.stop());return c.toDataURL('image/png')}
   function imgZoom(u){if(!IMGRX.test(u))return;const o=document.createElement('div');o.style.cssText='position:fixed;inset:0;z-index:2147483647;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;padding:16px;cursor:zoom-out';const i=document.createElement('img');i.src=u;i.style.cssText='max-width:100%;max-height:100%;border-radius:10px';o.appendChild(i);o.onclick=()=>o.remove();document.body.appendChild(o)}
   const msgsOf=t=>[{from:'client',text:t.message,t:t.t,img:t.img,files:t.files,drive:t.drive},...Object.values(t.msgs||{})].filter(m=>m&&m.text).sort((a,b)=>a.t-b.t);
+  // ── ✍️ Assistant d'écriture : 🎤 dictée vocale, ✨ correction, 🪄 reformulation ──
+  // waBind(textarea, conteneur, {role:'sav'|'client', btn:'style inline', cls:'classe', note:true})
+  const WA_SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  // commandes vocales : « virgule », « point » (en fin de phrase), « point d'interrogation », « à la ligne »…
+  const WL='(?<!\\p{L})',WR='(?!\\p{L})';
+  const WA_CMD=[[`\\s*${WL}point (?:d'|d’)interrogation${WR}`,'?'],[`\\s*${WL}point (?:d'|d’)exclamation${WR}`,'!'],[`\\s*${WL}points? de suspension${WR}`,'…'],[`\\s*${WL}point[- ]virgule${WR}`,';'],[`\\s*${WL}deux[- ]points${WR}`,':'],[`\\s*${WL}virgule${WR}`,','],
+    [`\\s*${WL}point (?:à la ligne|à la ligne suivante)${WR}\\s*`,'.\n'],[`\\s*${WL}(?:à la ligne|retour à la ligne|nouvelle ligne|nouveau paragraphe)${WR}\\s*`,'\n'],[`\\s*${WL}point(?: final)?\\s*$`,'.']].map(([r,v])=>[new RegExp(r,'giu'),v]);
+  function waCmd(t){t=String(t||'');WA_CMD.forEach(([r,v])=>{t=t.replace(r,v)});return t}
+  function waTidy(t){t=String(t||'').replace(/[ \t]+/g,' ').replace(/ *\n */g,'\n').replace(/\s+([,.…])/g,'$1').replace(/\s*([?!:;])/g,' $1').replace(/([,.;:!?…])(?=[^\s\d.,!?…)»"'\n])/g,'$1 ')
+      .replace(/(^|[.!?…]\s+|\n)([a-zàâçéèêëîïôûùüÿœ])/g,(m,a,b)=>a+b.toUpperCase()).replace(/\bi\b/g,'I').trim();
+    t=t.replace(/ ([?!:;])/g,' $1');if(t&&!/[.!?…:)»"]$/.test(t))t+='.';return t}
+  async function waLT(t){const r=await fetch('https://api.languagetool.org/v2/check',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'language=fr&text='+encodeURIComponent(t)});
+    if(!r.ok)throw new Error('correcteur indisponible');const j=await r.json();let out=t,n=0;
+    (j.matches||[]).filter(m=>m.replacements&&m.replacements.length).sort((a,b)=>b.offset-a.offset).forEach(m=>{out=out.slice(0,m.offset)+m.replacements[0].value+out.slice(m.offset+m.length);n++});return{t:out,n}}
+  const WA_OPEN=/^(bonjour|bonsoir|madame|monsieur|cher|chère|salut|hello)\b/i,WA_CLOSE=/(cordialement|bonne journée|bonne soirée|merci( d'avance| par avance| beaucoup)?)[.!]?\s*([\s\S]{0,60})?$/i;
+  function waPolite(t,role){t=t.trim();if(!WA_OPEN.test(t))t='Bonjour,\n\n'+t;
+    if(!WA_CLOSE.test(t))t+=role==='sav'?'\n\nN\'hésitez pas à nous recontacter si besoin.\nCordialement,\nLe service après-vente':'\n\nMerci d\'avance pour votre aide.\nCordialement.';return t}
+  function waBind(ta,host,o){if(!ta||!host)return;o=o||{};const role=o.role||'client';let rec=null,on=false,hist=[];
+    const B=(k,ic,lb,tt)=>`<button type="button" data-wa="${k}" title="${tt}" ${o.cls?`class="${o.cls}"`:''} style="${o.btn||''}">${ic} <span>${lb}</span></button>`;
+    host.innerHTML=`<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">${WA_SR?B('mic','🎤','Dicter','Dicter le message à voix haute (dites « virgule », « point », « à la ligne »…)'):''}${B('fix','✨','Corriger','Corriger l\'orthographe, la grammaire et la ponctuation')}${B('pol','🪄','Formuler','Rendre le message poli et bien présenté')}${B('undo','↶','Annuler','Revenir au texte précédent')}<span data-wst style="font-size:12px;opacity:.8"></span></div>`;
+    const q=k=>host.querySelector(`[data-wa="${k}"]`),st=host.querySelector('[data-wst]'),say=(m,c)=>{st.textContent=m||'';st.style.color=c||''};
+    const push=()=>{hist.push(ta.value);if(hist.length>20)hist.shift();q('undo').style.display=''};q('undo').style.display='none';
+    const set=v=>{ta.value=v;ta.dispatchEvent(new Event('input',{bubbles:true}))};
+    q('undo').onclick=()=>{if(!hist.length)return;set(hist.pop());if(!hist.length)q('undo').style.display='none';say('↶ Texte précédent rétabli')};
+    if(WA_SR){const mic=q('mic'),bg0=mic.style.background,co0=mic.style.color;const stop=()=>{on=false;try{rec&&rec.stop()}catch(e){}mic.style.background=bg0;mic.style.color=co0;mic.querySelector('span').textContent='Dicter';mic.style.animation=''};
+      mic.onclick=()=>{if(on){stop();set(waTidy(ta.value));say('✓ Dictée terminée');return}
+        push();let base=ta.value.trim()?ta.value.replace(/\s*$/,' '):'',fin='';rec=new WA_SR();rec.lang='fr-FR';rec.continuous=true;rec.interimResults=true;
+        rec.onresult=e=>{if(!ta.isConnected){stop();return}let tmp='';for(let i=e.resultIndex;i<e.results.length;i++){const r=e.results[i];if(r.isFinal)fin+=waCmd(r[0].transcript)+' ';else tmp+=r[0].transcript}
+          set((base+fin+tmp).replace(/ {2,}/g,' '));ta.scrollTop=ta.scrollHeight};
+        rec.onerror=e=>{if(e.error==='not-allowed'||e.error==='service-not-allowed'){stop();say('🎤 Micro refusé : autorisez le micro dans le navigateur','#f87171')}else if(e.error==='no-speech')say('Je n\'entends rien…')};
+        rec.onend=()=>{if(on&&ta.isConnected){base=ta.value.replace(/\s*$/,' ');fin='';try{rec.start()}catch(e){stop()}}else if(on)stop()};
+        try{rec.start();on=true;mic.style.background='#ef4444';mic.style.color='#fff';mic.style.animation='waRec 1.2s infinite';mic.querySelector('span').textContent='Arrêter';say('🔴 Parlez… (« virgule », « point », « à la ligne »)')}catch(e){say('Dictée impossible sur ce navigateur','#f87171')}}}
+    q('fix').onclick=async()=>{const v=ta.value.trim();if(!v)return say('Écrivez ou dictez d\'abord un message');push();say('✨ Correction…');
+      let t=waTidy(waCmd(v)),n=0;try{const r=await waLT(t);t=r.t;n=r.n}catch(e){say('Correction de base appliquée (correcteur en ligne indisponible)','#fbbf24');set(t);return}
+      set(t);say(n?`✓ ${n} correction${n>1?'s':''}`:'✓ Aucune faute trouvée','#10b981')};
+    q('pol').onclick=async()=>{const v=ta.value.trim();if(!v)return say('Écrivez ou dictez d\'abord un message');push();say('🪄 Mise en forme…');
+      let t=waTidy(waCmd(v));
+      try{if(self.Rewriter&&(await Rewriter.availability({expectedInputLanguages:['fr'],outputLanguage:'fr'}))==='available'){const rw=await Rewriter.create({tone:'more-formal',length:'as-is',format:'plain-text',expectedInputLanguages:['fr'],outputLanguage:'fr',sharedContext:role==='sav'?'Réponse d\'un service après-vente à un client':'Message d\'un client au service après-vente d\'un logiciel'});t=(await rw.rewrite(t)).trim();rw.destroy&&rw.destroy()}}catch(e){}
+      try{t=(await waLT(t)).t}catch(e){}
+      set(waPolite(t,role));say('✓ Message formulé — relisez avant d\'envoyer','#10b981')};
+    if(!document.getElementById('waCss')){const s=document.createElement('style');s.id='waCss';s.textContent='@keyframes waRec{50%{box-shadow:0 0 0 6px rgba(239,68,68,.3)}}';document.head.appendChild(s)}}
+
   let UNR_LAST=0,UNR_TID=null;
   async function unread(){let n=0,last=0,lt=null;for(const tid of myT()){const t=await getT(tid);if(!t)continue;const M=msgsOf(t).filter(m=>m.from==='sav'&&m.t>seen(tid));n+=M.length;M.forEach(m=>{if(m.t>last){last=m.t;lt=tid}})}UNR_LAST=last;UNR_TID=lt;return n}
   // ── Réponse du SAV : bouton animé, puis au bout de 30 s alerte au centre de l'écran + signal sonore ──
@@ -655,7 +697,7 @@
             <div style="font-size:11px;color:#64748b;margin-top:2px">${fmt(last.t)}${nu?` · <b style="color:#c4b5fd">${nu} nouveau${nu>1?'x':''}</b>`:''}</div></button>`}).join(''):''}</div>`}
     else if(savView==='new'){box.innerHTML=head('Nouvelle demande',1)+`<div style="flex:1;overflow:auto;padding:16px 18px">
         <select data-s style="${IN}"><option>Problème technique</option><option>Question d'utilisation</option><option>Facturation / licence</option><option>Autre demande</option></select>
-        <textarea data-m rows="7" maxlength="2000" placeholder="Décrivez votre demande… (vous pouvez coller une capture avec Ctrl+V)" style="${IN};resize:vertical"></textarea>
+        <textarea data-m rows="7" maxlength="2000" placeholder="Décrivez votre demande… (ou appuyez sur 🎤 Dicter)" style="${IN};resize:vertical"></textarea><div data-wa1 style="margin-top:6px"></div>
         <div style="font-size:12px;color:#8b93b0;margin:2px 0 0">Pièces jointes : captures d'écran, PDF, Word, Excel… (2 Mo max par fichier)</div>${attBar(BTN)}
         <input data-t type="tel" placeholder="Téléphone / WhatsApp (facultatif)" style="${IN}">
         <button data-go style="${BTN};width:100%;margin-top:12px;background:linear-gradient(135deg,#7c3aed,#06b6d4)">Envoyer au SAV</button><div data-r style="margin-top:10px;font-size:13px;text-align:center"></div></div>`}
@@ -664,11 +706,12 @@
         ${m.map(k=>{const me=k.from==='client';return `<div style="align-self:${me?'flex-end':'flex-start'};max-width:82%"><div style="padding:9px 12px;border-radius:${me?'14px 14px 4px 14px':'14px 14px 14px 4px'};background:${me?'linear-gradient(135deg,#7c3aed,#4f46e5)':'#1f2937'};font-size:14px;line-height:1.45;white-space:pre-wrap;word-break:break-word">${esc(k.text)}${attHTML(k)}</div><div style="font-size:10.5px;color:#64748b;margin:3px 4px;text-align:${me?'right':'left'}">${me?'Vous':'🛟 SAV'}${k.via&&k.via!=='app'?' · via '+({whatsapp:'WhatsApp','e-mail':'e-mail'}[k.via]||esc(k.via)):''} · ${fmt(k.t)}</div></div>`}).join('')}
         ${t.statut==='traite'?'<div style="text-align:center;font-size:12px;color:#6ee7b7;margin:6px 0">✓ Demande marquée comme résolue — vous pouvez répondre pour la rouvrir</div>':''}</div>
         <div data-al style="display:none;flex-wrap:wrap;gap:6px;padding:8px 12px 0;border-top:1px solid rgba(255,255,255,.08)"></div>
+        <div data-wa2 style="padding:8px 12px 0;border-top:1px solid rgba(255,255,255,.08)"></div>
         <div style="display:flex;gap:6px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));border-top:1px solid rgba(255,255,255,.08)"><button data-af title="Joindre un fichier (image, PDF, Word, Excel…)" style="${BTN};background:#1f2937;padding:0 11px">📎</button><button data-as title="Capture d'écran" style="${BTN};background:#1f2937;padding:0 11px">📸</button><textarea data-rep rows="1" maxlength="2000" placeholder="Votre message…" style="${IN};margin:0;resize:none;max-height:120px"></textarea><button data-send style="${BTN};background:linear-gradient(135deg,#7c3aed,#06b6d4);padding:0 16px">➤</button></div>`;
       const th=box.querySelector('[data-th]');th.scrollTop=th.scrollHeight;
       th.querySelectorAll('[data-z]').forEach(i=>i.onclick=()=>imgZoom(i.src));
       const draw=attZone(box.querySelector('[data-al]'));box.querySelector('[data-af]').onclick=()=>attPickFiles(draw);if(box.querySelector('[data-as]'))box.querySelector('[data-as]').onclick=()=>attShotAdd(draw);
-      box.querySelector('[data-rep]').addEventListener('paste',e=>attPaste(e,draw));
+      box.querySelector('[data-rep]').addEventListener('paste',e=>attPaste(e,draw));waBind(box.querySelector('[data-rep]'),box.querySelector('[data-wa2]'),{role:'client',btn:'padding:7px 11px;border:0;border-radius:10px;background:#1f2937;color:#e5e7eb;font:600 12.5px system-ui,sans-serif;cursor:pointer'});
       box.querySelector('[data-send]').onclick=async()=>{const ta=box.querySelector('[data-rep]'),imgs=SATT.img.slice(),fls=SATT.files.slice(),v=ta.value.trim()||(imgs.length||fls.length?'📎 Pièce jointe':'');if(!v)return;ta.disabled=true;
         const mid='m'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),fb=await fbUrl();
         try{const r=await fetch(`${fb}/support/${savTid}/msgs/${mid}.json`,{method:'PUT',body:JSON.stringify({from:'client',text:v.slice(0,2000),t:Date.now(),via:'app',...(imgs.length?{img:imgs}:{}),...(fls.length?{files:fls}:{})})});if(!r.ok)throw 0;SATT={img:[],files:[]};
@@ -676,7 +719,7 @@
       clearInterval(savPoll);savPoll=setInterval(async()=>{const n=await getT(savTid);if(n&&msgsOf(n).length!==m.length&&savView==='thread'&&!SHOTMODE&&!box.querySelector('[data-rep]').value&&!SATT.img.length&&!SATT.files.length)renderSav()},10000)}
     const q=k=>box.querySelector(k);q('[data-x]').onclick=closeSav;if(q('[data-back]'))q('[data-back]').onclick=()=>{clearInterval(savPoll);savView='home';renderSav()};
     if(q('[data-new]'))q('[data-new]').onclick=()=>{SATT={img:[],files:[]};savView='new';renderSav()};
-    if(savView==='new'&&q('[data-al]')){const draw=attZone(q('[data-al]'));q('[data-af]').onclick=()=>attPickFiles(draw);if(q('[data-as]'))q('[data-as]').onclick=()=>attShotAdd(draw);q('[data-m]').addEventListener('paste',e=>attPaste(e,draw))}
+    if(savView==='new'&&q('[data-al]')){const draw=attZone(q('[data-al]'));q('[data-af]').onclick=()=>attPickFiles(draw);if(q('[data-as]'))q('[data-as]').onclick=()=>attShotAdd(draw);q('[data-m]').addEventListener('paste',e=>attPaste(e,draw));waBind(q('[data-m]'),q('[data-wa1]'),{role:'client',btn:'padding:7px 11px;border:0;border-radius:10px;background:#1f2937;color:#e5e7eb;font:600 12.5px system-ui,sans-serif;cursor:pointer'})}
     box.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>{savView='thread';savTid=b.dataset.open;renderSav()});
     if(q('[data-go]'))q('[data-go]').onclick=async()=>{const s=get(),msg=q('[data-m]').value.trim();if(msg.length<5){q('[data-r]').style.color='#fda4af';q('[data-r]').textContent='Merci de décrire votre demande.';return}
       q('[data-go]').disabled=true;q('[data-go]').textContent='Envoi…';const tid=[...crypto.getRandomValues(new Uint8Array(12))].map(b=>b.toString(16).padStart(2,'0')).join('');
