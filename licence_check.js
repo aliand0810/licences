@@ -573,8 +573,38 @@
   async function savShot(){const st=await navigator.mediaDevices.getDisplayMedia({video:true,audio:false});const v=document.createElement('video');v.srcObject=st;v.muted=true;await v.play();await new Promise(r=>setTimeout(r,450));const c=document.createElement('canvas');c.width=v.videoWidth;c.height=v.videoHeight;c.getContext('2d').drawImage(v,0,0);st.getTracks().forEach(t=>t.stop());return c.toDataURL('image/png')}
   function imgZoom(u){if(!IMGRX.test(u))return;const o=document.createElement('div');o.style.cssText='position:fixed;inset:0;z-index:2147483647;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;padding:16px;cursor:zoom-out';const i=document.createElement('img');i.src=u;i.style.cssText='max-width:100%;max-height:100%;border-radius:10px';o.appendChild(i);o.onclick=()=>o.remove();document.body.appendChild(o)}
   const msgsOf=t=>[{from:'client',text:t.message,t:t.t,img:t.img,files:t.files,drive:t.drive},...Object.values(t.msgs||{})].filter(m=>m&&m.text).sort((a,b)=>a.t-b.t);
-  async function unread(){let n=0;for(const tid of myT()){const t=await getT(tid);if(t)n+=msgsOf(t).filter(m=>m.from==='sav'&&m.t>seen(tid)).length}return n}
-  function setBadge(n){if(!savBtn)return;savBtn.textContent=n?`🛟 SAV · ${n} nouveau${n>1?'x':''} message${n>1?'s':''}`:'🛟 SAV';savBtn.style.animation=n?'licPulse 1.6s infinite':''}
+  let UNR_LAST=0,UNR_TID=null;
+  async function unread(){let n=0,last=0,lt=null;for(const tid of myT()){const t=await getT(tid);if(!t)continue;const M=msgsOf(t).filter(m=>m.from==='sav'&&m.t>seen(tid));n+=M.length;M.forEach(m=>{if(m.t>last){last=m.t;lt=tid}})}UNR_LAST=last;UNR_TID=lt;return n}
+  // ── Réponse du SAV : bouton animé, puis au bout de 30 s alerte au centre de l'écran + signal sonore ──
+  const ALKEY='licSavAlert_'+PRODUIT,ALDELAY=30000;let alTimer=null,alBox=null;
+  const alSeen=()=>{try{return +localStorage.getItem(ALKEY)||0}catch(e){return 0}},alSet=t=>{try{localStorage.setItem(ALKEY,String(t))}catch(e){}};
+  function savBeep(){try{const A=window.AudioContext||window.webkitAudioContext;if(!A)return;const c=new A();if(c.state==='suspended')c.resume();
+      [[880,0],[1175,.18],[1568,.36],[1175,.9],[1568,1.08]].forEach(([f,d])=>{const o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.value=f;o.connect(g);g.connect(c.destination);
+        const t=c.currentTime+d;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.28,t+.02);g.gain.exponentialRampToValueAtTime(.001,t+.32);o.start(t);o.stop(t+.34)});
+      setTimeout(()=>{try{c.close()}catch(e){}},2000)}catch(e){}
+    try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}}
+  function savAlertClose(mark){if(alBox){alBox.remove();alBox=null}if(mark)alSet(UNR_LAST)}
+  function savAlert(n){if(FRAMED||alBox||savPanel||SHOTMODE||!savBtn)return;
+    alBox=document.createElement('div');alBox.setAttribute('data-licshot','');
+    alBox.style.cssText='position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(7,11,22,.55);backdrop-filter:blur(3px);font-family:system-ui,sans-serif;animation:licFadeIn .25s both';
+    alBox.innerHTML=`<div style="width:min(400px,100%);background:#111827;color:#eef2ff;border-radius:24px;border:1px solid rgba(255,255,255,.12);box-shadow:0 30px 80px rgba(0,0,0,.6);padding:26px 22px 20px;text-align:center;animation:licPop .45s cubic-bezier(.2,1.4,.4,1) both">
+      <div style="width:84px;height:84px;margin:0 auto 14px;border-radius:26px;display:grid;place-items:center;font-size:42px;background:linear-gradient(135deg,#7c3aed,#06b6d4);box-shadow:0 0 0 0 rgba(124,58,237,.6);animation:licRing 1.4s infinite">🛟</div>
+      <div style="font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#a5b4fc">Service après-vente</div>
+      <div style="font-size:22px;font-weight:900;margin:6px 0 6px">🔔 Nouvelle information à prendre</div>
+      <div style="font-size:14px;color:#cbd5e1;line-height:1.45">Le SAV a répondu à votre demande${n>1?` (${n} nouveaux messages)`:''}.<br>Ouvrez le SAV pour lire la réponse.</div>
+      <button data-read type="button" style="margin-top:18px;width:100%;padding:14px;border:0;border-radius:14px;background:linear-gradient(135deg,#7c3aed,#06b6d4);color:#fff;font:800 16px system-ui,sans-serif;cursor:pointer">📖 Lire la réponse</button>
+      <button data-later type="button" style="margin-top:8px;width:100%;padding:11px;border:1px solid rgba(255,255,255,.15);border-radius:14px;background:transparent;color:#cbd5e1;font:600 14px system-ui,sans-serif;cursor:pointer">Plus tard</button></div>`;
+    document.body.appendChild(alBox);savBeep();
+    alBox.querySelector('[data-read]').onclick=()=>{const tid=UNR_TID;savAlertClose(true);openSav(savBtn._x,tid?'thread':'home',tid||undefined)};
+    alBox.querySelector('[data-later]').onclick=()=>savAlertClose(true);
+    alBox.onclick=e=>{if(e.target===alBox)savAlertClose(true)}}
+  function setBadge(n){if(!savBtn)return;
+    savBtn.textContent=n?`🛟 SAV · ${n} nouveau${n>1?'x':''} message${n>1?'s':''}`:'🛟 SAV';
+    savBtn.style.animation=n?'licSavShake 2.4s ease-in-out infinite, licSavGlow 1.2s ease-in-out infinite':'';
+    savBtn.style.background=n?'linear-gradient(135deg,#ef4444,#f59e0b)':'linear-gradient(135deg,#7c3aed,#06b6d4)';
+    if(!n){clearTimeout(alTimer);alTimer=null;savAlertClose(false);return}
+    // nouvelle réponse pas encore signalée : alerte au centre si le client n'a pas ouvert le SAV au bout de 30 s
+    if(UNR_LAST>alSeen()&&!alTimer&&!alBox)alTimer=setTimeout(async()=>{alTimer=null;const k=await unread();setBadge(k);if(k&&UNR_LAST>alSeen()&&!savPanel)savAlert(k)},ALDELAY)}
   // Bouton déplaçable (doigt ou souris), aimanté au bord le plus proche, position mémorisée par logiciel
   const PKEY='licSavPos_'+PRODUIT;
   function placeSav(b,p){const w=innerWidth,h=innerHeight,bw=b.offsetWidth||90,bh=b.offsetHeight||38,m=8;
@@ -597,14 +627,14 @@
     if(!on){clearInterval(savBg);if(savBtn){savBtn.remove();savBtn=null}if(savPanel){savPanel.remove();savPanel=null}return}
     if(savBtn){savBtn._x=x;return}
     const mount=()=>{if(!document.body)return setTimeout(mount,200);
-      if(!document.getElementById('licSavCss')){const st=document.createElement('style');st.id='licSavCss';st.textContent='@keyframes licPulse{50%{box-shadow:0 0 0 8px rgba(124,58,237,.25)}}';document.head.appendChild(st)}
+      if(!document.getElementById('licSavCss')){const st=document.createElement('style');st.id='licSavCss';st.textContent='@keyframes licPulse{50%{box-shadow:0 0 0 8px rgba(124,58,237,.25)}}@keyframes licSavShake{0%,62%,100%{transform:none}66%{transform:rotate(-8deg) scale(1.08)}70%{transform:rotate(8deg) scale(1.12)}74%{transform:rotate(-6deg) scale(1.1)}78%{transform:rotate(5deg) scale(1.06)}82%{transform:none}}@keyframes licSavGlow{0%,100%{box-shadow:0 8px 24px rgba(0,0,0,.35),0 0 0 0 rgba(239,68,68,.55)}50%{box-shadow:0 8px 24px rgba(0,0,0,.35),0 0 0 12px rgba(239,68,68,0)}}@keyframes licRing{0%{box-shadow:0 0 0 0 rgba(124,58,237,.6)}100%{box-shadow:0 0 0 26px rgba(124,58,237,0)}}@keyframes licPop{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}@keyframes licFadeIn{from{opacity:0}to{opacity:1}}';document.head.appendChild(st)}
       savBtn=document.createElement('button');savBtn._x=x;savBtn.type='button';savBtn.textContent='🛟 SAV';savBtn.title='Service après-vente';
       savBtn.style.cssText='position:fixed;left:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:2147483600;padding:9px 14px;border:0;border-radius:999px;background:linear-gradient(135deg,#7c3aed,#06b6d4);color:#fff;font:700 13px system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.35);cursor:pointer;opacity:.95';
       savBtn.onclick=e=>{if(savBtn._drag){e.preventDefault();return}openSav(savBtn._x)};document.body.appendChild(savBtn);dragSav(savBtn);
-      const bg=async()=>setBadge(await unread());bg();clearInterval(savBg);savBg=setInterval(bg,60000)};mount()}
+      const bg=async()=>{if(document.visibilityState==='hidden')return;setBadge(await unread())};bg();clearInterval(savBg);savBg=setInterval(bg,20000);document.addEventListener('visibilitychange',bg)};mount()}
   const IN='width:100%;box-sizing:border-box;padding:12px;border-radius:12px;border:1px solid #334155;background:#0b1220;color:#fff;font:16px system-ui,sans-serif;margin-top:6px';
   const BTN='padding:12px;border:0;border-radius:12px;font:700 14px system-ui,sans-serif;cursor:pointer;color:#fff';
-  function openSav(x,view,tid){savView=view||'home';savTid=tid||null;if(savPanel)savPanel.remove();clearInterval(savPoll);
+  function openSav(x,view,tid){clearTimeout(alTimer);alTimer=null;savAlertClose(false);if(UNR_LAST)alSet(UNR_LAST);savView=view||'home';savTid=tid||null;if(savPanel)savPanel.remove();clearInterval(savPoll);
     savPanel=document.createElement('div');savPanel._x=x;
     savPanel.style.cssText='position:fixed;inset:0;z-index:2147483646;background:rgba(7,11,22,.7);backdrop-filter:blur(4px);display:flex;align-items:flex-end;justify-content:center;font-family:system-ui,sans-serif';
     savPanel.innerHTML='<div data-box style="width:min(480px,100%);height:min(88vh,760px);display:flex;flex-direction:column;background:#111827;color:#eef2ff;border:1px solid rgba(255,255,255,.1);border-radius:22px 22px 0 0;box-shadow:0 -20px 60px rgba(0,0,0,.5);overflow:hidden"></div>';
