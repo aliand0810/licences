@@ -2886,15 +2886,58 @@ function waTidy(t){t=String(t||'').replace(/[ \t]+/g,' ').replace(/ *\n */g,'\n'
 async function waLT(t){const r=await fetch('https://api.languagetool.org/v2/check',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'language=fr&text='+encodeURIComponent(t)});
   if(!r.ok)throw new Error('correcteur indisponible');const j=await r.json();let out=t,n=0;
   (j.matches||[]).filter(m=>m.replacements&&m.replacements.length).sort((a,b)=>b.offset-a.offset).forEach(m=>{out=out.slice(0,m.offset)+m.replacements[0].value+out.slice(m.offset+m.length);n++});return{t:out,n}}
-const WA_OPEN=/^(bonjour|bonsoir|madame|monsieur|cher|chère|salut|hello)\b/i,WA_CLOSE=/(cordialement|bonne journée|bonne soirée|merci( d'avance| par avance| beaucoup)?)[.!]?\s*([\s\S]{0,60})?$/i;
-function waPolite(t,role){t=t.trim();if(!WA_OPEN.test(t))t='Bonjour,\n\n'+t;
-  if(!WA_CLOSE.test(t))t+=role==='sav'?'\n\nN\'hésitez pas à nous recontacter si besoin.\nCordialement,\nLe service après-vente':'\n\nMerci d\'avance pour votre aide.\nCordialement.';return t}
-function waBind(ta,host,o){if(!ta||!host)return;o=o||{};const role=o.role||'client';let rec=null,on=false,hist=[];
+// ── 🪄 Reformulation : remplace les tournures familières par des phrases plus soignées (plusieurs versions) ──
+const WA_L='(?<!\\p{L})',WA_R='(?!\\p{L})';
+const WA_RW=[
+ ["(?:ça|ca|sa) (?:ne )?(?:marche|fonctionne) (?:pas|plus)",["cela ne fonctionne pas","cela ne fonctionne plus correctement","le logiciel ne fonctionne pas comme prévu"]],
+ ["(?:ça|ca) (?:bug|beug|bugue|plante|crash)e?",["le logiciel rencontre une erreur","l'application se bloque","une erreur se produit"]],
+ ["(?:ça|ca) marche",["cela fonctionne","tout fonctionne correctement","c'est opérationnel"]],
+ ["j'ai (?:un |une )?(?:petit |gros )?(?:souci|soucis|problème|probleme|pb|bug|beug)",["je rencontre un problème","je constate un dysfonctionnement","je fais face à une difficulté"]],
+ ["(?:un |le )?(?:bug|beug)",["un dysfonctionnement","une anomalie","une erreur"]],
+ ["est-ce que vous (?:pouvez|pourriez)|vous pouvez|tu peux|tu pourrais|pouvez-vous|peux-tu",["pourriez-vous","serait-il possible de","auriez-vous la possibilité de"]],
+ ["je veux|je voudrais|j'veux",["je souhaiterais","j'aimerais","je voudrais"]],
+ ["(?:il )?y(?: |')a",["il y a"]],
+ ["(?<!il )faut",["il faut"]],["il faut(?! que)",["il faut","il est nécessaire de","je vous invite à"]],["ne fonctionne plus(?! correctement)",["ne fonctionne plus","a cessé de fonctionner","ne répond plus"]],["ne fonctionne pas(?! correctement| comme)",["ne fonctionne pas","ne fonctionne pas correctement","présente un dysfonctionnement"]],["je voudrais savoir|je veux savoir",["j'aimerais savoir","pourriez-vous m'indiquer","je souhaiterais savoir"]],["comment (?:faire|faut-il faire) pour",["comment procéder pour","quelle est la marche à suivre pour","comment faire pour"]],["merci pour",["merci pour","je vous remercie pour","un grand merci pour"]],["je n'arrive pas à",["je n'arrive pas à","je ne parviens pas à","il m'est impossible de"]],
+ ["je (?:vais )?regarde(?:r)?(?: ça| ca)?",["je vais examiner cela","je m'en occupe","je vais vérifier cela"]],
+ ["je vous tiens au jus",["je vous tiens informé","je reviens vers vous rapidement"]],
+ ["c'est bon",["c'est réglé","le problème est résolu","tout est rentré dans l'ordre"]],
+ ["pas de (?:souci|soucis|problème|probleme|pb)",["avec plaisir","bien entendu","aucun problème"]],
+ ["(?:ok|okay|oki|d'acc|dac)",["d'accord,","très bien,","entendu,"]],
+ ["(?:asap|au plus vite|vite fait)",["dans les plus brefs délais","dès que possible","rapidement"]],
+ ["(?:super|top|génial|nickel)",["parfait","excellent","très bien"]],
+ ["(?:le|ce) truc",["cet élément","cette fonction"]],
+ ["désolée?",["je vous prie de nous excuser pour la gêne occasionnée","nous sommes désolés pour ce désagrément"],"sav"],
+ ["désolée?|dsl",["je suis désolé","toutes mes excuses"],"client"],
+ ["svp|stp|s'te plait|s'il te plaît",["s'il vous plaît"]],["merci beaucoup|merci bcp|mci",["je vous remercie","merci beaucoup"]],
+ ["pk|pq",["pourquoi"]],["jsp|j'sais pas|je sais pas",["je ne sais pas"]],["bcp",["beaucoup"]],["pb",["problème"]],["rdv",["rendez-vous"]],["tt",["tout"]],["qd",["quand"]],["mtn|maintenant",["à présent","maintenant"]],["bisous|bises|biz",[""]],
+ ["(?:je|j') (?:arrive|parviens) pas",["je n'arrive pas","je ne parviens pas"]],
+ ["(?:ça|ca) s'(\\p{L}+) pas",["cela ne s'$1 pas"]],["(?:ça|ca) (\\p{L}+) pas",["cela ne $1 pas"]],
+ ["(je|il|elle|on|ils|elles) (\\p{L}+) pas",["$1 ne $2 pas"]],["(?<!ne |n')s'(\\p{L}+) pas",["ne s'$1 pas"]],["(?<!ne |n'|s')(marche|fonctionne|imprime|affiche|ouvre|charge|démarre|répond|s'allume|enregistre|synchronise)(nt)? pas",["ne $1$2 pas"]],["(je|il|elle|on|ils|elles) s'(\\p{L}+) pas",["$1 ne s'$2 pas"]],
+ ["(?:ça|ca)",["cela"]]].map(([r,a,role])=>[new RegExp(WA_L+'(?:'+r+')'+WA_R,'giu'),a,role]);
+const WA_OPENS={sav:["Bonjour,","Bonjour, et merci pour votre message.","Bonjour, merci de nous avoir contactés."],client:["Bonjour,","Bonjour, j'espère que vous allez bien.","Bonjour à l'équipe du SAV,"]};
+const WA_CLOSES={sav:["N'hésitez pas à revenir vers nous si besoin.\nCordialement,\nLe service après-vente","Nous restons à votre disposition pour toute question.\nBien cordialement,\nLe service après-vente","Je reste disponible si le problème persiste.\nCordialement,\nLe service après-vente"],
+  client:["Merci d'avance pour votre aide.\nCordialement.","Je vous remercie par avance pour votre retour.\nBien cordialement.","Dans l'attente de votre réponse, je vous remercie.\nCordialement."]};
+// retire salutation / formule de fin déjà présentes (pour pouvoir proposer une autre version)
+function waStrip(t){t=t.trim();const O=[...WA_OPENS.sav,...WA_OPENS.client].sort((a,b)=>b.length-a.length);
+  for(const o of O)if(t.startsWith(o)){t=t.slice(o.length).trim();break}
+  t=t.replace(/^(bonjour|bonsoir|salut|hello|coucou)\s*[,!.]?\s*/i,'');
+  for(const c of [...WA_CLOSES.sav,...WA_CLOSES.client]){const i=t.lastIndexOf(c.split('\n')[0]);if(i>=0&&i>t.length-c.length-5){t=t.slice(0,i).trim();break}}
+  t=t.replace(/\n*\s*(cordialement|bien cordialement|bonne journée|bonne soirée|merci d'avance|merci par avance)[\s\S]{0,60}$/i,'').trim();return t}
+function waRephrase(t,role,v){let n=0;WA_RW.forEach(([r,a,rl])=>{if(rl&&rl!==role)return;t=t.replace(r,(m,...g)=>{n++;let out=a[v%a.length].replace(/\$(\d)/g,(_,k)=>g[k-1]||'');
+    if(/^\p{Lu}/u.test(m)&&out)out=out[0].toUpperCase()+out.slice(1);return out})});
+  t=t.replace(/(?<!\p{L})ne ([aeiouhéèêàâîôûy])/giu,"n'$1").replace(/\s{2,}/g,' ').replace(/ ([,.])/g,'$1').replace(/,\s*,/g,',').replace(/,\s*([.!?])/g,'$1')
+    .replace(/[.,\s]*merci(?: beaucoup| bien)?\s*[.!]*\s*$/i,'').replace(/(problème|dysfonctionnement|difficulté) (je|j'|le|la|les|il|elle|mon|ma|mes|on|depuis|quand)(?!\p{L})/gu,'$1 : $2');
+    t=t.split('\n').map(L=>L.split(/(?<=[.!?…])\s+/).map(x=>/^(pourriez-vous|serait-il possible|auriez-vous|est-ce que|pouvez-vous|avez-vous|savez-vous|comment|pourquoi|quand|où|quel|quelle|quels|quelles)(?!\p{L})/iu.test(x)?x.replace(/\s*[.!]?$/,'\u00a0?'):x).join(' ')).join('\n');return{t,n}}
+function waPolite(t,role,v){v=v||0;const R=role==='sav'?'sav':'client';return WA_OPENS[R][v%3]+'\n\n'+t.trim()+'\n\n'+WA_CLOSES[R][v%3]}
+
+function waBind(ta,host,o){if(!ta||!host)return;o=o||{};const role=o.role||'client';let rec=null,on=false,hist=[],wv=0,wsrc='',wlast=null;
+    const grow=()=>{const mx=Math.round(innerHeight*(o.max||.5));ta.style.height='auto';const h=Math.max(ta.scrollHeight+2,o.min||0);ta.style.height=Math.min(h,mx)+'px';ta.style.overflowY=h>mx?'auto':'hidden'};
+    ta.style.resize='none';ta.style.transition='height .15s';ta.addEventListener('input',grow);setTimeout(grow,0);
   const B=(k,ic,lb,tt)=>`<button type="button" data-wa="${k}" title="${tt}" ${o.cls?`class="${o.cls}"`:''} style="${o.btn||''}">${ic} <span>${lb}</span></button>`;
   host.innerHTML=`<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">${WA_SR?B('mic','🎤','Dicter','Dicter le message à voix haute (dites « virgule », « point », « à la ligne »…)'):''}${B('fix','✨','Corriger','Corriger l\'orthographe, la grammaire et la ponctuation')}${B('pol','🪄','Formuler','Rendre le message poli et bien présenté')}${B('undo','↶','Annuler','Revenir au texte précédent')}<span data-wst style="font-size:12px;opacity:.8"></span></div>`;
   const q=k=>host.querySelector(`[data-wa="${k}"]`),st=host.querySelector('[data-wst]'),say=(m,c)=>{st.textContent=m||'';st.style.color=c||''};
   const push=()=>{hist.push(ta.value);if(hist.length>20)hist.shift();q('undo').style.display=''};q('undo').style.display='none';
-  const set=v=>{ta.value=v;ta.dispatchEvent(new Event('input',{bubbles:true}))};
+  const set=v=>{ta.value=v;ta.dispatchEvent(new Event('input',{bubbles:true}));grow()};
   q('undo').onclick=()=>{if(!hist.length)return;set(hist.pop());if(!hist.length)q('undo').style.display='none';say('↶ Texte précédent rétabli')};
   if(WA_SR){const mic=q('mic'),bg0=mic.style.background,co0=mic.style.color;const stop=()=>{on=false;try{rec&&rec.stop()}catch(e){}mic.style.background=bg0;mic.style.color=co0;mic.querySelector('span').textContent='Dicter';mic.style.animation=''};
     mic.onclick=()=>{if(on){stop();set(waTidy(ta.value));say('✓ Dictée terminée');return}
@@ -2907,11 +2950,11 @@ function waBind(ta,host,o){if(!ta||!host)return;o=o||{};const role=o.role||'clie
   q('fix').onclick=async()=>{const v=ta.value.trim();if(!v)return say('Écrivez ou dictez d\'abord un message');push();say('✨ Correction…');
     let t=waTidy(waCmd(v)),n=0;try{const r=await waLT(t);t=r.t;n=r.n}catch(e){say('Correction de base appliquée (correcteur en ligne indisponible)','#fbbf24');set(t);return}
     set(t);say(n?`✓ ${n} correction${n>1?'s':''}`:'✓ Aucune faute trouvée','#10b981')};
-  q('pol').onclick=async()=>{const v=ta.value.trim();if(!v)return say('Écrivez ou dictez d\'abord un message');push();say('🪄 Mise en forme…');
-    let t=waTidy(waCmd(v));
-    try{if(self.Rewriter&&(await Rewriter.availability({expectedInputLanguages:['fr'],outputLanguage:'fr'}))==='available'){const rw=await Rewriter.create({tone:'more-formal',length:'as-is',format:'plain-text',expectedInputLanguages:['fr'],outputLanguage:'fr',sharedContext:role==='sav'?'Réponse d\'un service après-vente à un client':'Message d\'un client au service après-vente d\'un logiciel'});t=(await rw.rewrite(t)).trim();rw.destroy&&rw.destroy()}}catch(e){}
-    try{t=(await waLT(t)).t}catch(e){}
-    set(waPolite(t,role));say('✓ Message formulé — relisez avant d\'envoyer','#10b981')};
+  q('pol').onclick=async()=>{const v=ta.value.trim();if(!v)return say('Écrivez ou dictez d\'abord un message');push();say('🪄 Reformulation…');
+      if(v!==wlast)wsrc=v;const ver=wv++;let t=waTidy(waCmd(waStrip(wsrc)));const rr=waRephrase(t,role,ver);t=waTidy(rr.t);let ai=false;
+      try{if(self.Rewriter&&(await Rewriter.availability({expectedInputLanguages:['fr'],outputLanguage:'fr'}))==='available'){const rw=await Rewriter.create({tone:'more-formal',length:'as-is',format:'plain-text',expectedInputLanguages:['fr'],outputLanguage:'fr',sharedContext:role==='sav'?'Réponse d\'un service après-vente à un client':'Message d\'un client au service après-vente d\'un logiciel'});t=(await rw.rewrite(t)).trim();ai=true;rw.destroy&&rw.destroy()}}catch(e){}
+      try{t=(await waLT(t)).t}catch(e){}
+      set(waPolite(t,role,ver));wlast=ta.value.trim();say(`✓ Version ${ver%3+1}/3${rr.n||ai?` · ${ai?'reformulé':rr.n+' tournure'+(rr.n>1?'s':'')+' améliorée'+(rr.n>1?'s':'')}`:''} — appuyez encore pour une autre version`,'#10b981')};
   if(!document.getElementById('waCss')){const s=document.createElement('style');s.id='waCss';s.textContent='@keyframes waRec{50%{box-shadow:0 0 0 6px rgba(239,68,68,.3)}}';document.head.appendChild(s)}}
 
 // ══ ☁️ Stockage Google Drive des pièces jointes ══
