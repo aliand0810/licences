@@ -111,6 +111,14 @@
     "flash": {
       ".read": true,
       ".write": "auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63'"
+    },
+    "secu": {
+      ".read": "auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63'",
+      ".write": "auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63'",
+      "$e": {
+        ".write": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (!data.exists() && newData.exists())",
+        ".validate": "$e.length >= 10 && $e.length <= 40 && newData.hasChildren(['t','r','lic','p']) && newData.child('t').isNumber() && newData.child('r').isString() && newData.child('r').val().length <= 12 && newData.child('lic').isString() && newData.child('lic').val().length <= 40 && newData.child('p').isString() && newData.child('p').val().length <= 60 && (!newData.child('u').exists() || (newData.child('u').isString() && newData.child('u').val().length <= 60)) && (!newData.child('ip').exists() || (newData.child('ip').isString() && newData.child('ip').val().length <= 45))"
+      }
     }
   }
 }
