@@ -103,6 +103,31 @@
       const w=function(x){const r=o.apply(this,arguments);try{if(typeof x==='string')setTimeout(()=>navRec(x),60)}catch(e){}return r};w.__licNav=1;window[f]=w});
     wrap();addEventListener('load',wrap);setTimeout(wrap,3000);
     navRec()}
+
+  // ══ 🛡️ Anti-piratage : signale à Licence Pro (Firebase « secu ») toute utilisation non autorisée ══
+  // copie sur un autre domaine, clé invalide, licence révoquée / bannie, appareils en trop, écran de licence contourné.
+  // Contenu : IP, ville, opérateur, appareil + coordonnées de l'établissement saisies dans le logiciel (nom, adresse, tél., e-mail, SIRET).
+  function identite(){const o={};try{const a=JSON.parse(localStorage.getItem('covo_settings')||'null')||{},r=a.rcpt||{};
+      o.shop=String(r.shopName||a.shopName||a.storeName||'').slice(0,80);o.soc=String(a.companyName||'').slice(0,80);o.adr=String(r.address||'').replace(/\s+/g,' ').slice(0,160);
+      o.tel=String(r.phone||'').slice(0,30);o.mail=String(r.email||'').slice(0,100);o.siret=String(r.siret||'').slice(0,30)}catch(e){}
+    try{const u=JSON.parse(localStorage.getItem('covo_current_user')||'null');if(u)o.user=String(u.username||u.name||'').slice(0,60)}catch(e){}
+    try{const g=localStorage.getItem('gdrive_email')||localStorage.getItem('gdrive_hint_email');if(g)o.gmail=String(g).replace(/^"|"$/g,'').slice(0,100)}catch(e){}
+    Object.keys(o).forEach(k=>{if(!o[k])delete o[k]});return o}
+  const maskKey=k=>{k=String(k||'').toUpperCase();return k.length>8?k.slice(0,4)+'…'+k.slice(-4):k?'…':''};
+  async function secuRep(r,x){x=x||{};try{if(FRAMED)return;
+    const dk='licSecR_'+PRODUIT+'_'+r,last=+localStorage.getItem(dk)||0;if(!x.force&&Date.now()-last<20*6e4)return;try{localStorage.setItem(dk,String(Date.now()))}catch(e){}
+    let fb=RLFB;if(!fb){const d=await (await fetch(SRC+'?t='+Date.now(),{cache:'no-store'})).json();fb=String(d.firebase||'').replace(/\/+$/,'')}if(!fb)return;
+    const ni=await netInfo().catch(()=>({})),id=identite(),st=get(),lab={copie:'Copie sur un domaine non autorisé',cle_invalide:'Clé de licence invalide',revoquee:'Licence révoquée encore utilisée',banni:'Adresse bannie',trop:'Appareils en trop',contourne:'Écran de licence contourné',sans_licence:'Utilisé sans licence'}[r]||r;
+    const ev={t:Date.now(),r,p:PRODUIT,m:MODULE||PRODUIT,lic:String(CURLIC||x.lic||'-').slice(0,40),u:String(id.user||id.shop||'').slice(0,60),n:(lab+(id.shop?' — '+id.shop:'')).slice(0,60),
+      ip:String(ni.ip||'').slice(0,45),loc:String(ni.loc||'').slice(0,60),isp:String(ni.isp||'').slice(0,60),tz:DEVTZ,dev:DEVD,ua:navigator.userAgent.replace(/^Mozilla\/5\.0 /,'').slice(0,120),dv:await devId(),
+      host:location.hostname.slice(0,60),url:location.href.split('#')[0].slice(0,200),mail:String(x.mail||st.mail||'').trim().toLowerCase().slice(0,120),key:maskKey(x.key||st.key),hint:String(x.hint||'').slice(0,80),how:'licence',id};
+    await fetch(fb+'/secu.json',{method:'POST',keepalive:true,body:JSON.stringify(ev)})}catch(e){}}
+  window.__licState={ok:false,t:Date.now()};
+  // écran de licence retiré ou masqué à la main (outils de développement) → signalé et remis
+  let TAMP=0;setInterval(()=>{if(!overlay){TAMP=0;return}let gone=!document.documentElement.contains(overlay),hid=false;
+    if(!gone)try{const c=getComputedStyle(overlay);hid=c.display==='none'||c.visibility==='hidden'||+c.opacity<.2||overlay.getBoundingClientRect().height<50}catch(e){}
+    if(!(gone||hid)){TAMP=0;return}if(++TAMP<2)return;TAMP=0;
+    {secuRep('contourne',{hint:gone?'écran supprimé':'écran masqué'});overlay.style.cssText+=';display:flex!important;visibility:visible!important;opacity:1!important';if(gone)(document.body||document.documentElement).appendChild(overlay)}},2500);
   // Renvoie {ok, expire, msg}
   // 🛡️ Verrou de domaine : le logiciel ne tourne que sur les adresses autorisées dans licences.json (« domaines »)
   const DEVHOST=!location.hostname||location.protocol==='file:'||/^(localhost|127\.|192\.168\.|10\.|\[?::1)/.test(location.hostname);
@@ -114,11 +139,11 @@
     if(!mail||!key)return{ok:false,msg:''};
     try{
       const d=await (await fetch(SRC+'?t='+Date.now(),{cache:'no-store'})).json();
-      if((d.bannis||[]).includes(mail))return{ok:false,msg:'Accès interdit pour cette adresse'};
+      if((d.bannis||[]).includes(mail)){secuRep('banni',{mail,key});return{ok:false,msg:'Accès interdit pour cette adresse'}}
       if(!hostOK(d.domaines))return{ok:false,msg:'DOMAINE',dom:1};
       const h=await sha(mail+'|'+PRODUIT+'|'+key);
       let l=d.licences.find(x=>x.email===mail&&x.produit===PRODUIT&&x.hash===h);
-      if(!l)return{ok:false,msg:'Licence invalide'};
+      if(!l){secuRep('cle_invalide',{mail,key});return{ok:false,msg:'Licence invalide'}}
       const wt=Math.max(+l.wipe||0,l.wipeDev?(+l.wipeDev[await devId()]||0):0);
       if(wt){const wk='licWiped_'+PRODUIT,done=+localStorage.getItem(wk)||0;l={...l,wipe:wt};
         if(l.wipe>done){if(get().mail){await wipeAll();try{localStorage.setItem(wk,String(l.wipe))}catch(e){}location.reload();return{ok:false,msg:'Données effacées par l\'administrateur'}}localStorage.setItem(wk,String(l.wipe))}}
@@ -127,7 +152,7 @@
        if(l.reloadIp){const ni=await netInfo().catch(()=>({}));if(ni.ip&&l.reloadIp[ni.ip])rtLic=Math.max(rtLic,+l.reloadIp[ni.ip])}
        if(await maybeReload(rtLic,_fb))return{ok:true,expire:l.expire||null,data:extra(l,d)}}
       {const ib=await checkIpBlock(_fb);if(ib==='block')return{ok:false,msg:'IPBLOCK',ipb:1};if(ib==='deco')return{ok:false,msg:''}}
-      if(!l.actif)return{ok:false,msg:'Licence révoquée'};
+      if(!l.actif){secuRep('revoquee',{mail,key,lic:l.id});return{ok:false,msg:'Licence révoquée'}}
       if(!notExpired(l.expire))return{ok:false,msg:'Licence expirée'};
       l=pvFix(l);if(MODULE&&Array.isArray(l.modules)&&!l.modules.includes(MODULE))return{ok:false,msg:`Le module « ${MODULE} » n'est pas inclus dans votre licence`};
       if(l.maxDevices&&d.firebase){const r=await device(d.firebase,l);if(!r.ok)return r}
@@ -174,7 +199,7 @@
     const keys=Object.keys(list).filter(k=>list[k]),k0=keys.find(k=>list[k].id===me);
     const actOthers=keys.filter(k=>list[k].id!==me&&isAct(list[k],now)).length;
     const n=await netInfo();
-    const refuse=async()=>{try{await fetch(`${fb}/excess/${l.id}/${me}.json`,{method:'PUT',body:JSON.stringify({t:Date.now(),ua:UA(),ip:n.ip,loc:n.loc,act:actOthers,max,reg:keys.length,known:!!k0})})}catch(e){}
+    const refuse=async()=>{secuRep('trop',{lic:l.id,hint:actOthers+' appareils déjà connectés (max '+max+')'});try{await fetch(`${fb}/excess/${l.id}/${me}.json`,{method:'PUT',body:JSON.stringify({t:Date.now(),ua:UA(),ip:n.ip,loc:n.loc,act:actOthers,max,reg:keys.length,known:!!k0})})}catch(e){}
       return{ok:false,msg:`Licence en trop : ${actOthers} appareil${actOthers>1?'s sont':' est'} déjà connecté${actOthers>1?'s':''} avec ce code (maximum ${max}). Fermez le logiciel sur un autre appareil, puis réessayez dans quelques minutes.`}};
     if(k0){// appareil déjà enregistré
       if(actOthers>=max)return refuse();
@@ -224,7 +249,7 @@
   let curExp=null;
   let rlT=null;
   function watch(expire){
-    curExp=expire;clearInterval(timer);
+    window.__licState={ok:true,t:Date.now()};curExp=expire;clearInterval(timer);
     timer=setInterval(()=>{if(!notExpired(curExp))return lock('Votre période d\'essai / licence a expiré');recheck()},1000);
     clearInterval(rlT);rlT=setInterval(()=>{if(document.visibilityState!=='visible'||!RLFB)return;if(IPBLOCKED)return checkIpBlock(RLFB);if(!overlay){maybeReload(0,RLFB);checkIpBlock(RLFB)}},12000);
   }
@@ -300,7 +325,7 @@
   function box(html,tab,sub){if(!overlay)return;const c=overlay.querySelector('.lic-card');
     const tabs=tab?`<div class="lic-tabs" role="tablist"><button data-tab="key" class="${tab==='key'?'on':''}">🔑 J'ai une clé</button>${canInscr()?`<button data-tab="ins" class="${tab==='ins'?'on':''}">🆕 Inscription</button>`:''}<button data-tab="req" class="${tab==='req'?'on':''}">📨 Demander</button></div>`:'';
     c.innerHTML=`<div class="lic-hd"><div class="lic-logo">${ICON}</div><div><h2>${esc(PRODUIT)}${MODULE?`<span class="lic-chip">${esc(MODULE)}</span>`:''}</h2><p>${esc(sub||'Licence logicielle')}</p></div></div>`+tabs+html+
-      `<div class="lic-ft">🔒 Connexion sécurisée · vos données restent sur cet appareil</div>`;
+      `<div class="lic-ft">🔒 Connexion sécurisée · vos données restent sur cet appareil<br><span style="opacity:.8">🛡️ Logiciel protégé : en cas d'utilisation non autorisée (copie, clé invalide, contournement), l'adresse IP, l'appareil et les coordonnées de l'établissement saisies dans le logiciel sont transmises à l'éditeur.</span></div>`;
     c.querySelectorAll('.lic-tabs button').forEach(b=>b.onclick=()=>{const t=b.dataset.tab;if(t==='key')showKey();else if(t==='req')showRequestForm();else{inscrDepuisApp=false;showInscription()}});
     c.querySelectorAll('.lic-eye').forEach(b=>b.onclick=()=>{const i=b.previousElementSibling;i.type=i.type==='password'?'text':'password';b.textContent=i.type==='password'?'👁':'🙈'});
     const k=c.querySelector('.lic-key');if(k){k.maxLength=24;k.addEventListener('input',e=>{const p=k.selectionStart===k.value.length;const v=k.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,20);let o=v.match(/.{1,4}/g)?.join('-')||'';if(p&&!/^delete/.test(e.inputType||'')&&v.length%4===0&&v.length&&v.length<20)o+='-';k.value=o;if(p)k.selectionStart=k.selectionEnd=k.value.length})}
@@ -423,11 +448,11 @@
       <div class="lic-ft">🔒 Contactez votre fournisseur si vous pensez qu'il s'agit d'une erreur</div></div>`;
     (document.body||document.documentElement).appendChild(o);overlay=o;try{document.body.style.overflow='hidden'}catch(e){}
     clearInterval(rlT);rlT=setInterval(()=>{if(RLFB)checkIpBlock(RLFB)},12000)}
-  function pirate(){clearInterval(timer);licCss();if(overlay){overlay.remove();overlay=null}
+  function pirate(){secuRep('copie',{hint:'Domaine : '+location.hostname});clearInterval(timer);licCss();if(overlay){overlay.remove();overlay=null}
     const o=document.createElement('div');o.id='lic-overlay';o.innerHTML=`<div class="lic-card" style="text-align:center">
       <div class="lic-logo" style="margin:0 auto 14px;background:linear-gradient(135deg,#e11d48,#f97316)">🛡️</div>
       <h2 style="margin:0 0 6px">Copie non autorisée</h2>
-      <p class="lic-lead" style="text-align:center">Cette copie de <b>${esc(PRODUIT)}</b> s'exécute sur un domaine non autorisé (<b>${esc(location.hostname||'inconnu')}</b>).<br>Le logiciel est protégé et ne peut fonctionner qu'à partir du site officiel de l'éditeur.</p>
+      <p class="lic-lead" style="text-align:center">Cette copie de <b>${esc(PRODUIT)}</b> s'exécute sur un domaine non autorisé (<b>${esc(location.hostname||'inconnu')}</b>).<br>Cette tentative (adresse IP, appareil, coordonnées de l'établissement) a été signalée à l'éditeur.<br>Le logiciel est protégé et ne peut fonctionner qu'à partir du site officiel de l'éditeur.</p>
       <div class="lic-ft" style="border:0">© ALIANDpro — tous droits réservés</div></div>`;
     (document.body||document.documentElement).appendChild(o);overlay=o;
     try{document.body.style.overflow='hidden'}catch(e){}}
