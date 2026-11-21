@@ -1,23 +1,24 @@
 {
   "rules": {
     "limits": {
-      ".read": true,
+      ".read": "auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63'",
       "$lic": {
         ".write": "auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63'"
       }
     },
     "devices": {
-      ".read": true,
+      ".read": "auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63'",
       "$lic": {
         ".write": "auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63'",
         "$slot": {
           ".write": "newData.exists() && $slot.length === 2 && $slot.matches(/^[0-9][0-9]$/) && root.child('limits').child($lic).exists() && (!data.exists() || data.child('id').val() === newData.child('id').val())",
           ".validate": "newData.hasChildren(['id','t']) && newData.child('id').isString() && newData.child('id').val().length <= 40"
-        }
+        },
+        ".read": true
       }
     },
     "excess": {
-      ".read": true,
+      ".read": "auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63'",
       "$lic": {
         ".write": "auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63'",
         "$dev": {
@@ -68,9 +69,10 @@
       }
     },
     "reload": {
-      ".read": true,
+      ".read": "auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63'",
       "$lic": {
-        ".write": "auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63'"
+        ".write": "auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63'",
+        ".read": true
       }
     },
     "ipblock": {
@@ -100,12 +102,13 @@
       }
     },
     "inbox": {
-      ".read": true,
+      ".read": "auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63'",
       "$o": {
         "$t": {
           ".write": "!data.exists() && newData.exists() && root.child('support').child($t).exists()",
           ".validate": "newData.isNumber() && $o.length <= 40 && $t.length <= 40"
-        }
+        },
+        ".read": true
       }
     },
     "flash": {
@@ -117,7 +120,7 @@
       ".write": "auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63'",
       "$e": {
         ".write": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (!data.exists() && newData.exists())",
-        ".validate": "$e.length >= 10 && $e.length <= 40 && newData.hasChildren(['t','r','lic','p']) && newData.child('t').isNumber() && newData.child('r').isString() && newData.child('r').val().length <= 12 && newData.child('lic').isString() && newData.child('lic').val().length <= 40 && newData.child('p').isString() && newData.child('p').val().length <= 60 && (!newData.child('u').exists() || (newData.child('u').isString() && newData.child('u').val().length <= 60)) && (!newData.child('ip').exists() || (newData.child('ip').isString() && newData.child('ip').val().length <= 45))"
+        ".validate": "$e.length >= 10 && $e.length <= 40 && newData.hasChildren(['t','r','lic','p']) && newData.child('t').isNumber() && newData.child('t').val() <= now + 300000 && newData.child('r').isString() && newData.child('r').val().length <= 12 && newData.child('lic').isString() && newData.child('lic').val().length <= 80 && newData.child('p').isString() && newData.child('p').val().length <= 60 && (!newData.child('u').exists() || (newData.child('u').isString() && newData.child('u').val().length <= 60)) && (!newData.child('ip').exists() || (newData.child('ip').isString() && newData.child('ip').val().length <= 45))"
       }
     }
   }

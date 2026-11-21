@@ -115,10 +115,10 @@
     Object.keys(o).forEach(k=>{if(!o[k])delete o[k]});return o}
   const maskKey=k=>{k=String(k||'').toUpperCase();return k.length>8?k.slice(0,4)+'…'+k.slice(-4):k?'…':''};
   async function secuRep(r,x){x=x||{};try{if(FRAMED)return;
-    const dk='licSecR_'+PRODUIT+'_'+r,last=+localStorage.getItem(dk)||0;if(!x.force&&Date.now()-last<20*6e4)return;try{localStorage.setItem(dk,String(Date.now()))}catch(e){}
+    const dk='licSecR_'+PRODUIT+'_'+(MODULE||'')+'_'+r,last=+localStorage.getItem(dk)||0;if(!x.force&&Date.now()-last<(x.every||20*6e4))return;try{localStorage.setItem(dk,String(Date.now()))}catch(e){}
     let fb=RLFB;if(!fb){const d=await (await fetch(SRC+'?t='+Date.now(),{cache:'no-store'})).json();fb=String(d.firebase||'').replace(/\/+$/,'')}if(!fb)return;
-    const ni=await netInfo().catch(()=>({})),id=identite(),st=get(),lab={copie:'Copie sur un domaine non autorisé',cle_invalide:'Clé de licence invalide',revoquee:'Licence révoquée encore utilisée',banni:'Adresse bannie',trop:'Appareils en trop',contourne:'Écran de licence contourné',sans_licence:'Utilisé sans licence'}[r]||r;
-    const ev={t:Date.now(),r,p:PRODUIT,m:MODULE||PRODUIT,lic:String(CURLIC||x.lic||'-').slice(0,40),u:String(id.user||id.shop||'').slice(0,60),n:(lab+(id.shop?' — '+id.shop:'')).slice(0,60),
+    const ni=await netInfo().catch(()=>({})),id=identite(),st=get(),lab={copie:'Copie sur un domaine non autorisé',cle_invalide:'Clé de licence invalide',revoquee:'Licence révoquée encore utilisée',banni:'Adresse bannie',trop:'Appareils en trop',contourne:'Écran de licence contourné',sans_licence:'Utilisé sans licence',ouverture:'Ouverture '+(MODULE?PRODUIT+' · '+MODULE:PRODUIT)}[r]||r;
+    const ev={t:Date.now(),r,p:PRODUIT,m:MODULE||PRODUIT,lic:String(x.lic||CURLIC||'-').slice(0,80),u:String(id.user||id.shop||'').slice(0,60),n:(lab+(id.shop?' — '+id.shop:'')).slice(0,60),
       ip:String(ni.ip||'').slice(0,45),loc:String(ni.loc||'').slice(0,60),isp:String(ni.isp||'').slice(0,60),tz:DEVTZ,dev:DEVD,ua:navigator.userAgent.replace(/^Mozilla\/5\.0 /,'').slice(0,120),dv:await devId(),
       host:location.hostname.slice(0,60),url:location.href.split('#')[0].slice(0,200),mail:String(x.mail||st.mail||'').trim().toLowerCase().slice(0,120),key:maskKey(x.key||st.key),hint:String(x.hint||'').slice(0,80),how:'licence',id};
     await fetch(fb+'/secu.json',{method:'POST',keepalive:true,body:JSON.stringify(ev)})}catch(e){}}
@@ -249,7 +249,7 @@
   let curExp=null;
   let rlT=null;
   function watch(expire){
-    window.__licState={ok:true,t:Date.now()};curExp=expire;clearInterval(timer);
+    if(!window.__licState||!window.__licState.ok)secuRep('ouverture',{every:2*36e5});window.__licState={ok:true,t:Date.now()};curExp=expire;clearInterval(timer);
     timer=setInterval(()=>{if(!notExpired(curExp))return lock('Votre période d\'essai / licence a expiré');recheck()},1000);
     clearInterval(rlT);rlT=setInterval(()=>{if(document.visibilityState!=='visible'||!RLFB)return;if(IPBLOCKED)return checkIpBlock(RLFB);if(!overlay){maybeReload(0,RLFB);checkIpBlock(RLFB)}},12000);
   }
