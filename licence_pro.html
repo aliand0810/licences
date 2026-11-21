@@ -805,6 +805,7 @@ kbd{display:inline-block;padding:2px 7px;border-radius:6px;border:1px solid var(
     <button data-v="act"><span class="ni">📡</span><span>Activité</span></button>
     <button data-v="vault"><span class="ni">🧰</span><span>Coffre</span></button>
     <button data-v="alerts"><span class="ni">⚠️</span><span>Alertes</span><i class="nb" id="nbAl"></i></button>
+    <button data-v="sec"><span class="ni">🛡️</span><span>Sécurité</span><i class="nb" id="nbSec"></i></button>
     <button data-v="ip"><span class="ni">🌐</span><span>Adresses IP</span></button>
     <button data-v="set"><span class="ni">⚙️</span><span>Réglages</span></button>
     <button data-v="more" class="navMore"><span class="ni">☰</span><span>Menu</span><i class="nb" id="nbMore"></i></button>
@@ -1011,6 +1012,33 @@ kbd{display:inline-block;padding:2px 7px;border-radius:6px;border:1px solid var(
   <!-- ALERTES -->
   <section id="v-alerts" class="view">
     <div class="card"><h3>⚠️ Appareils refusés (licence en trop)</h3><p class="hint">Un code utilisé sur plus d'appareils que prévu est bloqué automatiquement et apparaît ici. Tu peux autoriser un appareil de plus ou ignorer la tentative.</p><div id="alList"></div></div>
+  </section>
+
+  <!-- SÉCURITÉ : connexions COVO Pro -->
+  <section id="v-sec" class="view">
+    <style>
+      .sec-row{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:1px solid var(--bd);border-radius:14px;background:var(--glass);margin-bottom:8px}
+      .sec-row.new{border-color:var(--a1);box-shadow:0 0 0 3px color-mix(in srgb,var(--a1) 18%,transparent)}
+      .sec-ic{width:38px;height:38px;flex-shrink:0;border-radius:12px;display:grid;place-items:center;font-size:1.15rem;background:color-mix(in srgb,var(--c) 16%,transparent);border:1px solid color-mix(in srgb,var(--c) 45%,transparent)}
+      .sec-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}.sec-t b{font-size:.9rem}.sec-t small{color:var(--mut);font-size:.76rem;line-height:1.4}
+      .sec-tag{display:inline-block;padding:1px 7px;border-radius:999px;background:var(--glass2);font-size:.68rem;font-weight:700;margin-left:4px}
+      .sec-b{display:flex;flex-direction:column;gap:6px;align-items:stretch}
+      #secKpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:12px}
+      @media(max-width:640px){.sec-row{flex-wrap:wrap}.sec-b{flex-direction:row;flex-wrap:wrap;width:100%}}
+    </style>
+    <div id="secWarn"></div>
+    <div id="secKpi"></div>
+    <div class="toolbar">
+      <input id="secq" placeholder="🔎 Utilisateur, IP, ville, appareil, client…" oninput="secSearch(this.value)">
+      <div class="chips" id="secflt"><button data-f="all" class="act" onclick="secFilter('all')">Toutes</button><button data-f="today" onclick="secFilter('today')">📅 Aujourd'hui</button><button data-f="bad" onclick="secFilter('bad')">❌ Échecs / refus</button><button data-f="ok" onclick="secFilter('ok')">✅ Réussies</button></div>
+      <select id="secLic" onchange="secLicF(this.value)" style="max-width:240px"><option value="">Toutes les licences</option></select>
+      <button class="ghost sm" id="secNotif" onclick="secNotif()">🔔 Notifications</button>
+      <button class="ghost sm" id="secMute" onclick="secMute()">🔊 Son</button>
+      <button class="ghost sm" onclick="secClear()">🧹 Effacer le journal</button>
+    </div>
+    <p class="hint">Chaque tentative de connexion à COVO Pro (réussie, code PIN faux, compte bloqué, verrouillage après 5 essais) arrive ici en quelques secondes, avec une alerte. <b>⛔ Bloquer l'utilisateur</b> empêche ce compte de se connecter ; <b>🌐 Bloquer l'IP</b> coupe l'accès au logiciel depuis cette adresse.</p>
+    <div id="secUsers"></div>
+    <div id="secList"></div>
   </section>
 
   <!-- ADRESSES IP -->
@@ -3089,4 +3117,98 @@ function openShotHelp(){const mac=/Mac/.test(navigator.platform),ios=/iPhone|iPa
       <p>Raccourci : <kbd>${mac?'⌘':'Ctrl'}</kbd> + <kbd>${mac?'⌥':'Alt'}</kbd> + <kbd>S</kbd> — depuis n'importe quel écran de Licence Pro.</p>${canShot()?'':'<p class="red">⚠️ Cet appareil ne permet pas la capture directe depuis le navigateur (téléphones, tablettes) : utilisez le raccourci ci-dessous puis 📎.</p>'}</div></div>
     <div class="sh-g">${R.map(([ic,os,k,how,tip],i)=>`<div class="sh-c${i===me?' me':''}"><div class="sh-t">${ic} ${os}${i===me?' <span class="pill" style="padding:2px 8px">votre appareil</span>':''}</div><div class="sh-k">${k}</div><p>${how}</p><small>${tip}</small></div>`).join('')}</div></div>`)}
 </script>
+<script>
+/* ═══════════ 🛡️ SÉCURITÉ — CONNEXIONS COVO PRO (alertes + blocage utilisateur / IP) ═══════════
+   Lecture : nœud Firebase « secu » (une entrée par tentative de connexion, envoyée par COVO Pro).
+   Blocage d'un utilisateur : ipblock/usr_<licence>_<empreinte du compte> { mode:'block' } — lu par COVO Pro.
+   Blocage d'une IP : fenêtre « ⛔ Déconnexion à distance » existante (openIpCut). */
+(function(){
+  const SK='licSecUi',RES={ok:['✅','Connexion réussie','#10b981'],fail:['❌','Code PIN incorrect','#f59e0b'],blocked:['⛔','Compte bloqué — refusé','#e11d48'],locked:['🔒','Connexion verrouillée (trop d\'essais)','#e11d48'],kicked:['🚪','Déconnecté (compte bloqué)','#e11d48']};
+  let EV=[],LASTK=null,INIT=false,ERR='',UNSEEN=0,F='all',Q='',LICF='';
+  const ui=()=>{try{return JSON.parse(localStorage.getItem(SK)||'{}')}catch(e){return{}}},saveUi=u=>{try{localStorage.setItem(SK,JSON.stringify(u))}catch(e){}};
+  const licOf=id=>(typeof LIC!=='undefined'&&LIC.find(l=>l.id===id))||null;
+  const who=e=>{const l=licOf(e.lic);return l?(l.nom||l.client||l.email||l.id):(e.lic||'?')};
+  const fmt=t=>new Date(t).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  async function ukey(lic,uid){return 'usr_'+lic+'_'+(await sha('uid|'+uid)).slice(0,16)}
+  const isUserBlocked=async e=>{if(!e.uid)return false;const k=await ukey(e.lic,e.uid);return !!(IPB&&IPB[k]&&IPB[k].mode==='block')};
+  function userBlocks(){return Object.entries(IPB||{}).filter(([k,b])=>k.startsWith('usr_')&&b&&b.mode==='block').map(([k,b])=>({k,...b}))}
+
+  /* ── Chargement / sondage (toutes les 10 s) ── */
+  async function poll(){
+    let t;try{t=await fbTok()}catch(e){return}
+    const q=LASTK?`orderBy=%22$key%22&startAt=%22${encodeURIComponent(LASTK)}%22`:`orderBy=%22$key%22&limitToLast=400`;
+    let r;try{r=await fetch(`${FB()}/secu.json?auth=${t}&${q}&t=${Date.now()}`)}catch(e){return}
+    if(r.status===401||r.status===403){ERR='rules';render();return}
+    if(!r.ok)return;ERR='';
+    const d=await r.json()||{},keys=Object.keys(d).sort(),fresh=[];
+    keys.forEach(k=>{if(k===LASTK)return;const e={k,...d[k]};EV.push(e);fresh.push(e)});
+    if(keys.length)LASTK=keys[keys.length-1];
+    EV.sort((a,b)=>a.k<b.k?1:-1);if(EV.length>1500)EV.length=1500;
+    const u=ui();
+    if(!INIT){INIT=true;const seen=u.seen||'';UNSEEN=EV.filter(e=>e.k>seen).length;
+      if(UNSEEN&&seen)toast(`🛡️ ${UNSEEN} connexion(s) COVO Pro depuis ta dernière visite`,'ok')}
+    else if(fresh.length){UNSEEN+=fresh.length;fresh.slice(-5).forEach(alertOne)}
+    if($('v-sec')&&$('v-sec').classList.contains('on')&&!document.hidden)markSeen();
+    badge();render()}
+  function markSeen(){if(!EV.length)return;const u=ui();u.seen=EV[0].k;saveUi(u);UNSEEN=0;badge()}
+  function badge(){const b=$('nbSec');if(b)b.textContent=ERR==='rules'?'!':(UNSEEN?String(UNSEEN>99?'99+':UNSEEN):'')}
+
+  /* ── Alerte : notification système + son + bandeau ── */
+  function beep(bad){if(ui().mute)return;try{const A=window.AudioContext||window.webkitAudioContext,ac=new A();[0,.22].concat(bad?[.44]:[]).forEach((d,i)=>{const o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.value=bad?(i%2?660:990):880;g.gain.value=.12;o.connect(g);g.connect(ac.destination);o.start(ac.currentTime+d);o.stop(ac.currentTime+d+.16)});setTimeout(()=>ac.close(),1200)}catch(e){}}
+  function alertOne(e){const R=RES[e.r]||['🔐',e.r,'#6366f1'],bad=e.r!=='ok';
+    const txt=`${R[1]}${e.u?' — '+e.u:''} · ${who(e)}${e.loc?' · '+e.loc:''}${e.ip?' · '+e.ip:''}`;
+    toast('🛡️ '+txt,bad?'ko':'ok');beep(bad);
+    try{if(window.Notification&&Notification.permission==='granted'&&!ui().noNotif){const n=new Notification(`${R[0]} COVO Pro — ${R[1]}`,{body:`${e.u?'Utilisateur : '+e.u+'\n':''}Client : ${who(e)}\n${e.dev||''}${e.ip?'\nIP : '+e.ip:''}${e.loc?' ('+e.loc+')':''}`,tag:'sec-'+e.k,requireInteraction:bad});n.onclick=()=>{window.focus();go('sec');n.close()}}}catch(x){}
+    const ft=document.title;if(!document.title.startsWith('🛡️'))document.title='🛡️ '+ft;setTimeout(()=>{document.title=document.title.replace(/^🛡️ /,'')},6000)}
+
+  /* ── Affichage ── */
+  function filt(){const q=Q.trim().toLowerCase(),day=new Date().setHours(0,0,0,0);
+    return EV.filter(e=>{if(F==='ok'&&e.r!=='ok')return false;if(F==='bad'&&e.r==='ok')return false;if(F==='today'&&e.t<day)return false;if(LICF&&e.lic!==LICF)return false;
+      if(q&&![e.u,e.ip,e.loc,e.isp,e.dev,who(e),e.lic,e.hint].join(' ').toLowerCase().includes(q))return false;return true})}
+  async function render(){const v=$('v-sec');if(!v||!v.classList.contains('on'))return;
+    const day=new Date().setHours(0,0,0,0),today=EV.filter(e=>e.t>=day),bad=today.filter(e=>e.r!=='ok'),ub=userBlocks(),ipb=Object.values(IPB||{}).filter(b=>b&&b.ip&&!b.ref&&b.mode==='block');
+    const licIds=[...new Set(EV.map(e=>e.lic))];
+    $('secKpi').innerHTML=[['🔐',"Connexions aujourd'hui",today.length,'var(--a1)'],['❌','Échecs / refus aujourd\'hui',bad.length,'var(--ko)'],['⛔','Utilisateurs bloqués',ub.length,'#e11d48'],['🌐','Adresses IP coupées',ipb.length,'#f59e0b']]
+      .map(([i,l,v,c])=>`<div class="card kpi" style="--c:${c}"><div class="l">${i} ${l}</div><div class="v">${v}</div></div>`).join('');
+    $('secWarn').innerHTML=ERR==='rules'?`<div class="card" style="border-color:rgba(245,158,11,.5);background:rgba(245,158,11,.08)"><b>🔥 Règles Firebase à republier (nœud « secu »)</b><p class="hint" style="margin:6px 0 0">Réglages → 📜 Règles Firebase → 📋 Copier, puis Firebase → Realtime Database → Règles → coller → <b>Publier</b>. Sans cela, COVO Pro ne peut pas envoyer les tentatives de connexion.</p><button class="ghost sm" onclick="go('set')">⚙️ Ouvrir les Réglages</button></div>`:'';
+    const sel=$('secLic');if(sel){const cur=LICF;sel.innerHTML='<option value="">Toutes les licences</option>'+licIds.map(id=>`<option value="${esc(id)}"${id===cur?' selected':''}>${esc(who({lic:id}))}</option>`).join('')}
+    $('secUsers').innerHTML=ub.length?`<div class="card"><h3>⛔ Utilisateurs bloqués <small class="hint" style="margin:0 0 0 6px">${ub.length}</small></h3>${ub.map(b=>`<div class="sec-row"><div class="sec-ic" style="--c:#e11d48">⛔</div><div class="sec-t"><b>${esc(b.user||'?')}</b><small>${esc(who({lic:b.lic}))} · bloqué ${ago(b.t)}${b.msg?' · « '+esc(b.msg)+' »':''}</small></div><div class="sec-b"><button class="ghost sm ok" onclick="secUnblockUser('${esc(b.k)}')">✅ Débloquer</button></div></div>`).join('')}</div>`:'';
+    const L=filt().slice(0,300),blk=await Promise.all(L.map(isUserBlocked));
+    $('secList').innerHTML=L.length?L.map((e,i)=>{const R=RES[e.r]||['🔐',e.r,'#6366f1'],ipB=e.ip&&IPB&&IPB[ipKey(e.ip)];
+      return `<div class="sec-row${e.k>(ui().seen||'')?' new':''}"><div class="sec-ic" style="--c:${R[2]}">${R[0]}</div>
+        <div class="sec-t"><b><span style="color:${R[2]}">${R[1]}</span>${e.u?' — '+esc(e.u):''}${e.role?' <small class="sec-tag">'+esc(e.role)+'</small>':''}${blk[i]?' <small class="sec-tag" style="background:rgba(225,29,72,.15);color:#e11d48">bloqué</small>':''}</b>
+        <small>🕒 ${fmt(e.t)} (${ago(e.t)}) · 👤 ${esc(who(e))}${e.how&&e.how!=='pin'?' · via '+esc(e.how):''}${e.fails?' · '+e.fails+' échec(s) de suite':''}${e.lockMin?' · verrouillé '+e.lockMin+' min':''}</small>
+        <small>💻 ${esc(e.dev||'appareil inconnu')} · 🌐 ${e.ip?'<code>'+esc(e.ip)+'</code>':'IP inconnue'}${e.loc?' · 📍 '+esc(e.loc):''}${e.isp?' · '+esc(e.isp):''}${ipB?' · '+ipCutBadge(e.ip):''}${e.hint?' · '+esc(e.hint):''}</small></div>
+        <div class="sec-b">${e.uid&&e.uid!=='USR-MASTER'?(blk[i]?`<button class="ghost sm ok" onclick="secUnblockUid('${esc(e.lic)}','${esc(e.uid)}')">✅ Débloquer l'utilisateur</button>`:`<button class="ghost sm danger" onclick="secBlockUser('${esc(e.k)}')">⛔ Bloquer l'utilisateur</button>`):''}
+          ${e.ip?(ipB&&ipB.mode==='block'?`<button class="ghost sm ok" onclick="ipRestore('${esc(e.ip)}')">✅ Rétablir l'IP</button>`:`<button class="ghost sm danger" onclick="openIpCut('${esc(e.ip)}')">🌐 Bloquer l'IP</button>`):''}</div></div>`}).join('')
+      :`<div class="card"><p class="hint" style="margin:0">${EV.length?'Aucune tentative pour ce filtre.':'Aucune tentative de connexion reçue pour l\'instant. Elles apparaissent ici dès qu\'un utilisateur se connecte à COVO Pro (après mise à jour de COVO Pro et publication des règles Firebase).'}</p></div>`;
+    const u=ui();$('secNotif').textContent=window.Notification?(Notification.permission==='granted'&&!u.noNotif?'🔔 Notifications : activées':'🔕 Activer les notifications'):'🔕 Notifications indisponibles';$('secMute').textContent=u.mute?'🔇 Son coupé':'🔊 Son activé'}
+  window.secRender=render;
+
+  /* ── Actions ── */
+  window.secBlockUser=function(k){const e=EV.find(x=>x.k===k);if(!e)return;
+    niceConfirm({ic:'⛔',col:'#e11d48',title:`Bloquer « ${esc(e.u||'?')} »`,sub:`Licence : ${esc(who(e))}`,rows:[['Utilisateur',esc(e.u||'?')+(e.role?' ('+esc(e.role)+')':'')],['Dernière tentative',fmt(e.t)],['Appareil',esc(e.dev||'—')],['Adresse IP',esc(e.ip||'—')]],
+      points:['Ce compte ne pourra plus se connecter à COVO Pro (message « compte bloqué »).','S\'il est connecté en ce moment, il est déconnecté dans la minute.','Le compte Admin-Développeur ne peut pas être bloqué.'],btn:'⛔ Bloquer l\'utilisateur',
+      run:async()=>{try{const key=await ukey(e.lic,e.uid);await fbPut('ipblock/'+key,{mode:'block',kind:'user',t:Date.now(),user:e.u||'',uid:e.uid,lic:e.lic,email:(licOf(e.lic)||{}).email||'',prods:['COVO Pro'],msg:null});IPB[key]={mode:'block',kind:'user',t:Date.now(),user:e.u,uid:e.uid,lic:e.lic};closeModal();toast('⛔ '+(e.u||'Utilisateur')+' bloqué');render()}catch(x){closeModal();toast(String(x.message).includes('401')?'Règles Firebase à republier — voir Réglages':x.message,'ko')}}})};
+  async function unblockKey(key,label){try{await fbPut('ipblock/'+key,null);delete IPB[key];toast('✅ '+label+' débloqué');render()}catch(x){toast(x.message,'ko')}}
+  window.secUnblockUser=k=>unblockKey(k,(IPB[k]&&IPB[k].user)||'Utilisateur');
+  window.secUnblockUid=async(lic,uid)=>{const k=await ukey(lic,uid);unblockKey(k,(IPB[k]&&IPB[k].user)||'Utilisateur')};
+  window.secNotif=async function(){const u=ui();if(!window.Notification)return toast('Notifications non disponibles sur ce navigateur','ko');
+    if(Notification.permission==='granted'){u.noNotif=!u.noNotif;saveUi(u);toast(u.noNotif?'🔕 Notifications coupées':'🔔 Notifications activées');return render()}
+    const p=await Notification.requestPermission();u.noNotif=false;saveUi(u);toast(p==='granted'?'🔔 Notifications activées':'Notifications refusées par le navigateur',p==='granted'?'ok':'ko');render()};
+  window.secMute=function(){const u=ui();u.mute=!u.mute;saveUi(u);render()};
+  window.secClear=function(){niceConfirm({ic:'🧹',col:'#f59e0b',title:'Effacer le journal des connexions',sub:'Toutes les tentatives enregistrées seront supprimées (les blocages restent en place).',btn:'🧹 Effacer',run:async()=>{try{await fbPut('secu',null);EV=[];LASTK=null;closeModal();toast('🧹 Journal effacé');render()}catch(x){closeModal();toast(x.message,'ko')}}})};
+  window.secFilter=function(f){F=f;document.querySelectorAll('#secflt button').forEach(b=>b.classList.toggle('act',b.dataset.f===f));render()};
+  window.secSearch=function(v){Q=v;render()};window.secLicF=function(v){LICF=v;render()};
+
+  /* ── Branchement ── */
+  TITLES.sec=['Sécurité','Tentatives de connexion à COVO Pro · bloquer un utilisateur ou une adresse IP'];
+  const _go=go;go=function(v){_go(v);if(v==='sec'){markSeen();(typeof loadIpBlocks==='function'?loadIpBlocks():Promise.resolve()).then(render)}};
+  document.querySelectorAll('nav button[data-v="sec"]').forEach(b=>b.onclick=()=>go('sec'));
+  setInterval(poll,10000);                                                             // aussi en arrière-plan : l'alerte doit arriver même si l'onglet n'est pas affiché
+  setTimeout(poll,2500);
+  setInterval(()=>{if($('v-sec')&&$('v-sec').classList.contains('on'))render()},60000);
+})();
+</script>
+
 </body></html>
