@@ -22,7 +22,7 @@
       "onglets": null,
       "google": {
         "clientId": "531822941380-u6o0c9lsk4jsppau5mmrt1enst973r9d.apps.googleusercontent.com",
-        "em": "E1.cack3BdOqXz86rjg.J3CGOPkyUxvyp5kg671C9Pz73ufQ3rVl+cdrDTDVkrtJPA=="
+        "em": "E1.prX5hTJCQCma7wW8.Mndi4B6SyzUB17ddA0AqP61VnXjlqZi9GHZ9Hz7IOObNDA=="
       },
       "sav": {
         "on": true,
@@ -32,6 +32,10 @@
       "ongletsOff": null,
       "ongletsNoms": null,
       "log": [
+        {
+          "t": 1795475205169,
+          "a": "Masquer le bouton sumup"
+        },
         {
           "t": 1795475200264,
           "a": "Masquer le bouton vocal"
@@ -80,9 +84,10 @@
       "suivi": 1,
       "masquer": [
         "verif",
-        "vocal"
+        "vocal",
+        "sumup"
       ],
-      "em": "E1.UmdC3vD/oxvQiy3c.dJ7p2YHYzPz/dds7ozd27UMNl8mq4GaD9VuTn0j9XClRaQ=="
+      "em": "E1.3HNNBv/xohdX/+Ak.wi84JsnPLX3oiIluelBqZrUIhUk+Ih6vrQvVsOOd2p0s6w=="
     },
     {
       "id": "4dd7a434fd4813907afaaab9fe377a11c09f02ec9317bdbefa5d9246d6ade619",
@@ -132,7 +137,7 @@
         }
       ],
       "suivi": 1,
-      "em": "E1.Bq9yXnrqkVVyR4Nc.TsenuFNhMmfE5mIONf7YTNzoZfAh5+h1A7lEMOaI7EO8ezjq"
+      "em": "E1.1c83CST1rJxI3KtA.gi3BTalXkyF1QYvgGqdiV+CxTA3aO+M4mxuoOnPdxRtOwbrY"
     },
     {
       "id": "e920618ab44fccf2e98f0e20f0a4e04c5de1abeab2f1f1a522bf11eaf42edd96",
@@ -151,7 +156,7 @@
       "google": null,
       "ongletsOff": null,
       "ongletsNoms": null,
-      "em": "E1.YPB8jM0cfWlsIPd0./xgdg4E4ZljSI35tAPpRs54r4//hUEiS1dbM5/wZg+11ZYoL"
+      "em": "E1.WDjEnZKGxBTZUJp9.7cW+eFymYOXOY67hX20sEENB13XQM0SSY/lbSrlmqxwi7JGk"
     },
     {
       "id": "e26c290ce3849e13dd8182d565d944e387c40123b964476fbd99ceff0d1fec79",
@@ -170,7 +175,7 @@
       "google": null,
       "ongletsOff": null,
       "ongletsNoms": null,
-      "em": "E1.mCzlPh3ec4fbRZ6D.kvBb+PwSm3YtqzYGnCJtqC/Zgl+u854zba98OO4VW7o8Zvfq/g=="
+      "em": "E1.633hrBuIVL+akhz/.YxOFskXjgZmKQwbPcM4kO4sHsq/K+hlOaBk1wSD+6d/i7rMydA=="
     },
     {
       "id": "04900c606129c087d546b9bcf2090c4392092890d4904311a134b8389e88125f",
@@ -200,7 +205,7 @@
       "google": null,
       "ongletsOff": null,
       "ongletsNoms": null,
-      "em": "E1.kbEv9uri4kTz0ZFk.d5nQNQtCtSfbkvLa0LROoXjBajl2P5nSI+RH+ZT2hE4Y9mws"
+      "em": "E1.8zkjNj3nBPRqSZjq.tFBc+WBCHfJ8g/cgz299z+keMfQhhZiB/4jmSyK5KlAq5VzU"
     }
   ],
   "bannis": [],
