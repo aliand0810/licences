@@ -22,7 +22,7 @@
       "onglets": null,
       "google": {
         "clientId": "531822941380-u6o0c9lsk4jsppau5mmrt1enst973r9d.apps.googleusercontent.com",
-        "em": "E1.zwYp4tgSOAFqS15k.NG0/niYQgx6I9eozMtRwS5uLYhNT2yNw//sMSTFPmpYfFw=="
+        "em": "E1.N2uvlPGxTdz+9qQY.tE9AKCZZoOYAIXAXuynNhlYr+GyeALHEVVIR2xhRZ1MHGw=="
       },
       "sav": {
         "on": true,
@@ -32,6 +32,10 @@
       "ongletsOff": null,
       "ongletsNoms": null,
       "log": [
+        {
+          "t": 1795476521904,
+          "a": "Afficher le bouton vocal"
+        },
         {
           "t": 1795476419722,
           "a": "Afficher le bouton sumup"
@@ -119,10 +123,9 @@
       },
       "suivi": 1,
       "masquer": [
-        "vocal",
         "verif"
       ],
-      "em": "E1.zUsK52pC8Svc9tH8.rx+3uU+bbzahIuGECoZhqXs2ybd6IWWpB1CNElGz3lPpgQ=="
+      "em": "E1.cMn017+8eBw0+o1k.mAKsnoKU/W6Tq/4wXezONhFn+kM1ob66DPjBQxM+QqA+Cw=="
     },
     {
       "id": "4dd7a434fd4813907afaaab9fe377a11c09f02ec9317bdbefa5d9246d6ade619",
@@ -172,7 +175,7 @@
         }
       ],
       "suivi": 1,
-      "em": "E1.JoP5ALzQUJ3mQC+c.UMpwwTp45q7PyCBOWr3t9mtcbuZjtXmOd34eDe3YmWI/FzF5"
+      "em": "E1.zw2a/eQUeI4N6SED./ysU+BtSTwoR7uyeynZEbTzpuzsgckG6X2ETgKieqKfXxFNX"
     },
     {
       "id": "e920618ab44fccf2e98f0e20f0a4e04c5de1abeab2f1f1a522bf11eaf42edd96",
@@ -191,7 +194,7 @@
       "google": null,
       "ongletsOff": null,
       "ongletsNoms": null,
-      "em": "E1.hVEKQLShkIKnDytT.u3r7OIF61vR8dbNToMKwhLrACjw+wl2lZzbLixZ+jDmu2HlB"
+      "em": "E1.uokqrjRSFoAslRf0.2FxuzPQbP/W3+MIR+GKuuWKzXgSK8h3SDsuAwoIZd4CkU0Vx"
     },
     {
       "id": "e26c290ce3849e13dd8182d565d944e387c40123b964476fbd99ceff0d1fec79",
@@ -210,7 +213,7 @@
       "google": null,
       "ongletsOff": null,
       "ongletsNoms": null,
-      "em": "E1.3AcH5vsH46vjcqUh.6D/BNZJ7iggpTzNt/7KsOdgB/ESXs3gSvpFAB/pgy1VUKXTT+Q=="
+      "em": "E1.bCDgdbIeprxu1p14.3fQFG/6mMiiyjVnIhTo398HvomaA1oP7uAS1IjmWHG6GeR71LA=="
     },
     {
       "id": "04900c606129c087d546b9bcf2090c4392092890d4904311a134b8389e88125f",
@@ -240,7 +243,7 @@
       "google": null,
       "ongletsOff": null,
       "ongletsNoms": null,
-      "em": "E1.ujEbBTnNitfSi21D.quTUVlwpFvBqg6APsy6J8JUnQjCC9RjMTKV8T2iDhn5ePNG4"
+      "em": "E1.0FoDWp+j5EmXu9cY.tYMgrn5EHXTFCnbFaP1+Pr+NaRozTcTZEzl97p3kUNliUa+j"
     }
   ],
   "bannis": [],
