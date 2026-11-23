@@ -1291,6 +1291,22 @@ async function fbTok(){if(FBT&&FBT.exp>Date.now())return FBT.t;if(FBP)return FBP
   try{return await FBP}finally{FBP=null}}
 async function fbPut(path,val){const t=await fbTok();const r=await fetch(`${FB()}/${path}.json?auth=${t}`,{method:val===null?'DELETE':'PUT',body:JSON.stringify(val)});
   if(!r.ok)throw new Error('Firebase '+r.status+' — vérifie les règles publiées')}
+// 🛡️ Toute donnée lue dans Firebase passe par fbClean : une entrée dont la clé contient des caractères
+// dangereux (apostrophe, guillemet, chevron, parenthèse…) est ignorée — elle ne peut jamais finir dans un bouton.
+const KEYBAD=/['"`\\<>&(){};=\u0000-\u001f]/,KEYOK={test:k=>k.length<=300&&!KEYBAD.test(k)};let KEYDROP=0;
+function fbClean(o,d){if(!o||typeof o!=='object'||(d||0)>8)return o;if(Array.isArray(o))return o.map(x=>fbClean(x,(d||0)+1));const r={};
+  for(const k in o){if(!KEYOK.test(k)){KEYDROP++;continue}r[k]=fbClean(o[k],(d||0)+1)}return r}
+{const _rj=Response.prototype.json;Response.prototype.json=async function(){const v=await _rj.call(this);try{return /firebasedatabase\.app|firebaseio\.com/.test(this.url)?fbClean(v):v}catch(e){return v}}}
+// 🔒 Reverrouillage automatique : après 15 min sans activité, le coffre est refermé (secrets effacés de la mémoire, page rechargée)
+(()=>{const IDLE=15*60000;let last=Date.now(),warned=false;
+  const hasLock=()=>{try{return !!(localStorage.getItem('licVault')||localStorage.getItem('licAdmin'))}catch(e){return false}};
+  const touch=()=>{last=Date.now();if(warned){warned=false;const w=document.getElementById('lockWarn');if(w)w.remove()}};
+  ['pointerdown','keydown','wheel','touchstart','mousemove'].forEach(ev=>addEventListener(ev,touch,{passive:true}));
+  setInterval(()=>{if(!hasLock()||!SVAULT)return;const idle=Date.now()-last;
+    if(idle>IDLE){try{SVAULT=null;SVKEY=null;FBT=null}catch(e){}location.reload();return}
+    if(idle>IDLE-60000&&!warned){warned=true;const w=document.createElement('div');w.id='lockWarn';
+      w.style.cssText='position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:2147483000;background:#111827;color:#fff;padding:12px 18px;border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.45);font-weight:700;font-size:14px';
+      w.textContent='🔒 Licence Pro se verrouille dans 1 minute (inactivité) — bouge la souris pour rester connecté';document.body.appendChild(w)}},5000)})();
 async function fbAuthQ(){try{return '&auth='+await fbTok()}catch(e){return ''}}
 async function fbGet(path){try{const r=await fetch(`${FB()}/${path}.json?t=${Date.now()}${await fbAuthQ()}`);return r.ok?await r.json():null}catch(e){return null}}
 let RULES_OK=true;
@@ -2231,7 +2247,7 @@ async function flDel(id){if(!confirm('Supprimer ce flash ?'))return;try{await fb
 async function mbProSet(rid,on){try{await mbSet(rid,{pro:on});toast(on?'⭐ Mode avancé activé':'Mode avancé retiré');loadAnnMb()}catch(e){toast(e.message,'ko')}}
 async function mbPro(rid){const r=mbGet(rid);try{const t=await fbTok(),acc=await (await fetch(`${FB()}/requests/${r.ref}.json?auth=${t}`)).json();if(!acc)throw new Error('Compte introuvable');
   await fbPut('requests/'+r.ref,{...acc,pro:true});await mbSet(rid,{statut:'accordee'});toast('⭐ Mode avancé accordé');loadAnnMb()}catch(e){toast(e.message,'ko')}}
-async function loadAnnMb(){try{const d=await annGet('requests');ANNMB=Object.entries(d).map(([rid,r])=>({...r,rid})).filter(r=>r.produit==='Annonces'&&(r.type==='compte'||r.type==='mdp'||r.type==='pro')).sort((a,b)=>b.t-a.t);renderAnnMb()}catch(e){$('annMb').innerHTML=`<div class="empty">⚠️ ${esc(e.message)}</div>`}}
+async function loadAnnMb(){try{const d=await annGet('requests');ANNMB=Object.entries(d).map(([rid,r])=>({...r,rid})).filter(r=>r.produit==='Annonces'&&(r.type==='compte'||r.type==='mdp'||r.type==='pro')).sort((a,b)=>b.t-a.t);renderAnnMb();mbIndex()}catch(e){$('annMb').innerHTML=`<div class="empty">⚠️ ${esc(e.message)}</div>`}}
 function renderAnnMb(){const w=ANNMB.filter(r=>r.statut==='attente'),ok=ANNMB.filter(r=>r.type==='compte'&&r.statut==='accordee');
  $('annMbN').textContent=ok.length+' membre(s) · '+w.length+' en attente';ANNMBW=w.length;annBadge();
  const nAds=em=>[...ANNW,...ANNON].filter(a=>(anWho(a).ml||'').toLowerCase()===String(em||'').toLowerCase()).length;
@@ -2241,12 +2257,16 @@ function renderAnnMb(){const w=ANNMB.filter(r=>r.statut==='attente'),ok=ANNMB.fi
  $('annMb').innerHTML=(w.length?w.map(r=>row(r,r.type==='pro'?`<button class="btn sm" onclick="mbPro('${r.rid}')">⭐ Accorder le mode avancé</button><button class="ghost sm danger" onclick="mbNo('${r.rid}')">❌ Refuser</button>`:r.type==='mdp'?`<button class="btn sm" onclick="mbPwd('${r.rid}')">✅ Valider le nouveau mot de passe</button><button class="ghost sm danger" onclick="mbNo('${r.rid}')">❌ Refuser</button>`:`<button class="btn sm" onclick="mbOk('${r.rid}')">✅ Valider le compte</button><button class="ghost sm danger" onclick="mbNo('${r.rid}')">❌ Refuser</button>`)).join(''):'<div class="empty">📭 Aucune demande de compte en attente</div>')
   +(ok.length?`<details style="margin-top:12px"><summary style="cursor:pointer">Membres validés (${ok.length})</summary>${ok.map(r=>row(r,`<button class="ghost sm" onclick="mbProSet('${r.rid}',${!r.pro})">${r.pro?'☆ Retirer le mode avancé':'⭐ Activer le mode avancé'}</button><button class="ghost sm danger" onclick="mbOff('${r.rid}')">⛔ Désactiver</button>`)).join('')}</details>`:'')}
 const mbGet=rid=>ANNMB.find(x=>x.rid===rid);
+// index de connexion des membres (empreinte e-mail + mot de passe → compte) : complété automatiquement
+async function mbIndex(){try{const L=await fbGet('membresLog')||{},have=new Set(Object.keys(L));
+  for(const r of ANNMB.filter(r=>r.type==='compte'&&/^[0-9a-f]{64}$/.test(r.hash||'')&&r.statut!=='refusee'))if(!have.has(r.hash))await fbPut('membresLog/'+r.hash,r.rid)}catch(e){}}
 async function mbSet(rid,patch){const{rid:_,...v}=mbGet(rid);await fbPut('requests/'+rid,{...v,...patch,traite:Date.now()})}
 async function mbOk(rid){try{await mbSet(rid,{statut:'accordee'});toast('🎉 Compte validé — le membre peut se connecter');loadAnnMb()}catch(e){toast(e.message,'ko')}}
-async function mbNo(rid){const m=prompt('Motif du refus (facultatif, affiché au demandeur) :','');if(m===null)return;try{await mbSet(rid,{statut:'refusee',motif:m.slice(0,200)});toast('Demande refusée');loadAnnMb()}catch(e){toast(e.message,'ko')}}
+async function mbNo(rid){const m=prompt('Motif du refus (facultatif, affiché au demandeur) :','');if(m===null)return;try{await mbSet(rid,{statut:'refusee',motif:m.slice(0,200)});const rr=mbGet(rid);if(rr&&rr.type==='compte'&&/^[0-9a-f]{64}$/.test(rr.hash||''))await fbPut('membresLog/'+rr.hash,null).catch(()=>{});toast('Demande refusée');loadAnnMb()}catch(e){toast(e.message,'ko')}}
 async function mbOff(rid){if(!confirm('Désactiver ce membre ? Il sera déconnecté du site.'))return;try{await mbSet(rid,{statut:'refusee',motif:'Compte désactivé'});toast('Membre désactivé');loadAnnMb()}catch(e){toast(e.message,'ko')}}
-async function mbPwd(rid){const r=mbGet(rid);try{const t=await fbTok(),acc=await (await fetch(`${FB()}/requests/${r.ref}.json?auth=${t}`)).json();if(!acc)throw new Error('Compte d\'origine introuvable');
-  await fbPut('requests/'+r.ref,{...acc,hash:r.hash,mdpLe:Date.now()});await mbSet(rid,{statut:'accordee'});toast('🔑 Nouveau mot de passe activé');loadAnnMb()}catch(e){toast(e.message,'ko')}}
+async function mbPwd(rid){const r=mbGet(rid);try{const t=await fbTok(),ref=r.ref||(ANNMB.find(x=>x.type==='compte'&&x.statut==='accordee'&&norm(x.email)===norm(r.email))||{}).rid;if(!ref)throw new Error('Aucun compte validé pour '+r.email);
+  const acc=await (await fetch(`${FB()}/requests/${ref}.json?auth=${t}`)).json();if(!acc)throw new Error('Compte d\'origine introuvable');
+  if(/^[0-9a-f]{64}$/.test(acc.hash||''))await fbPut('membresLog/'+acc.hash,null).catch(()=>{});await fbPut('requests/'+ref,{...acc,hash:r.hash,mdpLe:Date.now()});await fbPut('membresLog/'+r.hash,ref);await mbSet(rid,{statut:'accordee'});toast('🔑 Nouveau mot de passe activé');loadAnnMb()}catch(e){toast(e.message,'ko')}}
 function annImgs(id,on){const a=(on?ANNON:ANNW).find(x=>x.id===id);if(!a)return;const w=window.open('','_blank');if(w)w.document.write(`<title>${esc(a.title)}</title><body style="margin:0;background:#111;display:grid;gap:8px;padding:8px">${(a.imgs||[]).map(s=>`<img src="${s}" style="max-width:100%">`).join('')}`)}
 async function annOk(id,show){const a=ANNW.find(x=>x.id===id);if(!a)return;const{id:_,priv,...ad}=a;if(show&&priv)ad.contact=priv;else delete ad.contact;
  try{await fbPut('crm/annoncesPriv/'+id,priv||{});await fbPut('annonces/'+id,ad);await fbPut('annoncesWait/'+id,null);anLogAdd(a,show?'pub':'pubm');toast(show?'✅ Annonce publiée avec coordonnées':'✅ Annonce publiée, coordonnées masquées');await loadAnn()}catch(e){toast(e.message,'ko')}}

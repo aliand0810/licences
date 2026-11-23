@@ -875,10 +875,13 @@ function openLoginM(msg){closeM('mR');closeM('mA');$('lgB').innerHTML=`${msg?`<d
  <button class="btn btn-line" onclick="openForgot()">Mot de passe oublié ?</button>
  <div style="text-align:center;color:var(--ink2);font-size:.9rem;padding-top:8px;border-top:1px solid var(--line)">Pas encore de compte ?</div>
  <button class="btn btn-terra" onclick="openRegister()">Créer un compte</button>`;openM('mG');setTimeout(()=>$('gE')&&$('gE').focus(),200)}
-async function findMember(email){const rid=await fget('membresIdx/'+ekey(email));if(!rid)return null;const r=await fget('requests/'+rid);return r&&r.produit===PRODUIT?{rid,r}:null}
+// Connexion : l'annuaire est indexé par l'empreinte (e-mail + mot de passe) — sans le mot de passe, impossible de retrouver le compte
+async function findLogin(email,pass){const h=await phash(email,pass);let rid=null;try{rid=await fget('membresLog/'+h)}catch(e){}
+ if(!rid){try{rid=await fget('membresIdx/'+ekey(email))}catch(e){}}// anciens comptes (avant la mise à jour de sécurité)
+ if(!rid)return null;const r=await fget('requests/'+rid).catch(()=>null);return r&&r.produit===PRODUIT&&r.hash===h?{rid,r,h}:null}
 async function accLogin(b){const e=$('gE').value.trim().toLowerCase(),p=$('gP').value;if(!e||!p){toast('E-mail et mot de passe requis');return}
  b.disabled=true;b.textContent='Connexion…';
- try{const m=await findMember(e);if(!m||m.r.hash!==await phash(e,p))throw new Error('E-mail ou mot de passe incorrect');
+ try{const m=await findLogin(e,p);if(!m)throw new Error('E-mail ou mot de passe incorrect');
   if(m.r.statut==='attente')throw new Error('Votre inscription est encore en attente de validation');
   if(m.r.statut==='refusee')throw new Error('Votre inscription a été refusée'+(m.r.motif?' : '+m.r.motif:''));
   ACC={rid:m.rid,email:e,nom:m.r.nom||e,tel:m.r.tel||'',ville:m.r.ville||'',statut:'accordee',auth:true,pro:!!m.r.pro};LS.set('ma_acc',ACC);accUI();closeM('mG');toast('Bienvenue '+ACC.nom+' ✓')}
@@ -896,10 +899,10 @@ async function accReq(b){const nom=$('rN').value.trim(),email=$('rE').value.trim
  if(!nom||!/^\S+@\S+\.\S+$/.test(email))return toast('Nom et e-mail valides requis');
  if(p.length<6)return toast('Mot de passe : 6 caractères minimum');if(p!==$('rP2').value)return toast('Les mots de passe ne correspondent pas');
  b.disabled=true;
- try{const ex=await findMember(email);if(ex&&ex.r.statut!=='refusee')throw new Error(ex.r.statut==='attente'?'Une demande est déjà en attente pour cet e-mail':'Cet e-mail a déjà un compte — connectez-vous');
-  const id=rid(),body={email,nom,tel:$('rT').value.trim().slice(0,30),ville:$('rC').value.trim().slice(0,60),produit:PRODUIT,type:'compte',module:'Inscription site',hash:await phash(email,p),t:Date.now(),
+ try{const id=rid(),body={email,nom,tel:$('rT').value.trim().slice(0,30),ville:$('rC').value.trim().slice(0,60),produit:PRODUIT,type:'compte',module:'Inscription site',hash:await phash(email,p),t:Date.now(),
    message:('Demande d\'inscription — Maison des Annonces'+($('rM').value.trim()?'\n\n'+$('rM').value.trim():'')).slice(0,1000),statut:'attente',ua:navigator.userAgent.slice(0,200),page:location.href.split('#')[0].slice(0,200)};
-  await fput('requests/'+id,body);await fput('membresIdx/'+ekey(email),id).catch(()=>{});
+  try{await fput('membresIdx/'+ekey(email),id)}catch(e){throw new Error('Cet e-mail a déjà un compte ou une demande en cours — connectez-vous ou utilisez « Mot de passe oublié »')}
+  await fput('requests/'+id,body);await fput('membresLog/'+body.hash,id).catch(()=>{});
   ACC={rid:id,email,nom,statut:'attente'};LS.set('ma_acc',ACC);accUI();closeM('mR');showPending();toast('Demande envoyée ✓')}
  catch(x){toast(x.message||'Envoi impossible')}finally{b.disabled=false}}
 
@@ -913,8 +916,8 @@ function openForgot(){$('lgB').innerHTML=`<div class="note">Choisissez votre nou
 async function forgotReq(b){const e=$('fE').value.trim().toLowerCase(),p=$('fP').value;
  if(p.length<6)return toast('Mot de passe : 6 caractères minimum');if(p!==$('fP2').value)return toast('Les mots de passe ne correspondent pas');
  b.disabled=true;
- try{const m=await findMember(e);if(!m||m.r.statut!=='accordee')throw new Error('Aucun compte validé avec cet e-mail');
-  await fput('requests/'+rid(),{email:e,nom:m.r.nom||'',produit:PRODUIT,type:'mdp',module:'Mot de passe oublié',ref:m.rid,hash:await phash(e,p),t:Date.now(),message:('Demande de nouveau mot de passe — Maison des Annonces'+($('fM').value.trim()?'\n\n'+$('fM').value.trim():'')).slice(0,1000),statut:'attente'});
+ try{if(!/^\S+@\S+\.\S+$/.test(e))throw new Error('E-mail valide requis');
+  await fput('requests/'+rid(),{email:e,produit:PRODUIT,type:'mdp',module:'Mot de passe oublié',hash:await phash(e,p),t:Date.now(),message:('Demande de nouveau mot de passe — Maison des Annonces'+($('fM').value.trim()?'\n\n'+$('fM').value.trim():'')).slice(0,1000),statut:'attente'});
   openLoginM('📨 Demande envoyée. Dès qu\'elle sera validée, connectez-vous avec votre nouveau mot de passe.')}
  catch(x){toast(x.message||'Envoi impossible')}finally{b.disabled=false}}
 

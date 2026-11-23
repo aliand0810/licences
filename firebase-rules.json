@@ -13,7 +13,7 @@
         ".write": "auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63'",
         "$slot": {
           ".write": "newData.exists() && $slot.matches(/^[0-9][0-9]$/) && root.child('limits').child($lic).exists() && auth != null && newData.child('uid').val() === auth.uid && (!data.exists() || data.child('uid').val() === auth.uid || (!data.child('uid').exists() && data.child('id').val() === newData.child('id').val()))",
-          ".validate": "newData.hasChildren(['id','t'])",
+          ".validate": "$lic.matches(/^[A-Za-z0-9_-]+$/) && newData.hasChildren(['id','t'])",
           "id": {
             ".validate": "newData.isString() && newData.val().length <= 40"
           },
@@ -41,7 +41,34 @@
         ".write": "auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63'",
         "$dev": {
           ".write": "newData.exists() && $dev.length <= 40 && root.child('limits').child($lic).exists()",
-          ".validate": "newData.hasChildren(['t'])"
+          ".validate": "$dev.matches(/^[A-Za-z0-9_-]+$/) && newData.hasChildren(['t'])",
+          "ua": {
+            ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (newData.isString() && newData.val().length <= 400)"
+          },
+          "ip": {
+            ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (newData.isString() && newData.val().length <= 45)"
+          },
+          "loc": {
+            ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (newData.isString() && newData.val().length <= 100)"
+          },
+          "t": {
+            ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || newData.isNumber()"
+          },
+          "act": {
+            ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || newData.isNumber()"
+          },
+          "max": {
+            ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || newData.isNumber()"
+          },
+          "reg": {
+            ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || newData.isNumber()"
+          },
+          "known": {
+            ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || newData.isBoolean()"
+          },
+          "$other": {
+            ".validate": "auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63'"
+          }
         }
       }
     },
@@ -50,7 +77,10 @@
       "$rid": {
         ".read": true,
         ".write": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (!data.exists() && newData.exists())",
-        ".validate": "$rid.length >= 20 && $rid.length <= 40 && newData.hasChildren(['email','produit','t']) && newData.child('email').isString() && newData.child('email').val().length <= 120 && newData.child('produit').isString() && newData.child('produit').val().length <= 60 && (!newData.child('message').exists() || (newData.child('message').isString() && newData.child('message').val().length <= 1000)) && (!newData.child('nom').exists() || (newData.child('nom').isString() && newData.child('nom').val().length <= 80))"
+        ".validate": "$rid.matches(/^[A-Za-z0-9_-]+$/) && $rid.length >= 20 && $rid.length <= 40 && newData.hasChildren(['email','produit','t']) && newData.child('email').isString() && newData.child('email').val().length <= 120 && newData.child('produit').isString() && newData.child('produit').val().length <= 60 && (!newData.child('message').exists() || (newData.child('message').isString() && newData.child('message').val().length <= 1000)) && (!newData.child('nom').exists() || (newData.child('nom').isString() && newData.child('nom').val().length <= 80))",
+        "$other": {
+          ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || newData.isNumber() || newData.isBoolean() || (newData.isString() && newData.val().length <= 2000)"
+        }
       }
     },
     "crm": {
@@ -61,16 +91,42 @@
       ".read": "auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63'",
       "$tid": {
         ".write": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (!data.exists() && newData.exists())",
-        ".validate": "$tid.length >= 20 && $tid.length <= 40 && newData.hasChildren(['email','produit','t','message']) && newData.child('email').isString() && newData.child('email').val().length <= 120 && newData.child('message').isString() && newData.child('message').val().length <= 2000 && newData.child('produit').isString() && newData.child('produit').val().length <= 60",
+        ".validate": "$tid.matches(/^[A-Za-z0-9_-]+$/) && $tid.length >= 20 && $tid.length <= 40 && newData.hasChildren(['email','produit','t','message']) && newData.child('email').isString() && newData.child('email').val().length <= 120 && newData.child('message').isString() && newData.child('message').val().length <= 2000 && newData.child('produit').isString() && newData.child('produit').val().length <= 60",
         ".read": true,
         "msgs": {
           "$mid": {
             ".write": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (!data.exists() && newData.exists() && newData.child('from').val() === 'client')",
-            ".validate": "$mid.length <= 40 && newData.hasChildren(['from','text','t']) && newData.child('text').isString() && newData.child('text').val().length <= 2000"
+            ".validate": "$mid.matches(/^[A-Za-z0-9_-]+$/) && $mid.length <= 40 && newData.hasChildren(['from','text','t']) && newData.child('text').isString() && newData.child('text').val().length <= 2000",
+            "img": {
+              "$i": {
+                ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || ($i.matches(/^[0-9]$/) && newData.isString() && newData.val().length <= 1200000)"
+              }
+            },
+            "files": {
+              "$i": {
+                ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || ($i.matches(/^[0-9]$/) && newData.child('d').isString() && newData.child('d').val().length <= 2900000)"
+              }
+            },
+            "$other": {
+              ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || newData.isNumber() || newData.isBoolean() || (newData.isString() && newData.val().length <= 2000)"
+            }
           }
         },
         "statut": {
           ".write": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || newData.val() === 'nouveau'"
+        },
+        "img": {
+          "$i": {
+            ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || ($i.matches(/^[0-9]$/) && newData.isString() && newData.val().length <= 1200000)"
+          }
+        },
+        "files": {
+          "$i": {
+            ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || ($i.matches(/^[0-9]$/) && newData.child('d').isString() && newData.child('d').val().length <= 2900000)"
+          }
+        },
+        "$other": {
+          ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || newData.isNumber() || newData.isBoolean() || (newData.isString() && newData.val().length <= 2000)"
         }
       }
     },
@@ -81,7 +137,67 @@
         "$dev": {
           "$e": {
             ".write": "!data.exists() && newData.exists() && $dev.length <= 40",
-            ".validate": "newData.hasChildren(['t','p']) && newData.child('p').isString() && newData.child('p').val().length <= 60 && (!newData.child('n').exists() || newData.child('n').val().length <= 60) && (!newData.child('ti').exists() || newData.child('ti').val().length <= 60)"
+            ".validate": "$e.matches(/^[A-Za-z0-9_-]+$/) && $dev.matches(/^[A-Za-z0-9_-]+$/) && $lic.matches(/^[A-Za-z0-9_-]+$/) && newData.hasChildren(['t','p']) && newData.child('p').isString() && newData.child('p').val().length <= 60 && (!newData.child('n').exists() || newData.child('n').val().length <= 60) && (!newData.child('ti').exists() || newData.child('ti').val().length <= 60)",
+            "src": {
+              ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (newData.isString() && newData.val().length <= 20)"
+            },
+            "p": {
+              ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (newData.isString() && newData.val().length <= 60)"
+            },
+            "v": {
+              ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (newData.isString() && newData.val().length <= 120)"
+            },
+            "n": {
+              ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (newData.isString() && newData.val().length <= 60)"
+            },
+            "h": {
+              ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (newData.isString() && newData.val().length <= 160)"
+            },
+            "m": {
+              ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (newData.isString() && newData.val().length <= 60)"
+            },
+            "ti": {
+              ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (newData.isString() && newData.val().length <= 60)"
+            },
+            "ip": {
+              ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (newData.isString() && newData.val().length <= 45)"
+            },
+            "loc": {
+              ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (newData.isString() && newData.val().length <= 100)"
+            },
+            "isp": {
+              ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (newData.isString() && newData.val().length <= 100)"
+            },
+            "d": {
+              ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (newData.isString() && newData.val().length <= 100)"
+            },
+            "scr": {
+              ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (newData.isString() && newData.val().length <= 20)"
+            },
+            "lang": {
+              ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (newData.isString() && newData.val().length <= 20)"
+            },
+            "tz": {
+              ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (newData.isString() && newData.val().length <= 60)"
+            },
+            "gtz": {
+              ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (newData.isString() && newData.val().length <= 60)"
+            },
+            "ev": {
+              ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (newData.isString() && newData.val().length <= 8)"
+            },
+            "r": {
+              ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (newData.isString() && newData.val().length <= 12)"
+            },
+            "t": {
+              ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || newData.isNumber()"
+            },
+            "w": {
+              ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || newData.isNumber()"
+            },
+            "$other": {
+              ".validate": "auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63'"
+            }
           }
         }
       }
@@ -109,14 +225,23 @@
       ".write": "auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63'",
       "$id": {
         ".write": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (!data.exists() && newData.exists())",
-        ".validate": "$id.length >= 10 && $id.length <= 40 && newData.hasChildren(['title','price','t']) && newData.child('title').isString() && newData.child('title').val().length <= 80"
+        ".validate": "$id.matches(/^[A-Za-z0-9_-]+$/) && $id.length >= 10 && $id.length <= 40 && newData.hasChildren(['title','price','t']) && newData.child('title').isString() && newData.child('title').val().length <= 80",
+        "imgs": {
+          "$i": {
+            ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || ($i.matches(/^[0-7]$/) && newData.isString() && newData.val().length <= 1500000)"
+          }
+        },
+        "desc": {
+          ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (newData.isString() && newData.val().length <= 6000)"
+        }
       }
     },
     "membresIdx": {
-      ".read": true,
+      ".read": "auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63'",
       "$k": {
         ".write": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || !data.exists() || root.child('requests').child(data.val()).child('statut').val() === 'refusee'",
-        ".validate": "newData.isString() && newData.val().length <= 40"
+        ".validate": "$k.matches(/^[A-Za-z0-9_@+-]+$/) && $k.length <= 120 && newData.isString() && newData.val().length <= 40",
+        ".read": false
       }
     },
     "inbox": {
@@ -124,7 +249,7 @@
       "$o": {
         "$t": {
           ".write": "!data.exists() && newData.exists() && root.child('support').child($t).exists()",
-          ".validate": "newData.isNumber() && $o.length <= 40 && $t.length <= 40"
+          ".validate": "$o.matches(/^[A-Za-z0-9_-]+$/) && $t.matches(/^[A-Za-z0-9_-]+$/) && newData.isNumber() && $o.length <= 40 && $t.length <= 40"
         },
         ".read": true
       }
@@ -138,7 +263,87 @@
       ".write": "auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63'",
       "$e": {
         ".write": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (!data.exists() && newData.exists())",
-        ".validate": "$e.length >= 10 && $e.length <= 40 && newData.hasChildren(['t','r','lic','p']) && newData.child('t').isNumber() && newData.child('t').val() <= now + 300000 && newData.child('r').isString() && newData.child('r').val().length <= 12 && newData.child('lic').isString() && newData.child('lic').val().length <= 80 && newData.child('p').isString() && newData.child('p').val().length <= 60 && (!newData.child('u').exists() || (newData.child('u').isString() && newData.child('u').val().length <= 60)) && (!newData.child('ip').exists() || (newData.child('ip').isString() && newData.child('ip').val().length <= 45))"
+        ".validate": "($e.matches(/^[A-Za-z0-9_-]+$/) && $e.length <= 64) && $e.length >= 10 && $e.length <= 40 && newData.hasChildren(['t','r','lic','p']) && newData.child('t').isNumber() && newData.child('t').val() <= now + 300000 && newData.child('r').isString() && newData.child('r').val().length <= 12 && newData.child('lic').isString() && newData.child('lic').val().length <= 80 && newData.child('p').isString() && newData.child('p').val().length <= 60 && (!newData.child('u').exists() || (newData.child('u').isString() && newData.child('u').val().length <= 60)) && (!newData.child('ip').exists() || (newData.child('ip').isString() && newData.child('ip').val().length <= 45))",
+        "r": {
+          ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (newData.isString() && newData.val().length <= 12)"
+        },
+        "p": {
+          ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (newData.isString() && newData.val().length <= 60)"
+        },
+        "m": {
+          ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (newData.isString() && newData.val().length <= 60)"
+        },
+        "lic": {
+          ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (newData.isString() && newData.val().length <= 80)"
+        },
+        "u": {
+          ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (newData.isString() && newData.val().length <= 60)"
+        },
+        "uid": {
+          ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (newData.isString() && newData.val().length <= 40)"
+        },
+        "role": {
+          ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (newData.isString() && newData.val().length <= 20)"
+        },
+        "n": {
+          ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (newData.isString() && newData.val().length <= 80)"
+        },
+        "how": {
+          ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (newData.isString() && newData.val().length <= 12)"
+        },
+        "hint": {
+          ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (newData.isString() && newData.val().length <= 100)"
+        },
+        "dv": {
+          ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (newData.isString() && newData.val().length <= 40)"
+        },
+        "dev": {
+          ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (newData.isString() && newData.val().length <= 100)"
+        },
+        "ua": {
+          ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (newData.isString() && newData.val().length <= 200)"
+        },
+        "ip": {
+          ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (newData.isString() && newData.val().length <= 45)"
+        },
+        "loc": {
+          ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (newData.isString() && newData.val().length <= 100)"
+        },
+        "isp": {
+          ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (newData.isString() && newData.val().length <= 100)"
+        },
+        "host": {
+          ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (newData.isString() && newData.val().length <= 100)"
+        },
+        "tz": {
+          ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (newData.isString() && newData.val().length <= 60)"
+        },
+        "url": {
+          ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (newData.isString() && newData.val().length <= 240)"
+        },
+        "mail": {
+          ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (newData.isString() && newData.val().length <= 120)"
+        },
+        "key": {
+          ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (newData.isString() && newData.val().length <= 20)"
+        },
+        "t": {
+          ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || newData.isNumber()"
+        },
+        "fails": {
+          ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || newData.isNumber()"
+        },
+        "lockMin": {
+          ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || newData.isNumber()"
+        },
+        "id": {
+          "$f": {
+            ".validate": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || ($f.matches(/^[a-z]{2,8}$/) && newData.isString() && newData.val().length <= 200)"
+          }
+        },
+        "$other": {
+          ".validate": "auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63'"
+        }
       }
     },
     "devmeta": {
@@ -180,6 +385,15 @@
             ".validate": false
           }
         }
+      }
+    },
+    "membresLog": {
+      ".read": "auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63'",
+      ".write": "auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63'",
+      "$h": {
+        ".read": true,
+        ".write": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (!data.exists() && newData.exists() && root.child('requests').child(newData.val()).child('hash').val() === $h)",
+        ".validate": "$h.matches(/^[0-9a-f]{64}$/) && newData.isString() && newData.val().matches(/^[A-Za-z0-9_-]+$/) && newData.val().length <= 40"
       }
     }
   }
