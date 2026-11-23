@@ -10,6 +10,9 @@
   const sha=async s=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))].map(x=>x.toString(16).padStart(2,'0')).join('');
   const get=()=>{try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){return{}}};
   const notExpired=e=>!e||new Date(e)>new Date();
+  const OFFMAX=72*36e5; // durée maximale d'utilisation hors ligne depuis la dernière vérification en ligne
+  // Refus définitif en ligne : la licence mémorisée ne peut plus servir hors ligne
+  function markRev(mail,key){try{const s=get();if(s.mail===mail&&s.key===key&&!s.rev){s.rev=Date.now();localStorage.setItem(KEY,JSON.stringify(s))}}catch(e){}}
   let overlay=null,timer=null;
 
   // 🧨 Effacement d'urgence demandé depuis Licence Pro : tout le stockage local de ce site sur l'appareil
@@ -31,7 +34,8 @@
   async function maybeReload(rtLic,fb){let rt=rtLic||0;fb=(fb||RLFB||'').replace(/\/+$/,'');if(fb)RLFB=fb;
     if(fb&&CURLIC){try{const rr=await (await fetch(`${fb}/reload/${CURLIC}.json?t=${Date.now()}`,{cache:'no-store'})).json();
       if(rr){const dv=await devId();rt=Math.max(rt,+rr.all||0,(rr.dev&&+rr.dev[dv])||0);
-        if(rr.ip){const ni=await netInfo().catch(()=>({}));if(ni.ip&&rr.ip[ni.ip])rt=Math.max(rt,+rr.ip[ni.ip])}}}catch(e){}}
+        if(rr.ip){const ni=await netInfo().catch(()=>({}));if(ni.ip&&rr.ip[ni.ip])rt=Math.max(rt,+rr.ip[ni.ip])}
+         if(rr.ih){const ni=await netInfo().catch(()=>({}));if(ni.ip){const hk='h'+(await sha(ni.ip)).slice(0,24);if(rr.ih[hk])rt=Math.max(rt,+rr.ih[hk])}}}}catch(e){}}
     if(!rt)return false;const rk='licReload_'+PRODUIT,done=+localStorage.getItem(rk)||0;
     if(rt>done){try{localStorage.setItem(rk,String(rt))}catch(e){}await hardReload();return true}return false}
   let CURLIC=null;
@@ -137,30 +141,32 @@
   async function verif(mail,key){
     mail=String(mail||'').trim().toLowerCase();key=String(key||'').trim().toUpperCase();
     if(!mail||!key)return{ok:false,msg:''};
+    const _now=Date.now(),MXK='licMaxT_'+PRODUIT;let _mx=0;try{_mx=+localStorage.getItem(MXK)||0;if(_now>_mx)localStorage.setItem(MXK,String(_now))}catch(e){}
     try{
       const d=await (await fetch(SRC+'?t='+Date.now(),{cache:'no-store'})).json();
-      if((d.bannis||[]).includes(mail)){secuRep('banni',{mail,key});return{ok:false,msg:'Accès interdit pour cette adresse'}}
+      const bh='h:'+await sha(mail);if((d.bannis||[]).some(b=>b===mail||b===bh)){secuRep('banni',{mail,key});markRev(mail,key);return{ok:false,msg:'Accès interdit pour cette adresse'}}
       if(!hostOK(d.domaines))return{ok:false,msg:'DOMAINE',dom:1};
       const h=await sha(mail+'|'+PRODUIT+'|'+key);
-      let l=d.licences.find(x=>x.email===mail&&x.produit===PRODUIT&&x.hash===h);
-      if(!l){secuRep('cle_invalide',{mail,key});return{ok:false,msg:'Licence invalide'}}
+      const idq=await sha(mail+'|'+PRODUIT);let l=d.licences.find(x=>x.produit===PRODUIT&&x.hash===h&&(x.id===idq||x.email===mail));
+      if(!l){secuRep('cle_invalide',{mail,key});markRev(mail,key);return{ok:false,msg:'Licence invalide'}}
       const wt=Math.max(+l.wipe||0,l.wipeDev?(+l.wipeDev[await devId()]||0):0);
       if(wt){const wk='licWiped_'+PRODUIT,done=+localStorage.getItem(wk)||0;l={...l,wipe:wt};
         if(l.wipe>done){if(get().mail){await wipeAll();try{localStorage.setItem(wk,String(l.wipe))}catch(e){}location.reload();return{ok:false,msg:'Données effacées par l\'administrateur'}}localStorage.setItem(wk,String(l.wipe))}}
       CURLIC=l.id;const _fb=(d.firebase||'').replace(/\/+$/,'');if(_fb)RLFB=_fb;
       {let rtLic=Math.max(+l.reload||0,l.reloadDev?(+l.reloadDev[await devId()]||0):0);
        if(l.reloadIp){const ni=await netInfo().catch(()=>({}));if(ni.ip&&l.reloadIp[ni.ip])rtLic=Math.max(rtLic,+l.reloadIp[ni.ip])}
+       if(l.reloadIh){const ni=await netInfo().catch(()=>({}));if(ni.ip){const hk='h'+(await sha(ni.ip)).slice(0,24);if(l.reloadIh[hk])rtLic=Math.max(rtLic,+l.reloadIh[hk])}}
        if(await maybeReload(rtLic,_fb))return{ok:true,expire:l.expire||null,data:extra(l,d)}}
       {const ib=await checkIpBlock(_fb);if(ib==='block')return{ok:false,msg:'IPBLOCK',ipb:1};if(ib==='deco')return{ok:false,msg:''}}
-      if(!l.actif){secuRep('revoquee',{mail,key,lic:l.id});return{ok:false,msg:'Licence révoquée'}}
-      if(!notExpired(l.expire))return{ok:false,msg:'Licence expirée'};
+      if(!l.actif){secuRep('revoquee',{mail,key,lic:l.id});markRev(mail,key);return{ok:false,msg:'Licence révoquée'}}
+      if(!notExpired(l.expire)){markRev(mail,key);return{ok:false,msg:'Licence expirée'}}
       l=pvFix(l);if(MODULE&&Array.isArray(l.modules)&&!l.modules.includes(MODULE))return{ok:false,msg:`Le module « ${MODULE} » n'est pas inclus dans votre licence`};
       if(l.maxDevices&&d.firebase){const r=await device(d.firebase,l);if(!r.ok)return r}
       return{ok:true,expire:l.expire||null,data:extra(l,d)};
-    }catch(e){ // hors ligne : dernière validation, 7 jours max, sans dépasser l'expiration
-      const s=get();
-      const ok=s.mail===mail&&s.key===key&&Date.now()-s.t<7*864e5&&notExpired(s.expire);
-      return{ok,expire:s.expire,msg:ok?'':'Connexion impossible et licence non vérifiée'};
+    }catch(e){ // hors ligne : dernière validation EN LIGNE il y a moins de 72 h, jamais après un refus (révoquée, expirée…), horloge cohérente
+      const s=get(),clockOk=_now>=_mx-6e5&&(+s.t||0)<=_now+6e5;
+      const ok=s.mail===mail&&s.key===key&&!s.rev&&clockOk&&_now-(+s.t||0)<OFFMAX&&notExpired(s.expire);
+      return{ok,expire:s.expire,msg:ok?'':(!clockOk?'Date et heure de l’appareil incohérentes : corrigez-les puis reconnectez-vous à Internet':s.rev?'Licence refusée lors de la dernière vérification : reconnectez-vous à Internet':'Connexion impossible et licence non vérifiée depuis plus de 72 h')};
     }
   }
 
@@ -186,16 +192,37 @@
   // Un appareil est « connecté » s'il a donné signe de vie depuis moins de 6 min (battement toutes les 2 min).
   const ACTW=6*6e4,BEAT=2*6e4;
   const isAct=(d,now)=>!!d&&(d.seen||d.t||0)>now-ACTW&&!((d.off||0)>=(d.seen||d.t||0));
+  // 🔐 Identité anonyme Firebase propre à cet appareil : seule elle peut modifier SA place (impossible de « libérer » la place d'un autre)
+  const LFBKEY='AIzaSyBf93ZHmBf6qi6GbtUX-dQh-DGMgR6nIts',AUK='licAnon_v1';let ATK=null,ATE=0,AUID=null,ATP=null;
+  const AUB=()=>window.__LIC_AUTH_BASE||'https://';
+  function anonTok(){if(ATK&&Date.now()<ATE)return Promise.resolve(ATK);if(ATP)return ATP;
+    ATP=(async()=>{let st=null;try{st=JSON.parse(localStorage.getItem(AUK)||'null')}catch(e){}
+      const keep=(t,rt,uid,ex)=>{ATK=t;AUID=uid;ATE=Date.now()+((+ex||3600)-300)*1e3;try{localStorage.setItem(AUK,JSON.stringify({rt,uid}))}catch(e){}return t};
+      try{if(st&&st.rt){const r=await fetch(`${AUB()}securetoken.googleapis.com/v1/token?key=${LFBKEY}`,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'grant_type=refresh_token&refresh_token='+encodeURIComponent(st.rt)});
+          const j=await r.json();if(r.ok&&j.id_token)return keep(j.id_token,j.refresh_token,j.user_id,j.expires_in)}}catch(e){}
+      try{const r=await fetch(`${AUB()}identitytoolkit.googleapis.com/v1/accounts:signUp?key=${LFBKEY}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({returnSecureToken:true})});
+        const j=await r.json();if(r.ok&&j.idToken)return keep(j.idToken,j.refreshToken,j.localId,j.expiresIn)}catch(e){}
+      return null})();
+    return ATP.finally(()=>{ATP=null})}
+  const AQ=t=>t?'?auth='+encodeURIComponent(t):'';
+  // Détails de l'appareil (IP, ville, navigateur) : nœud « devmeta », lisible par l'administrateur SEULEMENT
+  async function putMeta(fb,lic,k,me,n,tk){const mk='licMeta_'+lic+'_'+k,now=Date.now();let o={};try{o=JSON.parse(localStorage.getItem(mk)||'{}')}catch(e){}
+    const ch=n.ip&&o.ip!==n.ip;if(!ch&&now-(o.t||0)<6e5)return;
+    try{await fetch(`${fb}/devmeta/${lic}/${k}.json${AQ(tk)}`,{method:'PATCH',body:JSON.stringify({id:me,ua:UA(),seen:now,...(n.ip?{lastIp:n.ip,lastLoc:n.loc||''}:{})})});
+      if(ch)await fetch(`${fb}/devmeta/${lic}/${k}/h/${now}.json${AQ(tk)}`,{method:'PUT',body:JSON.stringify({ip:n.ip,loc:n.loc||''})});
+      localStorage.setItem(mk,JSON.stringify({ip:n.ip||o.ip||'',t:now}))}catch(e){}}
   let HB=null,HBK='';
   function beat(fb,lic,k){const key=lic+'/'+k;if(HBK===key)return;HBK=key;clearInterval(HB);
-    const put=(f)=>fetch(`${fb}/devices/${lic}/${k}/${f}.json`,{method:'PUT',keepalive:true,body:JSON.stringify(Date.now())}).catch(()=>{});
+    const put=(f,sync)=>{const go=t=>fetch(`${fb}/devices/${lic}/${k}/${f}.json${AQ(t)}`,{method:'PUT',keepalive:true,body:JSON.stringify(Date.now())}).catch(()=>{});
+      if(sync&&ATK)return go(ATK);anonTok().then(go)};
     HB=setInterval(()=>put('seen'),BEAT);
-    addEventListener('pagehide',()=>{if(!FRAMED)put('off')});
+    addEventListener('pagehide',()=>{if(!FRAMED)put('off',true)});
     addEventListener('pageshow',e=>{if(e.persisted)put('seen')});
     document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')put('seen')})}
   async function device(fb,l){
     fb=fb.replace(/\/+$/,'');const me=await devId(),flag='licSlot_'+l.id,max=+l.maxDevices||0,now=Date.now();
     let list;try{list=await (await fetch(`${fb}/devices/${l.id}.json`,{cache:'no-store'})).json()||{}}catch(e){return{ok:true}} // Firebase injoignable : on tolère
+    const tk=await anonTok();if(!tk)return{ok:true}; // connexion anonyme Firebase indisponible : on tolère (comme Firebase injoignable)
     const keys=Object.keys(list).filter(k=>list[k]),k0=keys.find(k=>list[k].id===me);
     const actOthers=keys.filter(k=>list[k].id!==me&&isAct(list[k],now)).length;
     const n=await netInfo();
@@ -203,18 +230,21 @@
       return{ok:false,msg:`Licence en trop : ${actOthers} appareil${actOthers>1?'s sont':' est'} déjà connecté${actOthers>1?'s':''} avec ce code (maximum ${max}). Fermez le logiciel sur un autre appareil, puis réessayez dans quelques minutes.`}};
     if(k0){// appareil déjà enregistré
       if(actOthers>=max)return refuse();
-      const d=list[k0],hist=(!d.lastIp||n.ip!==d.lastIp||now-(d.seen||0)>6e5)?[{t:now,ip:n.ip,loc:n.loc},...(Array.isArray(d.hist)?d.hist:[])].slice(0,15):d.hist;
-      fetch(`${fb}/devices/${l.id}/${k0}.json`,{method:'PUT',body:JSON.stringify({...d,seen:now,off:null,lastIp:n.ip,lastLoc:n.loc,ua:UA(),hist})}).catch(()=>{});
-      beat(fb,l.id,k0);return{ok:true}}
+      const d=list[k0];
+      // place à son nom (uid anonyme) : rattachement unique d'une ancienne place, sinon simple signe de vie
+      if(d.uid!==AUID)await fetch(`${fb}/devices/${l.id}/${k0}.json${AQ(tk)}`,{method:'PUT',body:JSON.stringify({id:me,t:d.t||now,seen:now,uid:AUID})}).catch(()=>{});
+      else fetch(`${fb}/devices/${l.id}/${k0}/seen.json${AQ(tk)}`,{method:'PUT',body:JSON.stringify(now)}).catch(()=>{});
+      putMeta(fb,l.id,k0,me,n,tk);beat(fb,l.id,k0);return{ok:true}}
     if(localStorage.getItem(flag))return{ok:false,msg:'Cet appareil a été retiré de la licence'}; // retiré par le vendeur
     if(actOthers>=max)return refuse();
     // nouvel appareil : première place libre (le nombre d'appareils enregistrés peut dépasser la limite, seuls les connectés comptent)
     for(let i=0;i<100;i++){const k=String(i).padStart(2,'0');if(list[k])continue;
-      const r=await fetch(`${fb}/devices/${l.id}/${k}.json`,{method:'PUT',body:JSON.stringify({id:me,t:now,seen:now,ua:UA(),ip:n.ip,loc:n.loc,lastIp:n.ip,lastLoc:n.loc,hist:[{t:now,ip:n.ip,loc:n.loc}]})});
-      if(r.ok){localStorage.setItem(flag,k);beat(fb,l.id,k);return{ok:true}}
+      const r=await fetch(`${fb}/devices/${l.id}/${k}.json${AQ(tk)}`,{method:'PUT',body:JSON.stringify({id:me,t:now,seen:now,uid:AUID})});
+      if(r.ok){localStorage.setItem(flag,k);putMeta(fb,l.id,k,me,n,tk);beat(fb,l.id,k);return{ok:true}}
       if(i>=max)break}// règles Firebase pas encore republiées : places limitées
     return refuse();
   }
+
 
   // ── Réglages injectés par Licence Pro ──
   // Projets Pro : inclus d'office dans les licences COVO Pro créées avant son arrivée (sans repère « pv »)

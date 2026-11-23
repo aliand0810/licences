@@ -9,12 +9,30 @@
     "devices": {
       ".read": "auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63'",
       "$lic": {
+        ".read": true,
         ".write": "auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63'",
         "$slot": {
-          ".write": "newData.exists() && $slot.length === 2 && $slot.matches(/^[0-9][0-9]$/) && root.child('limits').child($lic).exists() && (!data.exists() || data.child('id').val() === newData.child('id').val())",
-          ".validate": "newData.hasChildren(['id','t']) && newData.child('id').isString() && newData.child('id').val().length <= 40"
-        },
-        ".read": true
+          ".write": "newData.exists() && $slot.matches(/^[0-9][0-9]$/) && root.child('limits').child($lic).exists() && auth != null && newData.child('uid').val() === auth.uid && (!data.exists() || data.child('uid').val() === auth.uid || (!data.child('uid').exists() && data.child('id').val() === newData.child('id').val()))",
+          ".validate": "newData.hasChildren(['id','t'])",
+          "id": {
+            ".validate": "newData.isString() && newData.val().length <= 40"
+          },
+          "uid": {
+            ".validate": "newData.isString() && newData.val().length <= 128"
+          },
+          "t": {
+            ".validate": "newData.isNumber()"
+          },
+          "seen": {
+            ".validate": "newData.isNumber()"
+          },
+          "off": {
+            ".validate": "newData.isNumber()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
       }
     },
     "excess": {
@@ -121,6 +139,47 @@
       "$e": {
         ".write": "(auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63') || (!data.exists() && newData.exists())",
         ".validate": "$e.length >= 10 && $e.length <= 40 && newData.hasChildren(['t','r','lic','p']) && newData.child('t').isNumber() && newData.child('t').val() <= now + 300000 && newData.child('r').isString() && newData.child('r').val().length <= 12 && newData.child('lic').isString() && newData.child('lic').val().length <= 80 && newData.child('p').isString() && newData.child('p').val().length <= 60 && (!newData.child('u').exists() || (newData.child('u').isString() && newData.child('u').val().length <= 60)) && (!newData.child('ip').exists() || (newData.child('ip').isString() && newData.child('ip').val().length <= 45))"
+      }
+    },
+    "devmeta": {
+      ".read": "auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63'",
+      ".write": "auth != null && auth.uid === 'P9ycnnKJF9dV2fPiW6b2xTgb0V63'",
+      "$lic": {
+        "$slot": {
+          ".write": "auth != null && root.child('devices').child($lic).child($slot).child('uid').val() === auth.uid",
+          "id": {
+            ".validate": "newData.isString() && newData.val().length <= 40"
+          },
+          "ua": {
+            ".validate": "newData.isString() && newData.val().length <= 400"
+          },
+          "seen": {
+            ".validate": "newData.isNumber()"
+          },
+          "lastIp": {
+            ".validate": "newData.isString() && newData.val().length <= 45"
+          },
+          "lastLoc": {
+            ".validate": "newData.isString() && newData.val().length <= 120"
+          },
+          "h": {
+            "$t": {
+              ".validate": "$t.matches(/^[0-9]{10,13}$/) && newData.hasChildren(['ip'])",
+              "ip": {
+                ".validate": "newData.isString() && newData.val().length <= 45"
+              },
+              "loc": {
+                ".validate": "newData.isString() && newData.val().length <= 120"
+              },
+              "$o": {
+                ".validate": false
+              }
+            }
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
       }
     }
   }

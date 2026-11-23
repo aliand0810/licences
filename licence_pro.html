@@ -1177,7 +1177,37 @@ function mergeTabs(cat){TABCAT=cat||{};TABS_DEF=JSON.parse(JSON.stringify(TABS_B
   [...new Set([...prods(),...Object.keys(TABS_DEF)])].forEach(p=>{TABS_DEF[p]=[...(TABS_DEF[p]||[]),PRINT_TAB]})}
 let GDEF={};
 const GCID_RE=/^[\w.-]+\.apps\.googleusercontent\.com$/i;
-const C=()=>{try{return JSON.parse(localStorage.getItem('licCfg')||'{}')}catch(e){return{}}};
+// 🔐 Coffre : token GitHub, secret maître, mot de passe Firebase, comptes admin et session Firebase sont CHIFFRÉS
+// (AES-GCM, clé dérivée du mot de passe des réglages — PBKDF2 150 000 tours) dans « licVault ». Rien en clair dans licCfg.
+const SECK=['tok','sec','fbPass','appAdm','fbSess'];let SVAULT=null,SVKEY=null,SVSALT=null;
+const C=()=>{let c={};try{c=JSON.parse(localStorage.getItem('licCfg')||'{}')}catch(e){}return SVAULT?{...c,...SVAULT}:c};
+async function vaultWrite(){if(!SVKEY||!SVAULT)return;const iv=crypto.getRandomValues(new Uint8Array(12));
+  const ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},SVKEY,enc.encode(JSON.stringify(SVAULT))));
+  localStorage.setItem('licVault',JSON.stringify({v:1,salt:b64(SVSALT),iv:b64(iv),ct:b64(ct)}))}
+function cfgSave(c){const pub={...c},sec={};SECK.forEach(k=>{if(k in pub){if(pub[k]!==undefined&&pub[k]!=='')sec[k]=pub[k];delete pub[k]}});
+  if(SVKEY){SVAULT=sec;localStorage.setItem('licCfg',JSON.stringify(pub));vaultWrite()}
+  else localStorage.setItem('licCfg',JSON.stringify(c))}// coffre pas encore ouvert : chiffré au prochain déverrouillage
+async function vaultOpen(p){let v=null;try{v=JSON.parse(localStorage.getItem('licVault')||'null')}catch(e){}
+  const salt=v?ub64(v.salt):crypto.getRandomValues(new Uint8Array(16)),key=await pbk(p,salt);let sec={};
+  if(v){try{sec=JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:ub64(v.iv)},key,ub64(v.ct))))}catch(e){throw new Error('Coffre illisible avec ce mot de passe')}}
+  SVKEY=key;SVSALT=salt;let c={};try{c=JSON.parse(localStorage.getItem('licCfg')||'{}')}catch(e){}
+  SECK.forEach(k=>{if(k in c){if(!(k in sec)&&c[k]!==undefined&&c[k]!=='')sec[k]=c[k];delete c[k]}});// migration : anciens secrets en clair
+  try{const o=JSON.parse(localStorage.getItem('licFbTok')||'null');if(o&&!sec.fbSess)sec.fbSess=o;localStorage.removeItem('licFbTok')}catch(e){}
+  SVAULT=sec;localStorage.setItem('licCfg',JSON.stringify(c));await vaultWrite()}
+async function vaultRekey(p){if(!SVAULT)return;SVSALT=crypto.getRandomValues(new Uint8Array(16));SVKEY=await pbk(p,SVSALT);await vaultWrite()}
+async function pbkHash(p,salt){const k=await crypto.subtle.importKey('raw',enc.encode(p),'PBKDF2',false,['deriveBits']);
+  return hex(await crypto.subtle.deriveBits({name:'PBKDF2',salt:enc.encode('licAdmin|'+salt),iterations:150000,hash:'SHA-256'},k,256))}
+async function passOk(p){const a=ADM();if(!a)return false;if(a.v===2)return(await pbkHash(p,a.salt))===a.hash;
+  if((await passHash(p,a.salt))!==a.hash)return false;// ancien format (1 seul SHA-256) : mis à niveau tout de suite
+  try{localStorage.setItem('licAdmin',JSON.stringify({v:2,salt:a.salt,hash:await pbkHash(p,a.salt)}))}catch(e){}return true}
+function bootGate(){if(SVAULT||!(localStorage.getItem('licVault')||ADM()))return Promise.resolve();
+  return new Promise(res=>{const ov=document.createElement('div');ov.id='vaultGate';
+    ov.style.cssText='position:fixed;inset:0;z-index:2147483000;background:rgba(5,8,20,.88);display:flex;align-items:center;justify-content:center;padding:16px;font-family:inherit';
+    ov.innerHTML='<form style="background:var(--card,#141a2e);color:var(--txt,#e8ecf8);width:min(390px,100%);border-radius:18px;padding:22px;box-shadow:0 30px 80px rgba(0,0,0,.55)"><div style="font-size:32px">🔐</div><h2 style="margin:6px 0 6px;font-size:20px">Licence Pro verrouillé</h2><p style="font-size:13px;opacity:.82;margin:0 0 14px;line-height:1.5">Tes accès (token GitHub, secret maître, compte Firebase) sont <b>chiffrés</b> sur cet appareil. Saisis le mot de passe de tes réglages pour les ouvrir.</p><input type="password" id="vgP" autocomplete="current-password" placeholder="Mot de passe des réglages" style="width:100%;box-sizing:border-box;padding:12px;border-radius:11px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.06);color:inherit;font-size:15px"><div id="vgE" style="color:#f43f5e;font-size:12.5px;font-weight:700;min-height:18px;margin:7px 0"></div><button style="width:100%;padding:12px;border:none;border-radius:11px;background:#6366f1;color:#fff;font-weight:800;font-size:15px;cursor:pointer">Déverrouiller</button><button type="button" id="vgS" style="width:100%;margin-top:8px;padding:9px;border:none;background:none;color:inherit;opacity:.7;cursor:pointer">Continuer sans (rien ne sera chargé)</button></form>';
+    document.body.appendChild(ov);const f=ov.querySelector('form'),e=ov.querySelector('#vgE');
+    f.onsubmit=async ev=>{ev.preventDefault();e.textContent='⏳ Ouverture…';const p=ov.querySelector('#vgP').value;
+      try{if(!(await passOk(p)))throw new Error('Mot de passe incorrect');await vaultOpen(p);ov.remove();res()}catch(x){e.textContent='❌ '+(x.message||'Erreur');ov.querySelector('#vgP').select()}};
+    ov.querySelector('#vgS').onclick=()=>{ov.remove();res()};setTimeout(()=>ov.querySelector('#vgP').focus(),60)})}
 let IPB={},IPNAMES={},IPFILTER='all',IPNAV={},IPNAVLOADED=false,IPSORT='recent',IPSEL={},IPROWS=[];
 let LIC=[],BAN=[],DEV={},EXC={},EXCN=0,FILTER='all',PER=30,EDIT=null,KEEP=false,PROD='',DEVN=0,LASTID=null,charts={},FBT=null,FBOK=false;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -1207,15 +1237,30 @@ async function makeKey(mail,prod){const k=await crypto.subtle.importKey('raw',en
 /* ── GitHub ── */
 const api=()=>`https://api.github.com/repos/${C().own}/${C().rep}/contents/${C().pth||'licences.json'}`;
 const hdr=()=>({Authorization:'Bearer '+C().tok,Accept:'application/vnd.github+json'});
+const maskMail=t=>String(t==null?'':t).replace(/([A-Za-z0-9._%+-])[A-Za-z0-9._%+-]*@([A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,})/g,(m,a,d)=>a+'•••@'+d);
+async function emKey(){const sc=C().sec;if(!sc)return null;return crypto.subtle.importKey('raw',await crypto.subtle.digest('SHA-256',enc.encode('licences-email|'+sc)),'AES-GCM',false,['encrypt','decrypt'])}
+async function emEnc(k,t){const iv=crypto.getRandomValues(new Uint8Array(12));return 'E1.'+b64(iv)+'.'+b64(new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},k,enc.encode(String(t)))))}
+async function emDec(k,v){const p=String(v||'').split('.');return new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:ub64(p[1])},k,ub64(p[2])))}
+async function pubIn(d){const k=await emKey();if(!d||!Array.isArray(d.licences))return d;
+  for(const l of d.licences){if(!l.email&&l.em&&k){try{l.email=await emDec(k,l.em)}catch(e){}}if(l.google&&!l.google.email&&l.google.em&&k){try{l.google.email=await emDec(k,l.google.em)}catch(e){}}}
+  if(d.bannisEnc&&k){try{d.bannis=JSON.parse(await emDec(k,d.bannisEnc)).concat((d.bannis||[]).filter(x=>/^h:/.test(x)&&!d.bannisH))}catch(e){}}
+  return d}
+async function pubOut(data){const k=await emKey(),d=JSON.parse(JSON.stringify(data));if(!k)return d;// sans secret maître : inchangé
+  for(const l of d.licences||[]){if(l.email){l.em=await emEnc(k,l.email);delete l.email}
+    if(l.google&&l.google.email){l.google.em=await emEnc(k,l.google.email);delete l.google.email}
+    if(Array.isArray(l.log))l.log=l.log.map(x=>x&&x.a?{...x,a:maskMail(x.a)}:x)}
+  if(Array.isArray(d.bannis)){const clear=d.bannis.filter(x=>!/^h:/.test(x));
+    if(clear.length||d.bannisEnc){d.bannisEnc=await emEnc(k,JSON.stringify(clear));d.bannis=await Promise.all(clear.map(async x=>'h:'+await sha(norm(x))));d.bannisH=1}}
+  return d}
 async function ghGet(){const r=await fetch(api()+'?t='+Date.now(),{headers:hdr()});
   if(r.status===404)return{data:{licences:[]},sha:null};if(!r.ok)throw new Error('GitHub '+r.status);
-  const j=await r.json();return{data:JSON.parse(decodeURIComponent(escape(atob(j.content.replace(/\n/g,''))))),sha:j.sha}}
+  const j=await r.json();return{data:await pubIn(JSON.parse(decodeURIComponent(escape(atob(j.content.replace(/\n/g,'')))))),sha:j.sha}}
 async function diag(){const u=await fetch('https://api.github.com/user',{headers:hdr()});
   if(u.status===401)return 'Token GitHub invalide ou expiré';
   const r=await fetch(`https://api.github.com/repos/${C().own}/${C().rep}`,{headers:hdr()});
   if(r.status===404)return `Le token n'a pas accès à « ${C().own}/${C().rep} »`;
   const j=await r.json();if(j.permissions&&!j.permissions.push)return 'Permission « Contents » en lecture seule';return null}
-async function ghPut(data,sha,msg){const b={message:msg,content:btoa(unescape(encodeURIComponent(JSON.stringify(data,null,2))))};if(sha)b.sha=sha;
+async function ghPut(data,sha,msg){const b={message:maskMail(msg),content:btoa(unescape(encodeURIComponent(JSON.stringify(await pubOut(data),null,2))))};if(sha)b.sha=sha;
   const r=await fetch(api(),{method:'PUT',headers:hdr(),body:JSON.stringify(b)});
   if(!r.ok){const d=(r.status===404||r.status===403)&&await diag();throw new Error(d||'GitHub '+r.status)}}
 
@@ -1225,12 +1270,12 @@ const FBKEY=()=>C().fbKey||FB_DEF.fbKey;
 // ── Connexion Firebase : une seule vérification du mot de passe, puis renouvellement par jeton ──
 // (Google limite le nombre de vérifications de mot de passe : on garde la session et on la renouvelle sans mot de passe)
 let FBP=null;const FBTK='licFbTok',FBCD='licFbCool';
-const fbSave=o=>{try{o?localStorage.setItem(FBTK,JSON.stringify(o)):localStorage.removeItem(FBTK)}catch(e){}};
+const fbSave=o=>{if(SVKEY){SVAULT=SVAULT||{};if(o)SVAULT.fbSess=o;else delete SVAULT.fbSess;vaultWrite();return}try{o?sessionStorage.setItem(FBTK,JSON.stringify(o)):sessionStorage.removeItem(FBTK)}catch(e){}};
 function fbForget(){FBT=null;fbSave(null)}
 function fbCool(){try{const t=+localStorage.getItem(FBCD)||0;return t>Date.now()?t:0}catch(e){return 0}}
 async function fbTok(){if(FBT&&FBT.exp>Date.now())return FBT.t;if(FBP)return FBP;
   FBP=(async()=>{const mail=C().fbMail;if(!mail||!C().fbPass)throw new Error('Ajoute ton e-mail et mot de passe admin Firebase dans Réglages');
-    let st=null;try{st=JSON.parse(localStorage.getItem(FBTK)||'null')}catch(e){}
+    let st=null;try{st=(SVAULT&&SVAULT.fbSess)||JSON.parse(sessionStorage.getItem(FBTK)||'null')}catch(e){}
     if(st&&st.m===mail&&st.t&&st.exp>Date.now()){FBT={t:st.t,exp:st.exp};return st.t}
     if(st&&st.m===mail&&st.rt){// renouvellement sans mot de passe
       try{const r=await fetch('https://securetoken.googleapis.com/v1/token?key='+FBKEY(),{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'grant_type=refresh_token&refresh_token='+encodeURIComponent(st.rt)});
@@ -1250,9 +1295,20 @@ async function fbAuthQ(){try{return '&auth='+await fbTok()}catch(e){return ''}}
 async function fbGet(path){try{const r=await fetch(`${FB()}/${path}.json?t=${Date.now()}${await fbAuthQ()}`);return r.ok?await r.json():null}catch(e){return null}}
 let RULES_OK=true;
 async function fbRaw(path){try{const r=await fetch(`${FB()}/${path}.json?t=${Date.now()}${await fbAuthQ()}`);return{ok:r.ok,status:r.status,j:r.ok?await r.json():null}}catch(e){return{ok:false,status:0,j:null}}}
+const DEVPRIV=['ip','loc','lastIp','lastLoc','ua','hist'];let DEVMIG={};
+function devMerge(dj,mj){const out={};Object.entries(dj||{}).forEach(([k,v])=>{if(!v)return;const m=mj[k]||{};
+    const h=Object.entries(m.h||{}).map(([t,x])=>({t:+t,ip:x&&x.ip,loc:x&&x.loc})).sort((a,b)=>b.t-a.t);
+    out[k]={...v,ua:m.ua||v.ua,lastIp:m.lastIp||v.lastIp||v.ip,lastLoc:m.lastLoc||v.lastLoc||v.loc,hist:[...h,...(Array.isArray(v.hist)?v.hist:[])].slice(0,15)}});return out}
+// anciennes places qui exposaient IP / ville / navigateur en lecture publique : déplacées dans devmeta (lecture admin seule)
+async function devMigrate(lic,dj,mj){for(const[k,v]of Object.entries(dj||{})){if(!v||!DEVPRIV.some(f=>f in v))continue;
+    try{const m={...(mj[k]||{})},h={...(m.h||{})};(Array.isArray(v.hist)?v.hist:[]).forEach(x=>{if(x&&x.ip&&x.t)h[String(x.t)]={ip:String(x.ip).slice(0,45),loc:String(x.loc||'').slice(0,120)}});
+      const meta={id:v.id,ua:String(m.ua||v.ua||'').slice(0,400),seen:+(m.seen||v.seen||v.t||0),lastIp:String(m.lastIp||v.lastIp||v.ip||'').slice(0,45),lastLoc:String(m.lastLoc||v.lastLoc||v.loc||'').slice(0,120),h};
+      await fbPut(`devmeta/${lic}/${k}`,meta);const pub={id:v.id,t:+v.t||+v.seen||Date.now()};['seen','off','uid'].forEach(f=>{if(v[f]!=null)pub[f]=v[f]});
+      await fbPut(`devices/${lic}/${k}`,pub)}catch(e){}}
+  try{const rr=await fbGet('reload/'+lic);if(rr&&rr.ip){const ih={...(rr.ih||{})};for(const[ip,t]of Object.entries(rr.ip))ih['h'+(await sha(ip)).slice(0,24)]=t;const{ip:_o,...r2}=rr;await fbPut('reload/'+lic,{...r2,ih})}}catch(e){}}
 async function loadFB(){try{if(!Object.keys(IPNAMES).length)await loadIpNames()}catch(e){}const lim=LIC.filter(l=>l.maxDevices);const D={},E={};let denied=false;
-  await Promise.all(lim.map(async l=>{const[d,e]=await Promise.all([fbRaw('devices/'+l.id),fbRaw('excess/'+l.id)]);
-    if(d.j)D[l.id]=d.j;if(e.j)E[l.id]=e.j;if(e.status===401||d.status===401)denied=true}));
+  await Promise.all(lim.map(async l=>{const[d,e,m]=await Promise.all([fbRaw('devices/'+l.id),fbRaw('excess/'+l.id),fbRaw('devmeta/'+l.id)]);
+    if(d.j){D[l.id]=devMerge(d.j,m.j||{});if(!DEVMIG[l.id]&&m.ok){DEVMIG[l.id]=1;devMigrate(l.id,d.j,m.j||{})}}if(e.j)E[l.id]=e.j;if(e.status===401||d.status===401)denied=true}));
   DEV=D;EXC=E;RULES_OK=!denied;renderAll()}
 
 /* ── temps & statut ── */
@@ -1456,7 +1512,7 @@ async function allowExtra(id,dev){const l=LIC.find(x=>x.id===id);if(!l)return;
     await loadFB();toast('✔ Limite portée à '+((l.maxDevices||0)+1)+' — le client peut cliquer à nouveau sur « Activer »');if($('drawer').classList.contains('on'))openLic(id)}catch(e){toast(e.message,'ko')}}
 async function ignoreExc(id,dev){try{await fbPut(`excess/${id}/${dev}`,null);await loadFB();toast('Alerte ignorée');if($('drawer').classList.contains('on'))openLic(id)}catch(e){toast(e.message,'ko')}}
 async function devDel(id,k){if(!confirm('Retirer cet appareil ? Il sera bloqué et libérera une place.'))return;
-  try{await fbPut(`devices/${id}/${k}`,null);await loadFB();toast('Appareil retiré');openLic(id)}catch(e){toast(e.message,'ko')}}
+  try{await fbPut(`devices/${id}/${k}`,null);try{await fbPut(`devmeta/${id}/${k}`,null)}catch(e){}await loadFB();toast('Appareil retiré');openLic(id)}catch(e){toast(e.message,'ko')}}
 function wipeBox(l,devs,ex){const W=l.wipeDev||{},opts=[...devs.map(([k,v])=>({d:v.id,u:shortUA(v.ua),sub:`Place ${+k+1}${v.seen?' · vu '+ago(v.seen):''} · ${ipShow(v.lastIp||v.ip,v.lastLoc||v.loc)}`})),...ex.map(v=>({d:v.dev,u:shortUA(v.ua),sub:`En trop · ${v.t?ago(v.t):''} · ${ipShow(v.ip)}`}))].filter(o=>o.d);
   const pend=[];if(l.wipe)pend.push(`<b>tous les appareils</b> (le ${fmtW(l.wipe)})`);Object.entries(W).forEach(([d,t])=>{const o=opts.find(x=>x.d===d);pend.push(`${o?o.u.ic+' '+o.u.txt:'appareil '+esc(d.slice(0,6))} (le ${fmtW(t)})`)});
   return `${pend.length?`<div class="hint" style="padding:10px 12px;border-radius:12px;background:rgba(244,63,94,.12);color:var(--tko)">🧨 Effacement envoyé pour : ${pend.join(', ')} — exécuté à la prochaine connexion.</div>`:''}
@@ -1491,7 +1547,7 @@ function mailKey(mail,prod,key){location.href=`mailto:${mail}?subject=${encodeUR
 /* ── réglages ── */
 const CFG_KEYS=['tok','own','rep','pth','sec','prods','fbUrl','fbKey','fbMail','fbPass'];
 function initCfg(){renderConn()}
-async function saveCfg(){if(!UNLOCKED)return showLock();const c={...C()};CFG_KEYS.forEach(k=>c[k]=$(k).value.trim());localStorage.setItem('licCfg',JSON.stringify(c));fbForget();FBOK=false;renderConn();renderTiles();
+async function saveCfg(){if(!UNLOCKED)return showLock();const c={...C()};CFG_KEYS.forEach(k=>c[k]=$(k).value.trim());cfgSave(c);fbForget();FBOK=false;renderConn();renderTiles();
   const d=await diag().catch(()=>'GitHub injoignable');if(d)return toast(d,'ko');
   if(c.fbMail&&c.fbPass){try{await fbTok();FBOK=true;renderConn();toast('✔ GitHub et Firebase connectés')}catch(e){return toast(e.message,'ko')}}else toast('✔ GitHub connecté — ajoute Firebase pour limiter les appareils');
   load(true);setDev(DEVN)}
@@ -1553,9 +1609,9 @@ async function appActiver(r){const perms={};APP_PERMS.forEach(k=>perms[k]=k!=='c
   await appMajCompte(r.produit,r.cid,{actif:true,attente:false,perms,valideLe:Date.now()})}
 async function saveAppAdm(){if(!UNLOCKED)return showLock();const p=$('acProd').value,id=$('aaId').value.trim(),pwd=$('aaPwd').value;
   if(!id||!pwd)return toast('Identifiant et mot de passe requis','ko');
-  const c={...C()};c.appAdm={...(c.appAdm||{}),[p]:{id,pwd}};localStorage.setItem('licCfg',JSON.stringify(c));delete APPT[p];
+  const c={...C()};c.appAdm={...(c.appAdm||{}),[p]:{id,pwd}};cfgSave(c);delete APPT[p];
   try{await appTok(p);toast('✔ Connexion administrateur à '+p+' réussie')}catch(e){toast(e.message,'ko')}renderAppAdm()}
-function delAppAdm(){if(!UNLOCKED)return showLock();const p=$('acProd').value;const c={...C()};if(c.appAdm)delete c.appAdm[p];localStorage.setItem('licCfg',JSON.stringify(c));delete APPT[p];renderAppAdm();toast('Compte administrateur effacé')}
+function delAppAdm(){if(!UNLOCKED)return showLock();const p=$('acProd').value;const c={...C()};if(c.appAdm)delete c.appAdm[p];cfgSave(c);delete APPT[p];renderAppAdm();toast('Compte administrateur effacé')}
 
 /* ── Demandes de licence en ligne (Firebase « requests ») ── */
 let REQ=[],REQP=null,REQ_ERR='';
@@ -1645,16 +1701,17 @@ async function loadRules(){loadDomaines();let t='';for(const u of ['firebase-rul
   $('rulesTxt').textContent=t||'Impossible de charger les règles — ouvre github.com/aliand0810/licences/blob/main/firebase-rules.json'}
 async function unlockSet(){const p=$('lkPass').value,a=ADM();
   if(!a){if(p.length<6)return failLock('6 caractères minimum');if(p!==$('lkConf').value)return failLock('Les deux mots de passe sont différents');
-    const salt=hex(crypto.getRandomValues(new Uint8Array(16)));localStorage.setItem('licAdmin',JSON.stringify({salt,hash:await passHash(p,salt)}));toast('🔒 Mot de passe créé')}
-  else if(await passHash(p,a.salt)!==a.hash)return failLock('Mot de passe incorrect');
+    const salt=hex(crypto.getRandomValues(new Uint8Array(16)));localStorage.setItem('licAdmin',JSON.stringify({v:2,salt,hash:await pbkHash(p,salt)}));toast('🔒 Mot de passe créé')}
+  else if(!(await passOk(p)))return failLock('Mot de passe incorrect');
+  if(!SVAULT){try{await vaultOpen(p)}catch(e){return failLock(e.message)}}
   UNLOCKED=true;$('setLock').hidden=true;$('setBody').hidden=false;fillCfg();initTabCat();fillSavCfg();renderSecret();loadRules();loadAppCfg();bump()}
 function failLock(m){toast(m,'ko');const c=$('setLock');c.classList.remove('shake');void c.offsetWidth;c.classList.add('shake');$('lkPass').select()}
 function lockSet(manual){UNLOCKED=false;clearTimeout(lockTimer);clearCfgFields();if($('v-set').classList.contains('on'))showLock();if(manual)toast('🔒 Réglages verrouillés')}
-async function changeSetPass(){const o=prompt('Mot de passe actuel :');if(o===null)return;const a=ADM();if(a&&await passHash(o,a.salt)!==a.hash)return toast('Mot de passe incorrect','ko');
+async function changeSetPass(){const o=prompt('Mot de passe actuel :');if(o===null)return;const a=ADM();if(a&&!(await passOk(o)))return toast('Mot de passe incorrect','ko');if(!SVAULT){try{await vaultOpen(o)}catch(e){return toast(e.message,'ko')}}
   const n=prompt('Nouveau mot de passe (6 caractères minimum) :');if(!n)return;if(n.length<6)return toast('6 caractères minimum','ko');if(prompt('Confirme le nouveau mot de passe :')!==n)return toast('Les mots de passe sont différents','ko');
-  const salt=hex(crypto.getRandomValues(new Uint8Array(16)));localStorage.setItem('licAdmin',JSON.stringify({salt,hash:await passHash(n,salt)}));toast('✔ Mot de passe modifié')}
+  const salt=hex(crypto.getRandomValues(new Uint8Array(16)));localStorage.setItem('licAdmin',JSON.stringify({v:2,salt,hash:await pbkHash(n,salt)}));await vaultRekey(n);toast('✔ Mot de passe modifié — coffre re-chiffré')}
 function forgotSet(){if(!confirm("Réinitialiser le mot de passe ?\n\nPar sécurité, ton token GitHub, ton secret maître et ton mot de passe Firebase seront effacés de cet appareil. Tu devras les ressaisir (le secret maître doit être EXACTEMENT le même, sinon les clés changeront).\n\nTes licences sur GitHub ne sont pas touchées."))return;
-  const c=C();delete c.tok;delete c.sec;delete c.fbPass;delete c.appAdm;localStorage.setItem('licCfg',JSON.stringify(c));localStorage.removeItem('licAdmin');fbForget();FBOK=false;renderConn();showLock();toast('Mot de passe réinitialisé — crée-en un nouveau')}
+  const c=C();SECK.forEach(k=>delete c[k]);SVAULT=null;SVKEY=null;localStorage.setItem('licCfg',JSON.stringify(c));localStorage.removeItem('licVault');localStorage.removeItem('licAdmin');fbForget();FBOK=false;renderConn();showLock();toast('Mot de passe réinitialisé — crée-en un nouveau')}
 
 /* ── Fenêtre modale ── */
 function mdFullPref(){try{return localStorage.getItem('mdFull')!=='0'}catch(e){return true}}
@@ -1883,7 +1940,7 @@ async function importCfg(){if(!UNLOCKED)return showLock();
     <div class="md-f"><button class="ghost" onclick="closeModal()">Annuler</button><button class="btn" onclick="doImport()">📥 Importer</button></div>`)}
 async function doImport(){const parts=$('iCode').value.trim().replace(/\s+/g,'').split('.');if(parts.length!==4||parts[0]!=='LP1')return toast('Code de transfert invalide','ko');
   try{const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:ub64(parts[2])},await pbk($('iPass').value,ub64(parts[1])),ub64(parts[3]));
-    const o=JSON.parse(new TextDecoder().decode(pt));localStorage.setItem('licCfg',JSON.stringify({...C(),...o.cfg}));if(o.sign)localStorage.setItem('licSign',o.sign);
+    const o=JSON.parse(new TextDecoder().decode(pt));cfgSave({...C(),...o.cfg});if(o.sign)localStorage.setItem('licSign',o.sign);
     fbForget();FBOK=false;closeModal();fillCfg();renderConn();renderTiles();toast('✔ Réglages importés — vérification des clés…');await load(true);
     if(C().fbMail&&C().fbPass)fbTok().then(()=>{FBOK=true;renderConn()}).catch(()=>{})}
   catch(e){toast('Mot de passe de transfert incorrect ou code abîmé','ko')}}
@@ -2195,7 +2252,7 @@ async function annOk(id,show){const a=ANNW.find(x=>x.id===id);if(!a)return;const
  try{await fbPut('crm/annoncesPriv/'+id,priv||{});await fbPut('annonces/'+id,ad);await fbPut('annoncesWait/'+id,null);anLogAdd(a,show?'pub':'pubm');toast(show?'✅ Annonce publiée avec coordonnées':'✅ Annonce publiée, coordonnées masquées');await loadAnn()}catch(e){toast(e.message,'ko')}}
 async function annNo(id){const a=ANNW.find(x=>x.id===id);if(!a||!confirm('Refuser et supprimer l\'annonce « '+a.title+' » ?'))return;try{await fbPut('annoncesWait/'+id,null);anLogAdd(a,'ref');toast('Annonce refusée');await loadAnn()}catch(e){toast(e.message,'ko')}}
 async function annDel(id){const a=ANNON.find(x=>x.id===id);if(!confirm('Retirer définitivement cette annonce du site ?'))return;try{await fbPut('annonces/'+id,null);if(a)anLogAdd(a,'del');await fbPut('crm/annoncesPriv/'+id,null);toast('Annonce retirée');await loadAnn()}catch(e){toast(e.message,'ko')}}
-load();setInterval(load,60000);loadAnn();setInterval(loadAnn,60000);setInterval(()=>LIC.length&&renderAll(),30000);
+bootGate().finally(()=>load(true));setInterval(load,60000);loadAnn();setInterval(loadAnn,60000);setInterval(()=>LIC.length&&renderAll(),30000);
 if(!C().tok)go('set');
 /* ═══════════ THÈMES ═══════════ */
 const THEMES={
@@ -2252,9 +2309,9 @@ async function doReload(id){const boxes=[...document.querySelectorAll('.rlD:chec
   try{
     // 1) canal Firebase temps réel : livraison quasi instantanée, sans cache GitHub
     if(all)await fbPut('reload/'+id,{all:now});
-    else{const cur=(await fbGet('reload/'+id))||{};const dev={...(cur.dev||{})},ip={...(cur.ip||{})};sel.forEach(d=>dev[d]=now);ips.forEach(p=>ip[p]=now);await fbPut('reload/'+id,{...cur,dev,ip})}
+    else{const cur=(await fbGet('reload/'+id))||{};const dev={...(cur.dev||{})},ih={...(cur.ih||{})};sel.forEach(d=>dev[d]=now);for(const p of ips)ih['h'+(await sha(p)).slice(0,24)]=now;const{ip:_o,...cur2}=cur;await fbPut('reload/'+id,{...cur2,dev,ih})}
   }catch(e){ // Firebase indisponible : on retombe sur le fichier de licences
-    try{const {data,sha:s}=await ghGet(),x=data.licences.find(y=>y.id===id);if(x){if(all){x.reload=now;delete x.reloadDev;delete x.reloadIp}else{x.reloadDev={...(x.reloadDev||{})};sel.forEach(d=>x.reloadDev[d]=now);x.reloadIp={...(x.reloadIp||{})};ips.forEach(p=>x.reloadIp[p]=now)}await ghPut(data,s,'Redémarrage '+x.produit+' — '+x.email);LIC=data.licences}}
+    try{const {data,sha:s}=await ghGet(),x=data.licences.find(y=>y.id===id);if(x){if(all){x.reload=now;delete x.reloadDev;delete x.reloadIp;delete x.reloadIh}else{x.reloadDev={...(x.reloadDev||{})};sel.forEach(d=>x.reloadDev[d]=now);x.reloadIh={...(x.reloadIh||{})};for(const p of ips)x.reloadIh['h'+(await sha(p)).slice(0,24)]=now;delete x.reloadIp}await ghPut(data,s,'Redémarrage '+x.produit+' — '+x.email);LIC=data.licences}}
     catch(e2){closeModal();return toast('Échec de l\'envoi : '+(e2.message||e.message),'ko')}}
   // 2) journal (best-effort, n'empêche pas le redémarrage)
   try{if(l){l.log=[{t:now,a:all?'Redémarrage forcé (tous les appareils)':'Redémarrage forcé ('+sel.length+' appareil'+(sel.length>1?'s':'')+')'},...(l.log||[])].slice(0,40)}}catch(e){}
