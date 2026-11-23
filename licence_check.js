@@ -248,7 +248,7 @@
 
   // ── Boutons de caisse masquables : 🩺 vérification (assistant caisse) · 🎙️ assistant vocal · 💳 envoi SumUp ──
   // choix local (Paramètres de COVO Pro, clé « covo_ui_hide ») + choix imposé par la licence (Licence Pro)
-  const UIH_CSS={verif:'#cxd-help{display:none!important}',vocal:'#cv-fab,#cv-tg-ask{display:none!important}',sumup:'#app-sumup-chip,#cx-sumup-chip,#cx-echel-su{display:none!important}'};
+  const UIH_CSS={verif:'#cxd-help,#cxd-hint,#cxd-ring{display:none!important}',vocal:'#cv-fab,#cv-tg-ask,#cv-tg-listen,#cv-panel,#cv-coach{display:none!important}',sumup:'#app-sumup-chip,#cx-sumup-chip,#cx-echel-su{display:none!important}'};
   let UIH_LIC=null;
   function uiHideGet(){let loc=[];try{loc=JSON.parse(localStorage.getItem('covo_ui_hide')||'[]')||[]}catch(e){}
     if(UIH_LIC===null)try{const d=JSON.parse(localStorage.getItem('licData_'+PRODUIT)||'null');UIH_LIC=(d&&Array.isArray(d.masquer))?d.masquer:[]}catch(e){UIH_LIC=[]}
@@ -258,7 +258,9 @@
     st.textContent=h.all.map(k=>UIH_CSS[k]||'').join('')}
   window.covoUiHide={get:uiHideGet,set:a=>{try{localStorage.setItem('covo_ui_hide',JSON.stringify((a||[]).filter(k=>UIH_CSS[k])))}catch(e){}uiHide()}};
   try{uiHide()}catch(e){}
-  addEventListener('storage',e=>{if(e.key==='covo_ui_hide'||e.key==='licData_'+PRODUIT){UIH_LIC=null;uiHide()}});
+  addEventListener('storage',e=>{if(!e.key||e.key==='covo_ui_hide'||e.key==='licData_'+PRODUIT){UIH_LIC=null;uiHide()}});
+  addEventListener('covo-ui-hide',()=>{UIH_LIC=null;uiHide()});
+  {let k0='';setInterval(()=>{try{const k=(localStorage.getItem('covo_ui_hide')||'')+'|'+(localStorage.getItem('licData_'+PRODUIT)||'');if(k!==k0){k0=k;UIH_LIC=null;uiHide()}}catch(e){}},1000)}
 
   // ── Réglages injectés par Licence Pro ──
   // Projets Pro : inclus d'office dans les licences COVO Pro créées avant son arrivée (sans repère « pv »)
