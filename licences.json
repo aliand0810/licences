@@ -2,7 +2,6 @@
   "licences": [
     {
       "id": "ae59582370d43554e62e331c330624571830ea91c40bcb88059ef311b1e529a3",
-      "email": "covo.trv@gmail.com",
       "produit": "COVO Pro",
       "hash": "795ef7729834171672e8f81ef1d7435ab68357966830fcaa5672ee81cbc7fc46",
       "cree": "2026-10-18",
@@ -23,7 +22,7 @@
       "onglets": null,
       "google": {
         "clientId": "531822941380-u6o0c9lsk4jsppau5mmrt1enst973r9d.apps.googleusercontent.com",
-        "email": "covo.trv@gmail.com"
+        "em": "E1.+vD7zThlMHwyGYr2.sv9wVVw1HBGp7WALuDw9pthslzvBzAff22a0cl4AzA0qdQ=="
       },
       "sav": {
         "on": true,
@@ -33,6 +32,10 @@
       "ongletsOff": null,
       "ongletsNoms": null,
       "log": [
+        {
+          "t": 1795475198775,
+          "a": "Masquer le bouton verif"
+        },
         {
           "t": 1793706013591,
           "a": "Suivi de navigation activé"
@@ -70,11 +73,14 @@
         "f4821529bed7b34d4668d88f": 1793593531496,
         "a1ecac686dea2902cffcc53a": 1793593531496
       },
-      "suivi": 1
+      "suivi": 1,
+      "masquer": [
+        "verif"
+      ],
+      "em": "E1.tRM5TN9LRY85mTBW.HzcHVmHgX74AQYLRWvFk964TM5deozJpndUmvCnwoSZiZw=="
     },
     {
       "id": "4dd7a434fd4813907afaaab9fe377a11c09f02ec9317bdbefa5d9246d6ade619",
-      "email": "aliand0810@gmail.com",
       "produit": "Mon Planning Pro",
       "hash": "e0dd0639245ed3bc9639699153479d3075382cc3d2e38aba3543a346567aec74",
       "cree": "2026-10-19",
@@ -120,11 +126,11 @@
           "a": "Suivi de navigation activé"
         }
       ],
-      "suivi": 1
+      "suivi": 1,
+      "em": "E1.qbO/THycG6UYLqfu.rqEy8TpUGMedQL78tCA8W4KOzl5vWAD7rEt8bKbvgc5RKhg2"
     },
     {
       "id": "e920618ab44fccf2e98f0e20f0a4e04c5de1abeab2f1f1a522bf11eaf42edd96",
-      "email": "aliand0810@gmail.com",
       "produit": "Annonces",
       "hash": "af4eed22f610b495a9b3a5c533e79bd66a598aba3d04a20b1616ea32012fab86",
       "cree": "2026-11-07",
@@ -139,11 +145,11 @@
       "onglets": null,
       "google": null,
       "ongletsOff": null,
-      "ongletsNoms": null
+      "ongletsNoms": null,
+      "em": "E1.ZT1IO9w3GfmMhuFF.Bex/bvPeQ4bSEpT4NzOoyO/9gdWzO+qCFMOZCeBazuxb0TBr"
     },
     {
       "id": "e26c290ce3849e13dd8182d565d944e387c40123b964476fbd99ceff0d1fec79",
-      "email": "r.souffou@outlook.com",
       "produit": "Annonces",
       "hash": "43064bab4a8bef90c0248470d6dba64f3baa49ee00ca79178b6dec2211bca210",
       "cree": "2026-11-07",
@@ -158,11 +164,11 @@
       "onglets": null,
       "google": null,
       "ongletsOff": null,
-      "ongletsNoms": null
+      "ongletsNoms": null,
+      "em": "E1.zevEbtxAYsactT0n.TI27SA06+FXOcyFpDGu/zWgM23YUtThEa8rzJyKZPescPiWmwQ=="
     },
     {
       "id": "04900c606129c087d546b9bcf2090c4392092890d4904311a134b8389e88125f",
-      "email": "aliand0810@gmail.com",
       "produit": "Restauration Pro",
       "hash": "e5ea21322c48214ba026af82d87ca7cc9f8c34378be17de1cbae944929e5416b",
       "cree": "2026-11-12",
@@ -188,7 +194,8 @@
       "onglets": null,
       "google": null,
       "ongletsOff": null,
-      "ongletsNoms": null
+      "ongletsNoms": null,
+      "em": "E1.z/85UbJFqNrwHGv0.URonoB6+lueZz3dmIrXvFtdUeiB1EJWjxjHbc+1XPmTvjJpS"
     }
   ],
   "bannis": [],
