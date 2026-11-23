@@ -246,6 +246,20 @@
   }
 
 
+  // ── Boutons de caisse masquables : 🩺 vérification (assistant caisse) · 🎙️ assistant vocal · 💳 envoi SumUp ──
+  // choix local (Paramètres de COVO Pro, clé « covo_ui_hide ») + choix imposé par la licence (Licence Pro)
+  const UIH_CSS={verif:'#cxd-help{display:none!important}',vocal:'#cv-fab,#cv-tg-ask{display:none!important}',sumup:'#app-sumup-chip [data-su="send"],#cx-sumup-chip [data-su="send"]{display:none!important}'};
+  let UIH_LIC=null;
+  function uiHideGet(){let loc=[];try{loc=JSON.parse(localStorage.getItem('covo_ui_hide')||'[]')||[]}catch(e){}
+    if(UIH_LIC===null)try{const d=JSON.parse(localStorage.getItem('licData_'+PRODUIT)||'null');UIH_LIC=(d&&Array.isArray(d.masquer))?d.masquer:[]}catch(e){UIH_LIC=[]}
+    return{local:loc,licence:UIH_LIC||[],all:[...new Set([...loc,...(UIH_LIC||[])])]}}
+  function uiHide(lic){if(Array.isArray(lic))UIH_LIC=lic;else if(lic===null)UIH_LIC=[];const h=uiHideGet();
+    let st=document.getElementById('lic-uihide');if(!st){st=document.createElement('style');st.id='lic-uihide';(document.head||document.documentElement).appendChild(st)}
+    st.textContent=h.all.map(k=>UIH_CSS[k]||'').join('')}
+  window.covoUiHide={get:uiHideGet,set:a=>{try{localStorage.setItem('covo_ui_hide',JSON.stringify((a||[]).filter(k=>UIH_CSS[k])))}catch(e){}uiHide()}};
+  try{uiHide()}catch(e){}
+  addEventListener('storage',e=>{if(e.key==='covo_ui_hide'||e.key==='licData_'+PRODUIT){UIH_LIC=null;uiHide()}});
+
   // ── Réglages injectés par Licence Pro ──
   // Projets Pro : inclus d'office dans les licences COVO Pro créées avant son arrivée (sans repère « pv »)
   function pvFix(l){if(!l||l.produit!=='COVO Pro'||l.pv)return l;l={...l};if(Array.isArray(l.modules)&&!l.modules.includes('Projets'))l.modules=[...l.modules,'Projets'];if(Array.isArray(l.onglets)&&!l.onglets.includes('projets'))l.onglets=[...l.onglets,'projets'];return l}
@@ -253,8 +267,10 @@
     return{onglets:Array.isArray(l.onglets)?l.onglets:null,ongletsOff:Array.isArray(l.ongletsOff)?l.ongletsOff:null,ongletsNoms:l.ongletsNoms||null,modules:Array.isArray(l.modules)?l.modules:null,
       google:{clientId:String(g.clientId||dg||'').trim(),email:String(g.email||'').trim().toLowerCase()},
       suivi:l.suivi?{id:l.id,fb:(d.firebase||'').replace(/\/+$/,'')}:null,
+      masquer:Array.isArray(l.masquer)?l.masquer.filter(x=>['verif','vocal','sumup'].includes(x)):null,
       sav:(l.sav&&l.sav.on&&(!l.sav.until||new Date(l.sav.until)>new Date())&&!(d.sav&&d.sav.visible===false))?{until:l.sav.until||l.expire||null,contact:d.sav||{}}:null}}
   function applyData(x){if(!x)return;
+    try{uiHide(x.masquer)}catch(e){}
     try{navTrack(x.suivi)}catch(e){}
     try{const old=localStorage.getItem('licData_'+PRODUIT)||'',nv=JSON.stringify(x);if(old!==nv)localStorage.setItem('licData_'+PRODUIT,nv);
       const g=x.google||{};
