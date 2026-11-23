@@ -1138,6 +1138,7 @@ kbd{display:inline-block;padding:2px 7px;border-radius:6px;border:1px solid var(
       <div class="card" style="grid-column:1/-1"><h3>🔒 Sécurité</h3>
         <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="ghost" onclick="changeSetPass()">🔑 Changer le mot de passe</button><button class="ghost" onclick="lockSet(true)">🔒 Verrouiller maintenant</button></div>
         <p class="hint" style="margin-top:10px">Les réglages se verrouillent automatiquement quand tu quittes cet onglet ou après 5 minutes d'inactivité.</p>
+        <p class="hint" id="rmBox" style="margin-top:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap"></p>
       </div>
     </div>
     </div>
@@ -1203,11 +1204,43 @@ async function passOk(p){const a=ADM();if(!a)return false;if(a.v===2)return(awai
 function bootGate(){if(SVAULT||!(localStorage.getItem('licVault')||ADM()))return Promise.resolve();
   return new Promise(res=>{const ov=document.createElement('div');ov.id='vaultGate';
     ov.style.cssText='position:fixed;inset:0;z-index:2147483000;background:rgba(5,8,20,.88);display:flex;align-items:center;justify-content:center;padding:16px;font-family:inherit';
-    ov.innerHTML='<style>#vaultGate,#vaultGate *{color-scheme:dark}#vaultGate input::placeholder{color:#94a3c4;opacity:1}#vaultGate input:focus{outline:none;border-color:#818cf8!important;box-shadow:0 0 0 3px rgba(129,140,248,.35)}</style><form style="background:#141a2e;color:#f1f5ff;border:1px solid rgba(255,255,255,.12);width:min(390px,100%);border-radius:18px;padding:22px;box-shadow:0 30px 80px rgba(0,0,0,.55)"><div style="font-size:32px">🔐</div><h2 style="margin:6px 0 6px;font-size:20px;color:#ffffff">Licence Pro verrouillé</h2><p style="font-size:13.5px;color:#cbd5f5;margin:0 0 14px;line-height:1.55">Tes accès (token GitHub, secret maître, compte Firebase) sont <b>chiffrés</b> sur cet appareil. Saisis le mot de passe de tes réglages pour les ouvrir.</p><input type="password" id="vgP" autocomplete="current-password" placeholder="Mot de passe des réglages" style="width:100%;box-sizing:border-box;padding:12px;border-radius:11px;border:1px solid rgba(255,255,255,.3);background:#0b1020;color:#ffffff;caret-color:#ffffff;font-size:15px"><div id="vgE" style="color:#fda4af;font-size:12.5px;font-weight:700;min-height:18px;margin:7px 0"></div><button style="width:100%;padding:12px;border:none;border-radius:11px;background:#6366f1;color:#fff;font-weight:800;font-size:15px;cursor:pointer">Déverrouiller</button><button type="button" id="vgS" style="width:100%;margin-top:8px;padding:9px;border:none;background:none;color:#cbd5f5;cursor:pointer;font-size:13px">Continuer sans (rien ne sera chargé)</button></form>';
-    document.body.appendChild(ov);const f=ov.querySelector('form'),e=ov.querySelector('#vgE');
-    f.onsubmit=async ev=>{ev.preventDefault();e.textContent='⏳ Ouverture…';const p=ov.querySelector('#vgP').value;
-      try{if(!(await passOk(p)))throw new Error('Mot de passe incorrect');await vaultOpen(p);ov.remove();res()}catch(x){e.textContent='❌ '+(x.message||'Erreur');ov.querySelector('#vgP').select()}};
-    ov.querySelector('#vgS').onclick=()=>{ov.remove();res()};setTimeout(()=>ov.querySelector('#vgP').focus(),60)})}
+    ov.innerHTML='<style>#vaultGate,#vaultGate *{color-scheme:dark}#vaultGate input::placeholder{color:#94a3c4;opacity:1}#vaultGate input:focus{outline:none;border-color:#818cf8!important;box-shadow:0 0 0 3px rgba(129,140,248,.35)}</style><form style="background:#141a2e;color:#f1f5ff;border:1px solid rgba(255,255,255,.12);width:min(390px,100%);border-radius:18px;padding:22px;box-shadow:0 30px 80px rgba(0,0,0,.55)"><div style="font-size:32px">🔐</div><h2 style="margin:6px 0 6px;font-size:20px;color:#ffffff">Licence Pro verrouillé</h2><p style="font-size:13.5px;color:#cbd5f5;margin:0 0 14px;line-height:1.55">Tes accès (token GitHub, secret maître, compte Firebase) sont <b>chiffrés</b> sur cet appareil. Saisis le mot de passe de tes réglages pour les ouvrir.</p><input type="password" id="vgP" autocomplete="current-password" placeholder="Mot de passe des réglages" style="width:100%;box-sizing:border-box;padding:12px;border-radius:11px;border:1px solid rgba(255,255,255,.3);background:#0b1020;color:#ffffff;caret-color:#ffffff;font-size:15px"><label style="display:flex;align-items:center;gap:8px;margin:10px 0 0;font-size:13.5px;color:#e2e8ff;cursor:pointer"><input type="checkbox" id="vgR" style="width:18px;height:18px;accent-color:#6366f1"> Mémoriser sur cet appareil</label><div id="vgE" style="color:#fda4af;font-size:12.5px;font-weight:700;min-height:18px;margin:7px 0"></div><button style="width:100%;padding:12px;border:none;border-radius:11px;background:#6366f1;color:#fff;font-weight:800;font-size:15px;cursor:pointer">Déverrouiller</button><button type="button" id="vgS" style="width:100%;margin-top:8px;padding:9px;border:none;background:none;color:#cbd5f5;cursor:pointer;font-size:13px">Continuer sans (rien ne sera chargé)</button></form>';
+    document.body.appendChild(ov);const f=ov.querySelector('form'),e=ov.querySelector('#vgE'),ip=ov.querySelector('#vgP'),rk=ov.querySelector('#vgR');
+    rk.checked=rmHas();
+    f.onsubmit=async ev=>{ev.preventDefault();e.textContent='⏳ Ouverture…';const p=ip.value;
+      try{if(!(await passOk(p)))throw new Error('Mot de passe incorrect');await vaultOpen(p);
+        if(rk.checked)await rmSave(p);else rmForget();try{sessionStorage.removeItem('licIdleLock')}catch(_){}
+        ov.remove();res(p)}catch(x){e.textContent='❌ '+(x.message||'Erreur');ip.select()}};
+    ov.querySelector('#vgS').onclick=()=>{ov.remove();res()};setTimeout(()=>ip.focus(),60);
+    // 🔑 mot de passe mémorisé : ouverture automatique (après une mise en veille pour inactivité : pré-rempli, un clic suffit)
+    rmLoad().then(async p=>{if(!p||!document.body.contains(ov))return;let idle=false;try{idle=sessionStorage.getItem('licIdleLock')==='1'}catch(_){}
+      ip.value=p;if(idle){e.style.color='#a5b4fc';e.textContent='🔒 Verrouillé pour inactivité — clique sur Déverrouiller';return}
+      e.style.color='#a5b4fc';e.textContent='🔑 Ouverture automatique…';
+      try{if(!(await passOk(p)))throw 0;await vaultOpen(p);ov.remove();res(p)}catch(_){rmForget();ip.value='';rk.checked=false;e.style.color='#fda4af';e.textContent='Mot de passe mémorisé périmé — saisis-le à nouveau'}})})}
+// 🔑 Mémorisation locale du mot de passe : chiffré (AES-GCM) par une clé NON EXPORTABLE gardée dans IndexedDB de ce navigateur
+const RMK='licRemember';
+function rmDb(){return new Promise((ok,ko)=>{const r=indexedDB.open('licPro',1);r.onupgradeneeded=()=>r.result.createObjectStore('k');r.onsuccess=()=>ok(r.result);r.onerror=()=>ko(r.error)})}
+async function rmKey(create){const db=await rmDb();let k=await new Promise((ok,ko)=>{const t=db.transaction('k').objectStore('k').get('rm');t.onsuccess=()=>ok(t.result);t.onerror=()=>ko(t.error)});
+  if(!k&&create){k=await crypto.subtle.generateKey({name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+    await new Promise((ok,ko)=>{const t=db.transaction('k','readwrite');t.objectStore('k').put(k,'rm');t.oncomplete=ok;t.onerror=()=>ko(t.error)})}
+  db.close();return k||null}
+async function rmSave(p){try{const k=await rmKey(true),iv=crypto.getRandomValues(new Uint8Array(12));
+  const ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},k,enc.encode(p)));localStorage.setItem(RMK,JSON.stringify({iv:b64(iv),ct:b64(ct)}));rmUi();return true}catch(e){return false}}
+async function rmLoad(){try{const v=JSON.parse(localStorage.getItem(RMK)||'null');if(!v)return null;const k=await rmKey(false);if(!k)return null;
+  return new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:ub64(v.iv)},k,ub64(v.ct)))}catch(e){return null}}
+function rmForget(){try{localStorage.removeItem(RMK);indexedDB.deleteDatabase('licPro')}catch(e){}rmUi()}
+function rmHas(){try{return !!localStorage.getItem(RMK)}catch(e){return false}}
+function rmUi(){const b=document.getElementById('rmBox');if(!b)return;const h=rmHas();
+  b.innerHTML=h?'🔑 Mot de passe <b>mémorisé</b> sur cet appareil — ouverture automatique. <button class="ghost sm" type="button" onclick="rmForget();toast(\'Mot de passe oublié sur cet appareil\')">Oublier</button>'
+    :'🔑 Mot de passe non mémorisé. <button class="ghost sm" type="button" onclick="rmAsk()">Mémoriser sur cet appareil</button>'}
+async function rmAsk(){const p=prompt('Mot de passe des réglages à mémoriser :');if(!p)return;if(!(await passOk(p)))return toast('Mot de passe incorrect','ko');await rmSave(p);toast('🔑 Mot de passe mémorisé sur cet appareil')}
+// ⚡ Une fois connecté : « Enregistrer et tester » lancé automatiquement (GitHub + Firebase)
+async function autoConnect(p){if(!p||!SVAULT)return;const c=C();if(!(c.tok&&c.own&&c.rep))return;
+  try{cfgSave({...c})}catch(e){}toast('💾 Enregistrement et test de la connexion…');
+  const d=await diag().catch(()=>'GitHub injoignable');if(d)return toast('GitHub : '+d,'ko');
+  if(c.fbMail&&c.fbPass){try{await fbTok();FBOK=true;toast('✔ Enregistré — GitHub et Firebase connectés')}catch(e){FBOK=false;toast('Firebase : '+e.message,'ko')}}
+  else toast('✔ Enregistré — GitHub connecté (Firebase non configuré)');
+  try{renderConn();renderTiles()}catch(e){}}
 let IPB={},IPNAMES={},IPFILTER='all',IPNAV={},IPNAVLOADED=false,IPSORT='recent',IPSEL={},IPROWS=[];
 let LIC=[],BAN=[],DEV={},EXC={},EXCN=0,FILTER='all',PER=30,EDIT=null,KEEP=false,PROD='',DEVN=0,LASTID=null,charts={},FBT=null,FBOK=false;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -1303,7 +1336,7 @@ function fbClean(o,d){if(!o||typeof o!=='object'||(d||0)>8)return o;if(Array.isA
   const touch=()=>{last=Date.now();if(warned){warned=false;const w=document.getElementById('lockWarn');if(w)w.remove()}};
   ['pointerdown','keydown','wheel','touchstart','mousemove'].forEach(ev=>addEventListener(ev,touch,{passive:true}));
   setInterval(()=>{if(!hasLock()||!SVAULT)return;const idle=Date.now()-last;
-    if(idle>IDLE){try{SVAULT=null;SVKEY=null;FBT=null}catch(e){}location.reload();return}
+    if(idle>IDLE){try{SVAULT=null;SVKEY=null;FBT=null;sessionStorage.setItem('licIdleLock','1')}catch(e){}location.reload();return}
     if(idle>IDLE-60000&&!warned){warned=true;const w=document.createElement('div');w.id='lockWarn';
       w.style.cssText='position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:2147483000;background:#111827;color:#fff;padding:12px 18px;border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.45);font-weight:700;font-size:14px';
       w.textContent='🔒 Licence Pro se verrouille dans 1 minute (inactivité) — bouge la souris pour rester connecté';document.body.appendChild(w)}},5000)})();
@@ -1701,14 +1734,15 @@ async function acceptSansLic(rid){const r=REQ.find(x=>x.rid===rid);if(!r)return;
   try{await fbPut('requests/'+rid,nv);if(nv.compte)toast('🎉 Compte activé');await loadReq()}catch(e){toast(e.message,'ko')}}
 async function retryAct(rid){const r=REQ.find(x=>x.rid===rid);if(!r)return;try{await appActiver(r);const{rid:_,...v}=r;await fbPut('requests/'+rid,{...v,compte:'actif'});toast('🎉 Compte activé');await loadReq()}catch(e){toast(e.message,'ko')}}
 async function delReq(rid){if(!confirm('Supprimer cette demande ?'))return;try{await fbPut('requests/'+rid,null);await loadReq();toast('Demande supprimée')}catch(e){toast(e.message,'ko')}}
-let UNLOCKED=false,lockTimer=null;
+let UNLOCKED=false,lockTimer=null,MANLOCK=false;
 const ADM=()=>{try{return JSON.parse(localStorage.getItem('licAdmin')||'null')}catch(e){return null}};
 async function passHash(p,salt){return sha(salt+'|'+p)}
 function eye(b){const i=b.previousElementSibling;i.type=i.type==='password'?'text':'password';b.classList.toggle('on',i.type==='text');b.textContent=i.type==='text'?'🙈':'👁'}
 function showLock(){const a=ADM();$('setBody').hidden=true;$('setLock').hidden=false;$('lkPass').value='';$('lkConf').value='';
   $('lkConfWrap').hidden=!!a;$('lkForgot').hidden=!a;$('lkTitle').textContent=a?'Réglages protégés':'Crée ton mot de passe';
   $('lkHint').textContent=a?'Entre ton mot de passe pour accéder aux réglages.':'Choisis un mot de passe (6 caractères minimum) pour protéger ton token, ton secret et tes accès Firebase.';
-  $('lkBtn').textContent=a?'Déverrouiller':'Créer et déverrouiller';setTimeout(()=>$('lkPass').focus(),100)}
+  $('lkBtn').textContent=a?'Déverrouiller':'Créer et déverrouiller';setTimeout(()=>$('lkPass').focus(),100);
+  if(a&&!MANLOCK)rmLoad().then(p=>{if(p&&!UNLOCKED&&!$('setLock').hidden){$('lkPass').value=p;unlockSet()}})}
 function bump(){clearTimeout(lockTimer);if(UNLOCKED)lockTimer=setTimeout(()=>lockSet(),5*6e4)}
 ['click','keydown','touchstart'].forEach(ev=>addEventListener(ev,bump,{passive:true}));
 function fillCfg(){const c=C();CFG_KEYS.forEach(k=>$(k).value=c[k]||'');$('fbUrl').value=c.fbUrl||FB_DEF.fbUrl;$('fbKey').value=c.fbKey||FB_DEF.fbKey;$('prods').value=c.prods||DEF_P;$('pth').value=c.pth||'licences.json';
@@ -1721,14 +1755,14 @@ async function unlockSet(){const p=$('lkPass').value,a=ADM();
     const salt=hex(crypto.getRandomValues(new Uint8Array(16)));localStorage.setItem('licAdmin',JSON.stringify({v:2,salt,hash:await pbkHash(p,salt)}));toast('🔒 Mot de passe créé')}
   else if(!(await passOk(p)))return failLock('Mot de passe incorrect');
   if(!SVAULT){try{await vaultOpen(p)}catch(e){return failLock(e.message)}}
-  UNLOCKED=true;$('setLock').hidden=true;$('setBody').hidden=false;fillCfg();initTabCat();fillSavCfg();renderSecret();loadRules();loadAppCfg();bump()}
+  UNLOCKED=true;MANLOCK=false;$('setLock').hidden=true;$('setBody').hidden=false;fillCfg();rmUi();initTabCat();fillSavCfg();renderSecret();loadRules();loadAppCfg();bump()}
 function failLock(m){toast(m,'ko');const c=$('setLock');c.classList.remove('shake');void c.offsetWidth;c.classList.add('shake');$('lkPass').select()}
-function lockSet(manual){UNLOCKED=false;clearTimeout(lockTimer);clearCfgFields();if($('v-set').classList.contains('on'))showLock();if(manual)toast('🔒 Réglages verrouillés')}
+function lockSet(manual){UNLOCKED=false;if(manual)MANLOCK=true;clearTimeout(lockTimer);clearCfgFields();if($('v-set').classList.contains('on'))showLock();if(manual)toast('🔒 Réglages verrouillés')}
 async function changeSetPass(){const o=prompt('Mot de passe actuel :');if(o===null)return;const a=ADM();if(a&&!(await passOk(o)))return toast('Mot de passe incorrect','ko');if(!SVAULT){try{await vaultOpen(o)}catch(e){return toast(e.message,'ko')}}
   const n=prompt('Nouveau mot de passe (6 caractères minimum) :');if(!n)return;if(n.length<6)return toast('6 caractères minimum','ko');if(prompt('Confirme le nouveau mot de passe :')!==n)return toast('Les mots de passe sont différents','ko');
-  const salt=hex(crypto.getRandomValues(new Uint8Array(16)));localStorage.setItem('licAdmin',JSON.stringify({v:2,salt,hash:await pbkHash(n,salt)}));await vaultRekey(n);toast('✔ Mot de passe modifié — coffre re-chiffré')}
+  const salt=hex(crypto.getRandomValues(new Uint8Array(16)));localStorage.setItem('licAdmin',JSON.stringify({v:2,salt,hash:await pbkHash(n,salt)}));await vaultRekey(n);if(rmHas())await rmSave(n);toast('✔ Mot de passe modifié — coffre re-chiffré')}
 function forgotSet(){if(!confirm("Réinitialiser le mot de passe ?\n\nPar sécurité, ton token GitHub, ton secret maître et ton mot de passe Firebase seront effacés de cet appareil. Tu devras les ressaisir (le secret maître doit être EXACTEMENT le même, sinon les clés changeront).\n\nTes licences sur GitHub ne sont pas touchées."))return;
-  const c=C();SECK.forEach(k=>delete c[k]);SVAULT=null;SVKEY=null;localStorage.setItem('licCfg',JSON.stringify(c));localStorage.removeItem('licVault');localStorage.removeItem('licAdmin');fbForget();FBOK=false;renderConn();showLock();toast('Mot de passe réinitialisé — crée-en un nouveau')}
+  const c=C();SECK.forEach(k=>delete c[k]);SVAULT=null;SVKEY=null;localStorage.setItem('licCfg',JSON.stringify(c));localStorage.removeItem('licVault');localStorage.removeItem('licAdmin');rmForget();fbForget();FBOK=false;renderConn();showLock();toast('Mot de passe réinitialisé — crée-en un nouveau')}
 
 /* ── Fenêtre modale ── */
 function mdFullPref(){try{return localStorage.getItem('mdFull')!=='0'}catch(e){return true}}
@@ -2273,7 +2307,7 @@ async function annOk(id,show){const a=ANNW.find(x=>x.id===id);if(!a)return;const
  try{await fbPut('crm/annoncesPriv/'+id,priv||{});await fbPut('annonces/'+id,ad);await fbPut('annoncesWait/'+id,null);anLogAdd(a,show?'pub':'pubm');toast(show?'✅ Annonce publiée avec coordonnées':'✅ Annonce publiée, coordonnées masquées');await loadAnn()}catch(e){toast(e.message,'ko')}}
 async function annNo(id){const a=ANNW.find(x=>x.id===id);if(!a||!confirm('Refuser et supprimer l\'annonce « '+a.title+' » ?'))return;try{await fbPut('annoncesWait/'+id,null);anLogAdd(a,'ref');toast('Annonce refusée');await loadAnn()}catch(e){toast(e.message,'ko')}}
 async function annDel(id){const a=ANNON.find(x=>x.id===id);if(!confirm('Retirer définitivement cette annonce du site ?'))return;try{await fbPut('annonces/'+id,null);if(a)anLogAdd(a,'del');await fbPut('crm/annoncesPriv/'+id,null);toast('Annonce retirée');await loadAnn()}catch(e){toast(e.message,'ko')}}
-bootGate().finally(()=>load(true));setInterval(load,60000);loadAnn();setInterval(loadAnn,60000);setInterval(()=>LIC.length&&renderAll(),30000);
+bootGate().then(p=>autoConnect(p)).catch(()=>{}).finally(()=>load(true));setInterval(load,60000);loadAnn();setInterval(loadAnn,60000);setInterval(()=>LIC.length&&renderAll(),30000);
 if(!C().tok)go('set');
 /* ═══════════ THÈMES ═══════════ */
 const THEMES={
