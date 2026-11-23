@@ -248,7 +248,7 @@
 
   // ── Boutons de caisse masquables : 🩺 vérification (assistant caisse) · 🎙️ assistant vocal · 💳 envoi SumUp ──
   // choix local (Paramètres de COVO Pro, clé « covo_ui_hide ») + choix imposé par la licence (Licence Pro)
-  const UIH_CSS={verif:'#cxd-help{display:none!important}',vocal:'#cv-fab,#cv-tg-ask{display:none!important}',sumup:'#app-sumup-chip [data-su="send"],#cx-sumup-chip [data-su="send"]{display:none!important}'};
+  const UIH_CSS={verif:'#cxd-help{display:none!important}',vocal:'#cv-fab,#cv-tg-ask{display:none!important}',sumup:'#app-sumup-chip,#cx-sumup-chip{display:none!important}'};
   let UIH_LIC=null;
   function uiHideGet(){let loc=[];try{loc=JSON.parse(localStorage.getItem('covo_ui_hide')||'[]')||[]}catch(e){}
     if(UIH_LIC===null)try{const d=JSON.parse(localStorage.getItem('licData_'+PRODUIT)||'null');UIH_LIC=(d&&Array.isArray(d.masquer))?d.masquer:[]}catch(e){UIH_LIC=[]}
