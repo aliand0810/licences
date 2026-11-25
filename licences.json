@@ -19,18 +19,32 @@
         "Projets"
       ],
       "maxDevices": 3,
-      "onglets": null,
+      "onglets": [
+        "catalogue",
+        "stats",
+        "predictions",
+        "retours",
+        "historique",
+        "clotures",
+        "paiements",
+        "projets",
+        "__print"
+      ],
       "google": {
         "clientId": "531822941380-u6o0c9lsk4jsppau5mmrt1enst973r9d.apps.googleusercontent.com",
-        "em": "E1.6ggCdTkkEfe0qS7c.UjpGoa2bMqfj7q0NdVPyh28ec1mTPyBTg+gHljJyCA9vrA=="
+        "em": "E1.bnmFCNL3uABYs8j/.+AdORGTtoyA13su07CL68QquNx7kTan9F9F1HiLvUVJ7cw=="
       },
       "sav": {
         "on": true,
         "until": null
       },
       "pv": 1,
-      "ongletsOff": null,
-      "ongletsNoms": null,
+      "ongletsOff": [
+        "gestionhub"
+      ],
+      "ongletsNoms": {
+        "gestionhub": "Gestion Pro"
+      },
       "log": [
         {
           "t": 1795503458671,
@@ -150,7 +164,7 @@
         "a1ecac686dea2902cffcc53a": 1793593531496
       },
       "suivi": 1,
-      "em": "E1.JqbSWNi568MOqz6i.a6mSV3iZPcl85VBa8W4TWosgfxw8yCj/E9JRIiCZuo9UgQ=="
+      "em": "E1.sDU3Z+oiXvycbJJb.m5VHiZA0Nu/+TpnyEiBV2PSlH43RwjeZJevCik7R12EkkA=="
     },
     {
       "id": "4dd7a434fd4813907afaaab9fe377a11c09f02ec9317bdbefa5d9246d6ade619",
@@ -200,7 +214,7 @@
         }
       ],
       "suivi": 1,
-      "em": "E1.0oKo5ZcLSKyxEbfO.wM7qkLVCI9rmEzLGcR82wOS0y/W9G6zHh0j5ADrNiwAF8wxC"
+      "em": "E1.naSsgNme1hZSoLbf.MbjUpaKI7fPSRRvrRBxeJmx0ykfRHJyZx73z+nV+51OZFlfq"
     },
     {
       "id": "e920618ab44fccf2e98f0e20f0a4e04c5de1abeab2f1f1a522bf11eaf42edd96",
@@ -219,7 +233,7 @@
       "google": null,
       "ongletsOff": null,
       "ongletsNoms": null,
-      "em": "E1.VRcjTSpSqgCTXn2B.vCusvrtANxVsotPTZ58ZoBWb57TxlHPSYxviup6c0nbgG+G9"
+      "em": "E1.0pZRFAG8UdFcMsm8.rH1H8JkWase8V5mOgve4K5bJfEYm3pMBrrsE1ncJhjRstAXU"
     },
     {
       "id": "e26c290ce3849e13dd8182d565d944e387c40123b964476fbd99ceff0d1fec79",
@@ -238,7 +252,7 @@
       "google": null,
       "ongletsOff": null,
       "ongletsNoms": null,
-      "em": "E1.hSW2Xci5DeF0sERe.7rBYP9o1nqrTw7yF9OF/Dat9Kb9u3Fe1/LUqn/6Ok73SJcXi6Q=="
+      "em": "E1.lrEW6DmWZd83UxCR.b2W42E0BRShJ2nuVXqwxSsAXqYZT+RydC8PilBzD86jNRk5GTw=="
     },
     {
       "id": "04900c606129c087d546b9bcf2090c4392092890d4904311a134b8389e88125f",
@@ -268,7 +282,7 @@
       "google": null,
       "ongletsOff": null,
       "ongletsNoms": null,
-      "em": "E1.IEEoGR6K404mhs1l.oMuNIHC+PGQLn29rk/16EI1r4U1GssJm93G06ChRUQ54aFOZ"
+      "em": "E1.IThm18Hgo4ZeqhYe.9EL/Y1ANjn9Ztpjai9C6/ZN4IIHFaAZ70jASmaQQXV9Oll+r"
     }
   ],
   "bannis": [],
